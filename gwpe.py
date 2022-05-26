@@ -19,16 +19,14 @@ os.environ['MKL_NUM_THREADS'] = str(1)
 
 """
 python -m gwpe train new nde \
-    --data_dir /home/su/Documents/normalizing_flows/waveforms/GW150914/ \
-    --model_dir /home/su/Documents/normalizing_flows/models/GW150914/ \
+    --data_dir /home/su/Documents/glitch_dataset/ \
+    --model_dir /home/su/Documents/normalizing_flows/models/ \
     --nbins 8 \
     --num_transform_blocks 10 \
     --nflows 15 \
     --batch_norm \
     --lr 0.0002 \
-    --epochs 25 \
-    --distance_prior_fn uniform_distance \
-    --distance_prior 100.0 1000.0 \
+    --epochs 1000 \
     --hidden_dims 512 \
     --truncate_basis 100 \
     --activation elu \
@@ -36,8 +34,8 @@ python -m gwpe train new nde \
     
     
 python -m gwpe test \
-    --data_dir /home/su/Documents/normalizing_flows/waveforms/GW150914/ \
-    --model_dir /home/su/Documents/normalizing_flows/models/GW150914/ \
+    --data_dir /home/su/Documents/glitch_dataset/ \
+    --model_dir /home/su/Documents/normalizing_flows/models/ \
 """
 
 
@@ -81,15 +79,12 @@ class PosteriorModel(object):
         """
 
         # load training data
-        self.training_wg = wd.WaveformGenerator(dataset_len=1000)
+        self.training_wg = wd.WaveformGenerator(directory=self.data_dir)
         self.training_wg.load_data('training_data')
 
         # validation data
-        self.validation_wg = wd.WaveformGenerator(dataset_len=200)
+        self.validation_wg = wd.WaveformGenerator(directory=self.data_dir)
         self.validation_wg.load_data('validation_data')
-
-        #training_wg.load_data(self.data_dir+'training_data')
-        #testing_wg.load_data(self.data_dir+'test_data')
 
         wfd_train = wd.WaveformDatasetTorch(self.training_wg)
         wfd_test = wd.WaveformDatasetTorch(self.validation_wg)
@@ -265,15 +260,6 @@ class PosteriorModel(object):
         # another file.
         f = h5py.File(p / aux_filename, 'w')
 
-        # if self.wfd.domain == 'RB':
-        #
-        #     f.attrs['Nrb'] = self.wfd.Nrb
-        #
-        #     std_group = f.create_group('RB_std')
-        #     for ifo, std, in self.wfd.basis.standardization_dict.items():
-        #         std_group.create_dataset(ifo, data=std,
-        #                                  compression='gzip',
-        #                                  compression_opts=9)
 
         f.create_dataset('parameters_mean', data=self.training_wg.params_mean)
         f.create_dataset('parameters_std', data=self.training_wg.params_std)
@@ -342,6 +328,22 @@ class PosteriorModel(object):
 
         # Make sure the model is in evaluation mode
         self.model.eval()
+
+
+
+    def plot_losses(self):
+
+        epoch_axis = np.arange(1, self.epoch)
+
+        fig, ax = plt.subplots()
+        fig.set_size_inches(7, 7)
+
+        ax.plot(epoch_axis, self.train_history, label='Training Loss')
+        ax.plot(epoch_axis, self.test_history, label='Validation Loss')
+
+        legend = ax.legend()
+
+        plt.show()
 
 
 
@@ -417,17 +419,6 @@ class PosteriorModel(object):
         except FileNotFoundError:
             return
 
-        # if self.wfd.domain == 'RB':
-        #
-        #     # Truncate basis if necessary
-        #     Nrb = f.attrs['Nrb']
-        #     if Nrb != self.wfd.Nrb:
-        #         self.wfd.basis.truncate(Nrb)
-        #         self.wfd.Nrb = Nrb
-        #
-        #     std_group = f['RB_std']
-        #     for ifo in std_group.keys():
-        #         self.wfd.basis.standardization_dict[ifo] = std_group[ifo][:]
 
         self.testing_wg = wd.WaveformGenerator(dataset_len=1000)
         self.testing_wg.load_data('testing_data')
@@ -547,66 +538,6 @@ def parse_args():
     train_parent_parser.add_argument('--bw_dstar', type=float)
 
 
-    cvae_parent_parser = argparse.ArgumentParser(add_help=False)
-    cvae_parent_parser.add_argument(
-        '--latent_dim', type=int, required=True)
-    cvae_parent_parser.add_argument('--hidden_dims', type=int,
-                                    nargs='+', required=True)
-    cvae_parent_parser.add_argument('--batch_norm', action='store_true')
-    cvae_parent_parser.add_argument(
-        '--prior_gaussian_nn', action='store_true')
-    cvae_parent_parser.add_argument('--prior_full_cov', action='store_true')
-
-    iaf_parent_parser = argparse.ArgumentParser(add_help=False)
-    iaf_parent_parser.add_argument('--iaf.hidden_dims', type=int, nargs='+',
-                                   required=True)
-    context_group = iaf_parent_parser.add_mutually_exclusive_group(
-        required=True)
-    context_group.add_argument('--iaf.context_dim', type=int)
-    context_group.add_argument('--iaf.context_y', action='store_true')
-    iaf_parent_parser.add_argument('--iaf.nflows', type=int, required=True)
-    iaf_parent_parser.add_argument('--iaf.batch_norm', action='store_true')
-    iaf_parent_parser.add_argument('--iaf.bn_momentum', type=float,
-                                   default=0.9)
-    iaf_parent_parser.add_argument('--iaf.maf_parametrization',
-                                   action='store_false',
-                                   dest='iaf.iaf_parametrization')
-    iaf_parent_parser.add_argument('--iaf.xcontext', action='store_true')
-    iaf_parent_parser.add_argument('--iaf.ycontext', action='store_true')
-
-    maf_prior_parent_parser = argparse.ArgumentParser(add_help=False)
-    maf_prior_parent_parser.add_argument('--maf_prior.hidden_dims', type=int,
-                                         nargs='+',
-                                         required=True)
-    maf_prior_parent_parser.add_argument('--maf_prior.nflows', type=int,
-                                         required=True)
-    maf_prior_parent_parser.add_argument('--maf_prior.no_batch_norm',
-                                         action='store_false',
-                                         dest='maf_prior.batch_norm')
-    maf_prior_parent_parser.add_argument('--maf_prior.bn_momentum', type=float,
-                                         default=0.9)
-    maf_prior_parent_parser.add_argument('--maf_prior.iaf_parametrization',
-                                         action='store_true')
-
-    maf_decoder_parent_parser = argparse.ArgumentParser(add_help=False)
-    maf_decoder_parent_parser.add_argument('--maf_decoder.hidden_dims',
-                                           type=int,
-                                           nargs='+',
-                                           required=True)
-    maf_decoder_parent_parser.add_argument('--maf_decoder.nflows',
-                                           type=int,
-                                           required=True)
-    maf_decoder_parent_parser.add_argument('--maf_decoder.no_batch_norm',
-                                           action='store_false',
-                                           dest='maf_decoder.batch_norm')
-    maf_decoder_parent_parser.add_argument('--maf_decoder.bn_momentum',
-                                           type=float,
-                                           default=0.9)
-    maf_decoder_parent_parser.add_argument('--maf_decoder.iaf_parametrization',
-                                           action='store_true')
-    maf_decoder_parent_parser.add_argument('--maf_decoder.zcontext',
-                                           action='store_true')
-
     # Subprograms
 
     mode_subparsers = parser.add_subparsers(title='mode', dest='mode')
@@ -626,21 +557,6 @@ def parse_args():
     type_subparsers = train_new_parser.add_subparsers(dest='model_type')
     type_subparsers.required = True
 
-    # Pure MAF
-
-    maf_parser = type_subparsers.add_parser(
-        'maf',
-        description=('Build and train a MAF.'),
-        parents=[activation_parent_parser,
-                 dir_parent_parser,
-                 train_parent_parser])
-    maf_parser.add_argument('--hidden_dims', type=int, nargs='+',
-                            required=True)
-    maf_parser.add_argument('--nflows', type=int, required=True)
-    maf_parser.add_argument(
-        '--no_batch_norm', action='store_false', dest='batch_norm')
-    maf_parser.add_argument('--bn_momentum', type=float, default=0.9)
-    maf_parser.add_argument('--iaf_parametrization', action='store_true')
 
     # nde (curently just NSFC)
 
@@ -663,118 +579,6 @@ def parse_args():
     nde_parser.add_argument('--base_transform_type', type=str,
                             choices=['rq-coupling', 'rq-autoregressive'],
                             default='rq-coupling')
-
-    # Pure CVAE
-
-    cvae_parser = type_subparsers.add_parser(
-        'cvae',
-        description=('Build and train a CVAE.'),
-        parents=[activation_parent_parser,
-                 dir_parent_parser,
-                 cvae_parent_parser,
-                 train_parent_parser])
-    cvae_parser.add_argument('--encoder_diag_cov', action='store_false',
-                             dest='encoder_full_cov')
-    cvae_parser.add_argument('--decoder_diag_cov', action='store_false',
-                             dest='decoder_full_cov')
-
-    # CVAE with IAF
-
-    cvae_iaf_parser = type_subparsers.add_parser(
-        'cvae+iaf',
-        description=('Build and train a CVAE with IAF encoder.'),
-        parents=[activation_parent_parser,
-                 dir_parent_parser,
-                 cvae_parent_parser,
-                 iaf_parent_parser,
-                 train_parent_parser])
-    cvae_iaf_parser.add_argument('--encoder_full_cov', action='store_true')
-    cvae_iaf_parser.add_argument('--decoder_diag_cov', action='store_false',
-                                 dest='decoder_full_cov')
-
-    # CVAE with prior MAF
-
-    cvae_maf_prior_parser = type_subparsers.add_parser(
-        'cvae+maf_prior',
-        description=('Build and train a CVAE with MAF prior.'),
-        parents=[activation_parent_parser,
-                 dir_parent_parser,
-                 cvae_parent_parser,
-                 maf_prior_parent_parser,
-                 train_parent_parser])
-    cvae_maf_prior_parser.add_argument('--encoder_full_cov',
-                                       action='store_true')
-    cvae_maf_prior_parser.add_argument('--decoder_diag_cov',
-                                       action='store_false',
-                                       dest='decoder_full_cov')
-
-    # CVAE with decoder MAF
-
-    cvae_maf_decoder_parser = type_subparsers.add_parser(
-        'cvae+maf_decoder',
-        description=('Build and train a CVAE with MAF decoder.'),
-        parents=[activation_parent_parser,
-                 dir_parent_parser,
-                 cvae_parent_parser,
-                 maf_decoder_parent_parser,
-                 train_parent_parser])
-    cvae_maf_decoder_parser.add_argument('--encoder_diag_cov',
-                                         action='store_false',
-                                         dest='encoder_full_cov')
-    cvae_maf_decoder_parser.add_argument('--decoder_full_cov',
-                                         action='store_true')
-
-    # CVAE with IAF + MAF decoder
-
-    cvae_iaf_maf_decoder_parser = type_subparsers.add_parser(
-        'cvae+iaf+maf_decoder',
-        description=('Build and train a CVAE with IAF encoder'
-                     'and MAF decoder.'),
-        parents=[activation_parent_parser,
-                 dir_parent_parser,
-                 cvae_parent_parser,
-                 iaf_parent_parser,
-                 maf_decoder_parent_parser,
-                 train_parent_parser])
-    cvae_iaf_maf_decoder_parser.add_argument('--encoder_full_cov',
-                                             action='store_true')
-    cvae_iaf_maf_decoder_parser.add_argument('--decoder_full_cov',
-                                             action='store_true')
-
-    # CVAE with prior MAF + posterior MAF
-
-    cvae_maf_prior_maf_decoder_parser = type_subparsers.add_parser(
-        'cvae+maf_prior+maf_decoder',
-        description=('Build and train a CVAE with MAF prior'
-                     'and MAF decoder.'),
-        parents=[activation_parent_parser,
-                 dir_parent_parser,
-                 cvae_parent_parser,
-                 maf_prior_parent_parser,
-                 maf_decoder_parent_parser,
-                 train_parent_parser])
-    cvae_maf_prior_maf_decoder_parser.add_argument('--encoder_full_cov',
-                                                   action='store_true')
-    cvae_maf_prior_maf_decoder_parser.add_argument('--decoder_full_cov',
-                                                   action='store_true')
-
-    # CVAE with IAF + prior MAF + posterior MAF
-
-    cvae_all_parser = type_subparsers.add_parser(
-        'cvae+all',
-        description=('Build and train a CVAE with IAF, MAF prior'
-                     'and MAF decoder.'),
-        parents=[activation_parent_parser,
-                 dir_parent_parser,
-                 cvae_parent_parser,
-                 iaf_parent_parser,
-                 maf_prior_parent_parser,
-                 maf_decoder_parent_parser,
-                 train_parent_parser])
-    cvae_all_parser.add_argument('--encoder_full_cov',
-                                 action='store_true')
-    cvae_all_parser.add_argument('--decoder_full_cov',
-                                 action='store_true')
 
     train_subparsers.add_parser(
         'existing',
@@ -886,6 +690,7 @@ def main():
 
         print('Loading existing model')
         pm.load_model()
+        pm.plot_losses()
 
         print('\nModel hyperparameters:')
 

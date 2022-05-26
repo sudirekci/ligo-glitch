@@ -66,9 +66,9 @@ class WaveformGenerator:
         if priors is None:
             # default prior
             self.priors = np.zeros((self.INTRINSIC_LEN + self.EXTRINSIC_LEN + 1, 2))
-            self.priors[self.INTRINSIC_PARAMS['mass1']] = [30., 31.]
-            self.priors[self.INTRINSIC_PARAMS['mass2']] = [25., 26.]
-            self.priors[self.EXTRINSIC_PARAMS['distance']] = [540., 540.1]
+            self.priors[self.INTRINSIC_PARAMS['mass1']] = [10., 80.]
+            self.priors[self.INTRINSIC_PARAMS['mass2']] = [10., 80.]
+            self.priors[self.EXTRINSIC_PARAMS['distance']] = [100., 1000.]
             self.priors[self.INTRINSIC_PARAMS['phase']] = [0.0, 0.0]
             self.priors[self.INTRINSIC_PARAMS['a1']] = [0.0, 0.0]
             self.priors[self.INTRINSIC_PARAMS['a2']] = [0.0, 0.0]
@@ -146,6 +146,7 @@ class WaveformGenerator:
         self.performed_svd = False
 
 
+
     def initialize(self):
 
         self.initialize_freq_vars()
@@ -158,10 +159,12 @@ class WaveformGenerator:
         # self.initialize_svd()
 
 
+
     def initialize_svd(self):
 
         self.svd = SVD(no_basis_coeffs=self.svd_no_basis_coeffs)
         self.performed_svd = False
+
 
 
     def initialize_freq_vars(self):
@@ -326,7 +329,8 @@ class WaveformGenerator:
 
         elif self.domain == 'FD':
 
-            glitch = np.fft.rfft(np.pad(glitch, (beginning, self.length-end), 'constant'))[self.fft_mask]*self.dt
+            glitch = np.fft.rfft(np.pad(glitch, (beginning, self.length-end), 'constant'))[self.fft_mask]*self.dt*\
+                     np.sqrt(self.bandwidth)
             self.projection_strains[det] += glitch
 
         params = np.concatenate(([time], z))
