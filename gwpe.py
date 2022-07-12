@@ -19,14 +19,14 @@ os.environ['MKL_NUM_THREADS'] = str(1)
 
 """
 python -m gwpe train new nde \
-    --data_dir /home/su/Documents/glitch_dataset/ \
-    --model_dir /home/su/Documents/normalizing_flows/models/overfitted_model/ \
+    --data_dir /home/su.direkci/glitch_project/glitch_dataset/ \
+    --model_dir /home/su.direkci/glitch_project/models/test/ \
     --nbins 8 \
     --num_transform_blocks 10 \
     --nflows 15 \
     --batch_norm \
     --lr 0.0002 \
-    --epochs 600 \
+    --epochs 5 \
     --hidden_dims 512 \
     --truncate_basis 100 \
     --activation elu \
