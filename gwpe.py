@@ -20,22 +20,24 @@ os.environ['MKL_NUM_THREADS'] = str(1)
 """
 python -m gwpe train new nde \
     --data_dir /home/su/Documents/glitch_dataset/ \
-    --model_dir /home/su/Documents/normalizing_flows/models/ \
+    --model_dir /home/su/Documents/normalizing_flows/models/overfitted_model/ \
     --nbins 8 \
     --num_transform_blocks 10 \
     --nflows 15 \
     --batch_norm \
     --lr 0.0002 \
-    --epochs 1000 \
+    --epochs 600 \
     --hidden_dims 512 \
     --truncate_basis 100 \
     --activation elu \
-    --lr_anneal_method cosine
+    --lr_anneal_method cosine \
     
     
 python -m gwpe test \
     --data_dir /home/su/Documents/glitch_dataset/ \
-    --model_dir /home/su/Documents/normalizing_flows/models/ \
+    --model_dir /home/su/Documents/normalizing_flows/models/overfitted_model/ \
+    --test_on_training_data \
+    --epoch 600 \
 """
 
 
@@ -61,6 +63,9 @@ class PosteriorModel(object):
         self.training_wg = None
         self.validation_wg = None
         self.testing_wg = None
+        self.lr = None
+        self.test_on_training_data = None
+        self.epoch_to_use = None
 
 
         if use_cuda and torch.cuda.is_available():
@@ -196,6 +201,8 @@ class PosteriorModel(object):
                             flow_lr=None):
         """Set up the optimizer and scheduler."""
 
+        self.lr = lr
+
         if self.model is None:
             raise NameError('Construct model before initializing training.')
 
@@ -224,7 +231,7 @@ class PosteriorModel(object):
         self.epoch = 1
 
 
-    def save_model(self, filename='model.pt',
+    def save_model(self, filename='model',
                    aux_filename='waveforms_supplementary.hdf5'):
         """Save a model and optimizer to file.
         Args:
@@ -235,6 +242,8 @@ class PosteriorModel(object):
             filename:   filename for saved model
         """
 
+        filename += '_ep_' + str(int(self.epoch-1)) + '.pt'
+
         if self.model_dir is None:
             raise NameError("Model directory must be specified."
                             " Store in attribute PosteriorModel.model_dir")
@@ -242,7 +251,7 @@ class PosteriorModel(object):
         p = Path(self.model_dir)
         p.mkdir(parents=True, exist_ok=True)
 
-        dict = {
+        dict1 = {
             'model_type': self.model_type,
             'model_hyperparams': self.model.model_hyperparams,
             'model_state_dict': self.model.state_dict(),
@@ -252,29 +261,43 @@ class PosteriorModel(object):
         }
 
         if self.scheduler is not None:
-            dict['scheduler_state_dict'] = self.scheduler.state_dict()
+            dict1['scheduler_state_dict'] = self.scheduler.state_dict()
 
-        torch.save(dict, p / filename)
+        torch.save(dict1, p / filename)
 
-        # Save any information about basis truncation or standardization in
-        # another file.
-        f = h5py.File(p / aux_filename, 'w')
+        if not os.path.exists(p/aux_filename):
+
+            f = h5py.File(p / aux_filename, 'w')
+
+            f.create_dataset('parameters_mean', data=self.training_wg.params_mean)
+            f.create_dataset('parameters_std', data=self.training_wg.params_std)
+            f.create_dataset('glitch_parameters_mean', data=self.training_wg.glitch_params_mean)
+            f.create_dataset('glitch_parameters_std', data=self.training_wg.glitch_params_std)
+            f.create_dataset('waveforms_mean', data=self.training_wg.means)
+            f.create_dataset('waveforms_std', data=self.training_wg.stds)
+            f.create_dataset('Vh_real', data=self.training_wg.svd.Vh.real)
+            f.create_dataset('Vh_imag', data=self.training_wg.svd.Vh.imag)
+
+            f.close()
+
+        if not os.path.exists(p / 'hyperparams.txt'):
+
+            f = open(p / 'hyperparams.txt', 'w')
+
+            for key, value in self.model.model_hyperparams.items():
+                if type(value) == dict:
+                    f.write(key)
+                    for k, v in value.items():
+                        f.write(k+'\t'+str(v)+'\n')
+                else:
+                    f.write(key+'\t'+str(value)+'\n')
+
+            f.write('learning rate'+'\t'+'%s'% (self.lr))
+            f.close()
 
 
-        f.create_dataset('parameters_mean', data=self.training_wg.params_mean)
-        f.create_dataset('parameters_std', data=self.training_wg.params_std)
-        f.create_dataset('glitch_parameters_mean', data=self.training_wg.glitch_params_mean)
-        f.create_dataset('glitch_parameters_std', data=self.training_wg.glitch_params_std)
-        f.create_dataset('waveforms_mean', data=self.training_wg.means)
-        f.create_dataset('waveforms_std', data=self.training_wg.stds)
-        f.create_dataset('Vh_real', data=self.training_wg.svd.Vh.real)
-        f.create_dataset('Vh_imag', data=self.training_wg.svd.Vh.imag)
 
-        f.close()
-
-
-
-    def load_model(self, filename='model.pt'):
+    def load_model(self, filename='model'):
         """Load a saved model.
         Args:
             filename:       File name
@@ -285,7 +308,23 @@ class PosteriorModel(object):
                             " Store in attribute PosteriorModel.model_dir")
 
         p = Path(self.model_dir)
-        checkpoint = torch.load(p / filename, map_location=self.device)
+
+        if self.epoch_to_use != -1:
+            # load a specific epoch
+            filename += '_ep_' + str(self.epoch_to_use) + '.pt'
+            if os.path.exists(p/filename):
+                checkpoint = torch.load(p / filename, map_location=self.device)
+            else:
+                print('Invalid epoch specified')
+                return
+        else:
+            # load the latest epoch
+            # list files
+            model_epoch = [int((f[:-3]).split('_')[-1]) for f in os.listdir(p) if f.startswith(filename)]
+            self.epoch_to_use = np.max(model_epoch)
+            filename += '_ep_' + str(self.epoch_to_use) + '.pt'
+
+            checkpoint = torch.load(p / filename, map_location=self.device)
 
         model_type = checkpoint['model_type']
         model_hyperparams = checkpoint['model_hyperparams']
@@ -312,19 +351,24 @@ class PosteriorModel(object):
         if scheduler_present_in_checkpoint:
             self.scheduler.load_state_dict(checkpoint['scheduler_state_dict'])
 
-        # Load history
-        with open(p / 'history.txt', 'r') as f:
-            reader = csv.reader(f, delimiter='\t')
-            for row in reader:
-                self.train_history.append(float(row[1]))
-                self.test_history.append(float(row[2]))
-
         # Set the epoch to the correct value. This is needed to resume
         # training.
         self.epoch = checkpoint['epoch']
 
+
         # Store the list of detectors the model was trained with
         self.detectors = checkpoint['detectors']
+
+        # Load history
+        i = 1
+        with open(p / 'history.txt', 'r') as f:
+            reader = csv.reader(f, delimiter='\t')
+            for row in reader:
+                if i == self.epoch:
+                    break
+                self.train_history.append(float(row[1]))
+                self.test_history.append(float(row[2]))
+                i += 1
 
         # Make sure the model is in evaluation mode
         self.model.eval()
@@ -348,7 +392,7 @@ class PosteriorModel(object):
 
 
     def train(self, epochs, output_freq=50, kl_annealing=True,
-              snr_annealing=False):
+              snr_annealing=False, save_once_in=None):
         """Train the model.
         Args:
                 epochs:     number of epochs to train for
@@ -408,6 +452,10 @@ class PosteriorModel(object):
                         writer = csv.writer(f, delimiter='\t')
                         writer.writerow([epoch, train_loss, test_loss])
 
+            if save_once_in is not None and (self.epoch-1) % save_once_in == 0:
+                print('Saving model')
+                self.save_model()
+
 
 
     def init_waveform_supp(self, aux_filename='waveforms_supplementary.hdf5'):
@@ -420,8 +468,12 @@ class PosteriorModel(object):
             return
 
 
-        self.testing_wg = wd.WaveformGenerator(dataset_len=1000)
-        self.testing_wg.load_data('testing_data')
+        self.testing_wg = wd.WaveformGenerator()
+
+        if self.test_on_training_data:
+            self.testing_wg.load_data('training_data')
+        else:
+            self.testing_wg.load_data('testing_data')
 
         self.testing_wg.params_mean = f['parameters_mean'][:]
         self.testing_wg.params_std = f['parameters_std'][:]
@@ -431,7 +483,9 @@ class PosteriorModel(object):
         self.testing_wg.stds = f['waveforms_std'][:]
         Vh = f['Vh_real'][:] + 1j*f['Vh_imag'][:]
 
-        self.testing_wg.perform_svd(Vh)
+        if not self.test_on_training_data:
+            # do the svd
+            self.testing_wg.perform_svd(Vh)
 
         f.close()
 
@@ -445,10 +499,10 @@ class PosteriorModel(object):
             plot        whether to make a corner plot
         """
 
-        # y = self.wfd.noisy_test_waveforms[idx]
         params_true = np.concatenate((self.testing_wg.params[idx],self.testing_wg.glitch_params[idx]))
 
         y, _ = self.testing_wg.provide_sample(idx)
+
 
         if self.model_type == 'nde':
             x_samples = nde_flows.obtain_samples(
@@ -458,7 +512,7 @@ class PosteriorModel(object):
         x_samples = x_samples.cpu()
 
         params_samples = self.testing_wg.post_process_parameters(x_samples.numpy())
-        # params_samples
+        # params_samples = self.training_wg.post_process_parameters(x_samples.numpy())
 
         det = int(self.testing_wg.glitch_detector[idx])
 
@@ -521,6 +575,7 @@ def parse_args():
         '--output_freq', type=int, default='50')
     train_parent_parser.add_argument('--no_save', action='store_false',
                                      dest='save')
+    train_parent_parser.add_argument('--save_once_in', type=int, dest='save_once_in',default=-1)
     train_parent_parser.add_argument('--no_kl_annealing', action='store_false',
                                      dest='kl_annealing')
     train_parent_parser.add_argument('--detectors', nargs='+')
@@ -547,6 +602,9 @@ def parse_args():
 
     test_parser = mode_subparsers.add_parser('test', description=('Test a network trained beforehand.'), parents=[
                  dir_parent_parser])
+
+    test_parser.add_argument('--epoch', dest='epoch_to_use', default=-1, type=int)
+    test_parser.add_argument('--test_on_training_data', dest='test_on_training_data', action='store_true')
 
     train_subparsers = train_parser.add_subparsers(dest='model_source')
     train_subparsers.required = True
@@ -672,21 +730,35 @@ def main():
         print('Starting timer')
         start_time = time.time()
 
-        pm.train(args.epochs,
-                 output_freq=args.output_freq,
-                 kl_annealing=args.kl_annealing,
-                 snr_annealing=args.snr_annealing)
+        if args.save_once_in != -1:
+            save_once_in = args.save_once_in
+        else:
+            save_once_in = args.epochs
+
+        if args.save:
+            pm.train(args.epochs,
+                     output_freq=args.output_freq,
+                     kl_annealing=args.kl_annealing,
+                     snr_annealing=args.snr_annealing,
+                     save_once_in=save_once_in)
+
+        else:
+            pm.train(args.epochs,
+                     output_freq=args.output_freq,
+                     kl_annealing=args.kl_annealing,
+                     snr_annealing=args.snr_annealing)
 
         print('Stopping timer.')
         stop_time = time.time()
         print('Training time (including validation): {} seconds'
               .format(stop_time - start_time))
 
-        if args.save:
-            print('Saving model')
-            pm.save_model()
 
     elif args.mode == 'test':
+
+        pm.test_on_training_data = args.test_on_training_data
+        print('Test on training data is ', pm.test_on_training_data)
+        pm.epoch_to_use = args.epoch_to_use
 
         print('Loading existing model')
         pm.load_model()
@@ -705,8 +777,12 @@ def main():
         # TESTING
         print('Testing is starting...')
         pm.init_waveform_supp()
+
         for i in range(0, 10):
-            pm.evaluate(i, plot=True)
+
+            idx = np.random.randint(0, pm.testing_wg.dataset_len)
+            print(idx)
+            pm.evaluate(idx, plot=True)
 
     else:
         print('Wrong mode selected')

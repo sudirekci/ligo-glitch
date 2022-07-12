@@ -63,7 +63,7 @@ def plot_signals(dataset=None,index=0,domain='TD', loglog=False):
 
         elif domain == 'TD':
 
-            signals = np.fft.irfft(np.pad(arr, ((0, 0), (1, 0)), 'constant'))*dataset.df*dataset.length
+            signals = np.fft.irfft(np.pad(arr, ((0, 0), (1, 0)), 'constant'))*dataset.df*dataset.length/np.sqrt(dataset.bandwidth)
 
             plt.figure()
             plt.plot(td_axis, signals[0])
@@ -85,7 +85,6 @@ def plot_signals(dataset=None,index=0,domain='TD', loglog=False):
         elif domain == 'FD':
 
             print('TODO')
-
 
 
 
@@ -135,7 +134,7 @@ def test_signals():
 
     dataset = waveform_dataset.WaveformGenerator(dataset_len=dataset_len, path_to_glitschen=path_to_glitschen,
                                                  extrinsic_at_train=False, tomte_to_blip=1, domain=dataset_domain,
-                                                 add_glitch=True, add_noise=False)
+                                                 add_glitch=False, add_noise=False)
 
     dataset.construct_signal_dataset()
 
@@ -167,13 +166,13 @@ def test_signals():
         # print('tc GW signal:')
         # print(params[i][dataset.EXTRINSIC_PARAMS['tc']])
         print('Glitch params:')
-        print(glitch_params[i])
+        #print(glitch_params[i])
         print('SNRs:')
         print(dataset.snrs[0,i])
         print(dataset.snrs[1,i])
         #print(dataset.SNR_whitened(dataset.detector_signals[0,i,:]))
 
-        plot_signals(dataset=dataset, index=i, domain='TD', loglog=False)
+        plot_signals(dataset=dataset, index=i, domain='FD', loglog=False)
 
         # print('Glitch type:')
         # print(find_glitch_type(glitch_params[i][dataset.GLITCH_PARAMS['glitch_type']]))
