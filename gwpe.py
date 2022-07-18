@@ -683,7 +683,7 @@ def main():
                         use_cuda=args.cuda)
     print('Device', pm.device)
 
-    if pm.device == 'cuda':
+    if pm.device.type == 'cuda':
 
         num_gpus = args.num_gpus
         print_gpu_info(num_gpus)
