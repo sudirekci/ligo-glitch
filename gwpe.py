@@ -659,13 +659,14 @@ def main():
                         use_cuda=args.cuda)
     print('Device', pm.device)
 
+    if pm.device == 'cuda':
+        print('Using ' + torch.cuda.get_device_name(0))
+
     if args.mode == 'train':
 
         print('Loading dataset')
         print('Batch size: ', str(args.batch_size))
         pm.load_dataset(batch_size=args.batch_size)
-
-        print('Detectors:', pm.detectors)
 
         if args.model_source == 'new':
 
