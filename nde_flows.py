@@ -302,6 +302,9 @@ def train_epoch(flow, train_loader, optimizer, epoch,
         loss = (w * loss).mean()
 
         loss.backward()
+
+        torch.cuda.memory_summary(device=None, abbreviated=False)
+
         optimizer.step()
 
         if (output_freq is not None) and (batch_idx % output_freq == 0):
