@@ -66,6 +66,7 @@ class PosteriorModel(object):
         self.lr = None
         self.test_on_training_data = None
         self.epoch_to_use = None
+        self.batch_size = None
 
         if use_cuda and torch.cuda.is_available():
             self.device = torch.device('cuda')
@@ -292,7 +293,8 @@ class PosteriorModel(object):
                 else:
                     f.write(key+'\t'+str(value)+'\n')
 
-            f.write('learning rate'+'\t'+'%s'% (self.lr))
+            f.write('learning rate'+'\t'+'%s\n'% (self.lr))
+            f.write('batch size'+'\t'+'%d\n'% (self.batch_size))
             f.close()
 
 
@@ -509,7 +511,7 @@ class PosteriorModel(object):
                 self.model, y, nsamples, self.device
             )
 
-        x_samples = x_samples.cpu()
+        x_samples = x_samples.to(self.device)
 
         params_samples = self.testing_wg.post_process_parameters(x_samples.numpy())
         # params_samples = self.training_wg.post_process_parameters(x_samples.numpy())
@@ -525,6 +527,26 @@ class PosteriorModel(object):
             plt.show()
 
         return params_samples
+
+
+def print_gpu_info(num_gpus):
+
+    if num_gpus == 1:
+        print('Using ' + torch.cuda.get_device_name(0))
+    else:
+        print('**Parallel computing**')
+        num_available_gpus = torch.cuda.device_count()
+        print('# of available GPUs: ', str(num_available_gpus))
+
+        if num_gpus > num_available_gpus:
+            print('Desired number of GPUs is larger than the number of available GPUs.')
+            num_gpus = num_available_gpus
+
+        print('Using: \n')
+        for i in range(0, num_gpus):
+            print(torch.cuda.get_device_name(0))
+
+        print('*******************')
 
 
 class Nestedspace(argparse.Namespace):
@@ -551,6 +573,8 @@ def parse_args():
     dir_parent_parser.add_argument('--model_dir', type=str, required=True)
     dir_parent_parser.add_argument('--no_cuda', action='store_false',
                                    dest='cuda')
+    dir_parent_parser.add_argument('--gpus', type=int, default='1',
+                                   dest='num_gpus')
 
     activation_parent_parser = argparse.ArgumentParser(add_help=None)
     activation_parent_parser.add_argument(
@@ -660,13 +684,16 @@ def main():
     print('Device', pm.device)
 
     if pm.device == 'cuda':
-        print('Using ' + torch.cuda.get_device_name(0))
+
+        num_gpus = args.num_gpus
+        print_gpu_info(num_gpus)
 
     if args.mode == 'train':
 
         print('Loading dataset')
         print('Batch size: ', str(args.batch_size))
         pm.load_dataset(batch_size=args.batch_size)
+        pm.batch_size = args.batch_size
 
         if args.model_source == 'new':
 
