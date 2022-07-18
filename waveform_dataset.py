@@ -1,7 +1,6 @@
 import torch
 from torch.utils.data import Dataset
 
-import matplotlib.pyplot as plt
 import numpy as np
 import glitschen
 from glitschen import *
@@ -10,9 +9,7 @@ import pycbc.psd
 from pycbc.waveform import get_td_waveform, get_fd_waveform
 from pycbc.detector import Detector
 from pycbc.distributions import power_law
-from pycbc.types.timeseries import TimeSeries
-from pycbc.types.timeseries import FrequencySeries
-from pycbc.psd import welch, interpolate
+
 from numpy import fft
 import sys
 import h5py
