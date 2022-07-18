@@ -29,7 +29,7 @@ python -m gwpe train new nde \
     --epochs 5 \
     --hidden_dims 512 \
     --truncate_basis 100 \
-    --activation elu \
+    -- elu \
     --lr_anneal_method cosine \
     
     
@@ -662,6 +662,7 @@ def main():
     if args.mode == 'train':
 
         print('Loading dataset')
+        print('Batch size: ', str(args.batch_size))
         pm.load_dataset(batch_size=args.batch_size)
 
         print('Detectors:', pm.detectors)
