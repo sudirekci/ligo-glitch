@@ -303,7 +303,7 @@ def train_epoch(flow, train_loader, optimizer, epoch,
 
         loss.backward()
 
-        torch.cuda.memory_summary(device='cuda', abbreviated=False)
+        print(torch.cuda.memory_summary(device='cuda', abbreviated=False))
 
         optimizer.step()
 
