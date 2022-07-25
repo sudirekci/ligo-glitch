@@ -531,12 +531,19 @@ class PosteriorModel(object):
 
 def print_gpu_info(num_gpus):
 
+    num_available_gpus = torch.cuda.device_count()
+    print('# of available GPUs: ', str(num_available_gpus))
+
+    for i in range(0, num_available_gpus):
+        print(torch.cuda.get_device_name(i))
+        print(torch.cuda.get_device_properties(i))
+
     if num_gpus == 1:
+
         print('Using ' + torch.cuda.get_device_name(0))
+
     else:
         print('**Parallel computing**')
-        num_available_gpus = torch.cuda.device_count()
-        print('# of available GPUs: ', str(num_available_gpus))
 
         if num_gpus > num_available_gpus:
             print('Desired number of GPUs is larger than the number of available GPUs.')
