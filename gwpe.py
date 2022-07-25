@@ -13,8 +13,8 @@ import h5py
 import nde_flows
 import waveform_dataset as wd
 
-os.environ['OMP_NUM_THREADS'] = str(1)
-os.environ['MKL_NUM_THREADS'] = str(1)
+#os.environ['OMP_NUM_THREADS'] = str(1)
+#os.environ['MKL_NUM_THREADS'] = str(1)
 
 
 """
