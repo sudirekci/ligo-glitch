@@ -19,8 +19,8 @@ import waveform_dataset as wd
 
 """
 python -m gwpe train new nde \
-    --data_dir /home/su.direkci/glitch_project/glitch_dataset/ \
-    --model_dir /home/su.direkci/glitch_project/models/test/ \
+    --data_dir /home/su/Documents/glitch_dataset/ \
+    --model_dir /home/su/Documents/normalizing_flows/models/test/ \
     --nbins 8 \
     --num_transform_blocks 10 \
     --nflows 15 \
@@ -28,13 +28,14 @@ python -m gwpe train new nde \
     --lr 0.0002 \
     --epochs 5 \
     --hidden_dims 512 \
-    -- elu \
+    --activation elu \
     --lr_anneal_method cosine \
+    --batch_size 128 \
     
     
 python -m gwpe test \
-    --data_dir /home/su.direkci/glitch_project/glitch_dataset/ \
-    --model_dir /home/su.direkci/glitch_project/models/test/ \
+    --data_dir /home/su/Documents/glitch_dataset/ \
+    --model_dir /home/su/Documents/normalizing_flows/models/test/ \
     --test_on_training_data \
     --epoch 5 \
 """
@@ -388,7 +389,7 @@ class PosteriorModel(object):
 
         legend = ax.legend()
 
-        plt.show()
+        fig.savefig(self.model_dir+'losses.png')
 
 
 
@@ -522,7 +523,8 @@ class PosteriorModel(object):
         if plot:
             corner.corner(params_samples[:,slice], truths=params_true[slice])
             #              labels=self.wfd.parameter_labels)
-            plt.show()
+            # plt.show()
+            plt.savefig(self.model_dir+str(idx))
 
         return params_samples
 
@@ -815,7 +817,7 @@ def main():
         for i in range(0, 10):
 
             idx = np.random.randint(0, pm.testing_wg.dataset_len)
-            print(idx)
+            # print(idx)
             pm.evaluate(idx, plot=True)
 
     else:
