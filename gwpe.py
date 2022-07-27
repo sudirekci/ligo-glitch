@@ -511,7 +511,7 @@ class PosteriorModel(object):
 
         x_samples = x_samples.to(self.device)
 
-        params_samples = self.testing_wg.post_process_parameters(x_samples.numpy())
+        params_samples = self.testing_wg.post_process_parameters(x_samples.cpu().numpy())
         # params_samples = self.training_wg.post_process_parameters(x_samples.numpy())
 
         det = int(self.testing_wg.glitch_detector[idx])
