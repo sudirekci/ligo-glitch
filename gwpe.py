@@ -28,16 +28,15 @@ python -m gwpe train new nde \
     --lr 0.0002 \
     --epochs 5 \
     --hidden_dims 512 \
-    --truncate_basis 100 \
     -- elu \
     --lr_anneal_method cosine \
     
     
 python -m gwpe test \
-    --data_dir /home/su/Documents/glitch_dataset/ \
-    --model_dir /home/su/Documents/normalizing_flows/models/overfitted_model/ \
+    --data_dir /home/su.direkci/glitch_project/glitch_dataset/ \
+    --model_dir /home/su.direkci/glitch_project/models/test/ \
     --test_on_training_data \
-    --epoch 600 \
+    --epoch 5 \
 """
 
 
@@ -469,8 +468,7 @@ class PosteriorModel(object):
         except FileNotFoundError:
             return
 
-
-        self.testing_wg = wd.WaveformGenerator()
+        self.testing_wg = wd.WaveformGenerator(directory=self.data_dir)
 
         if self.test_on_training_data:
             self.testing_wg.load_data('training_data')
