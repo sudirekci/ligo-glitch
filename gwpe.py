@@ -16,6 +16,7 @@ import waveform_dataset as wd
 
 import plotly.graph_objects as go
 import plotly.express as px
+import pandas as pd
 
 #os.environ['OMP_NUM_THREADS'] = str(1)
 #os.environ['MKL_NUM_THREADS'] = str(1)
@@ -385,7 +386,10 @@ class PosteriorModel(object):
 
         epoch_axis = np.arange(1, self.epoch)
 
-        fig1 = px.line(self.train_history, x="a", y="b", title='Training Loss')
+        d = {'x': epoch_axis, 'y': self.train_history}
+        df = pd.DataFrame(data=d)
+
+        fig1 = px.line(df, x="a", y="b", title='Training Loss')
 
         fig1.write_html(self.model_dir+"losses.html")
 
