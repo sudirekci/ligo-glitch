@@ -4,6 +4,7 @@ from torch.utils.data import DataLoader
 import torch
 from pathlib import Path
 import matplotlib
+matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 import corner
 import csv
@@ -14,8 +15,6 @@ import mpld3
 
 import nde_flows
 import waveform_dataset as wd
-
-matplotlib.use('TkAgg')
 
 #os.environ['OMP_NUM_THREADS'] = str(1)
 #os.environ['MKL_NUM_THREADS'] = str(1)
