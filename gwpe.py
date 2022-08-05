@@ -3,6 +3,7 @@ import argparse
 from torch.utils.data import DataLoader
 import torch
 from pathlib import Path
+import matplotlib
 import matplotlib.pyplot as plt
 import corner
 import csv
@@ -13,6 +14,8 @@ import mpld3
 
 import nde_flows
 import waveform_dataset as wd
+
+matplotlib.use('GTK')
 
 #os.environ['OMP_NUM_THREADS'] = str(1)
 #os.environ['MKL_NUM_THREADS'] = str(1)
@@ -35,10 +38,10 @@ python -m gwpe train new nde \
     
     
 python -m gwpe test \
-    --data_dir /home/su/Documents/glitch_dataset/ \
-    --model_dir /home/su/Documents/normalizing_flows/models/test/ \
+    --data_dir /home/su.direkci/glitch_project/glitch_dataset/ \
+    --model_dir /home/su.direkci/glitch_project/models/overfitted_model/ \
     --test_on_training_data \
-    --epoch 5 \
+    --epoch 2000 \
 """
 
 
@@ -391,8 +394,7 @@ class PosteriorModel(object):
         legend = ax.legend()
 
         fig.savefig(self.model_dir+'losses.png')
-        mpld3.show()
-
+        plt.show()
 
 
     def train(self, epochs, output_freq=50, kl_annealing=True,
