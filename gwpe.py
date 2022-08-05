@@ -3,18 +3,19 @@ import argparse
 from torch.utils.data import DataLoader
 import torch
 from pathlib import Path
-import matplotlib
-matplotlib.use('TkAgg')
+
 import matplotlib.pyplot as plt
 import corner
 import csv
 import time
 import numpy as np
 import h5py
-import mpld3
 
 import nde_flows
 import waveform_dataset as wd
+
+import plotly.graph_objects as go
+import plotly.express as px
 
 #os.environ['OMP_NUM_THREADS'] = str(1)
 #os.environ['MKL_NUM_THREADS'] = str(1)
@@ -384,16 +385,22 @@ class PosteriorModel(object):
 
         epoch_axis = np.arange(1, self.epoch)
 
-        fig, ax = plt.subplots()
-        fig.set_size_inches(7, 7)
+        fig1 = px.line(self.train_history, x="a", y="b", title='Training Loss')
 
-        ax.plot(epoch_axis, self.train_history, label='Training Loss')
-        ax.plot(epoch_axis, self.test_history, label='Validation Loss')
+        fig1.write_html(self.model_dir+"losses.html")
 
-        legend = ax.legend()
+        # fig, ax = plt.subplots()
+        # fig.set_size_inches(7, 7)
+        #
+        # ax.plot(epoch_axis, self.train_history, label='Training Loss')
+        # ax.plot(epoch_axis, self.test_history, label='Validation Loss')
+        #
+        # legend = ax.legend()
+        #
+        # fig.savefig(self.model_dir+'losses.png')
+        # plt.show()
 
-        fig.savefig(self.model_dir+'losses.png')
-        plt.show()
+
 
 
     def train(self, epochs, output_freq=50, kl_annealing=True,
