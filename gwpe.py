@@ -9,6 +9,7 @@ import csv
 import time
 import numpy as np
 import h5py
+import mpld3
 
 import nde_flows
 import waveform_dataset as wd
@@ -390,6 +391,7 @@ class PosteriorModel(object):
         legend = ax.legend()
 
         fig.savefig(self.model_dir+'losses.png')
+        mpld3.show()
 
 
 
