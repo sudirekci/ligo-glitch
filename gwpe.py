@@ -386,23 +386,15 @@ class PosteriorModel(object):
 
         epoch_axis = np.arange(1, self.epoch)
 
-        d = {'Epoch': epoch_axis, 'Loss': self.train_history}
-        df = pd.DataFrame(data=d)
+        fig, ax = plt.subplots()
+        fig.set_size_inches(7, 7)
 
-        fig1 = px.line(df, x="Epoch", y="Loss", title='Training Loss')
+        ax.plot(epoch_axis, self.train_history, label='Training Loss')
+        ax.plot(epoch_axis, self.test_history, label='Validation Loss')
 
-        fig1.write_html(self.model_dir+"losses.html")
+        legend = ax.legend()
 
-        # fig, ax = plt.subplots()
-        # fig.set_size_inches(7, 7)
-        #
-        # ax.plot(epoch_axis, self.train_history, label='Training Loss')
-        # ax.plot(epoch_axis, self.test_history, label='Validation Loss')
-        #
-        # legend = ax.legend()
-        #
-        # fig.savefig(self.model_dir+'losses.png')
-        # plt.show()
+        fig.savefig(self.model_dir+'losses.png')
 
 
 
