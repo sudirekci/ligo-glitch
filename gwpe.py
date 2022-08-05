@@ -15,7 +15,7 @@ import mpld3
 import nde_flows
 import waveform_dataset as wd
 
-matplotlib.use('GTK3Agg')
+matplotlib.use('GTK4Agg')
 
 #os.environ['OMP_NUM_THREADS'] = str(1)
 #os.environ['MKL_NUM_THREADS'] = str(1)
