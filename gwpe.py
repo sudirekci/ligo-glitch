@@ -386,10 +386,10 @@ class PosteriorModel(object):
 
         epoch_axis = np.arange(1, self.epoch)
 
-        d = {'x': epoch_axis, 'y': self.train_history}
+        d = {'Epoch': epoch_axis, 'Loss': self.train_history}
         df = pd.DataFrame(data=d)
 
-        fig1 = px.line(df, x="a", y="b", title='Training Loss')
+        fig1 = px.line(df, x="Epoch", y="Loss", title='Training Loss')
 
         fig1.write_html(self.model_dir+"losses.html")
 
