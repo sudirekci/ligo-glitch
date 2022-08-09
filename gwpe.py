@@ -24,14 +24,14 @@ import pandas as pd
 
 """
 python gwpe.py train new nde \
-    --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_w_noise/ \
-    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/overfit1/ \
+    --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_no_noise/ \
+    --model_dir /home/su.direkci/glitch_project/models_no_glitch_no_noise/overfit1/ \
     --nbins 8 \
     --num_transform_blocks 10 \
     --nflows 15 \
     --batch_norm \
     --lr 0.0002 \
-    --epochs 3000 \
+    --epochs 5 \
     --hidden_dims 512 \
     --activation elu \
     --lr_anneal_method cosine \
@@ -39,10 +39,10 @@ python gwpe.py train new nde \
     
     
 python gwpe.py test \
-    --data_dir /home/su.direkci/glitch_project/glitch_dataset/ \
-    --model_dir /home/su.direkci/glitch_project/models/overfitted_model6/ \
+    --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_no_noise/ \
+    --model_dir /home/su.direkci/glitch_project/models_no_glitch_no_noise/overfit1/ \
     --test_on_training_data \
-    --epoch 4000 \
+    --epoch 5 \
 """
 
 
@@ -508,7 +508,10 @@ class PosteriorModel(object):
             plot        whether to make a corner plot
         """
 
-        params_true = np.concatenate((self.testing_wg.params[idx],self.testing_wg.glitch_params[idx]))
+        if self.testing_wg.add_glitch:
+            params_true = np.concatenate((self.testing_wg.params[idx],self.testing_wg.glitch_params[idx]))
+        else:
+            params_true = self.testing_wg.params[idx]
 
         y, _ = self.testing_wg.provide_sample(idx)
 
