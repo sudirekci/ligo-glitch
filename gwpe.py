@@ -771,7 +771,7 @@ def main():
 
         elif args.model_source == 'existing':
 
-            pm.epoch_to_use = args.epoch_to_use
+            print(args.epoch_to_use)
 
             print('Loading existing model')
             pm.load_model()
