@@ -35,7 +35,7 @@ python gwpe.py train new nde \
     --hidden_dims 512 \
     --activation elu \
     --lr_anneal_method cosine \
-    --batch_size 100 \
+    --batch_size 64 \
     
     
 python gwpe.py test \
@@ -172,7 +172,7 @@ class PosteriorModel(object):
         if not existing:
             # input_dim = self.wfd.nparams !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             # context_dim = self.wfd.context_dim !!!!!!!!!!!!!!!!!!!!!!!!!!!
-            context_dim = 400
+            context_dim = 40
             input_dim = 15
 
             self.model = model_creator(input_dim=input_dim,
