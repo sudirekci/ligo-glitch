@@ -31,11 +31,11 @@ python gwpe.py train new nde \
     --nflows 15 \
     --batch_norm \
     --lr 0.0002 \
-    --epochs 2500 \
+    --epochs 1000 \
     --hidden_dims 512 \
     --activation elu \
     --lr_anneal_method cosine \
-    --batch_size 512 \
+    --batch_size 100 \
     
     
 python gwpe.py test \
