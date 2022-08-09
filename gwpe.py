@@ -31,7 +31,7 @@ python gwpe.py train new nde \
     --nflows 15 \
     --batch_norm \
     --lr 0.0002 \
-    --epochs 2000 \
+    --epochs 3000 \
     --hidden_dims 512 \
     --activation elu \
     --lr_anneal_method cosine \
@@ -277,8 +277,9 @@ class PosteriorModel(object):
 
             f.create_dataset('parameters_mean', data=self.training_wg.params_mean)
             f.create_dataset('parameters_std', data=self.training_wg.params_std)
-            f.create_dataset('glitch_parameters_mean', data=self.training_wg.glitch_params_mean)
-            f.create_dataset('glitch_parameters_std', data=self.training_wg.glitch_params_std)
+            if self.training_wg.add_glitch:
+                f.create_dataset('glitch_parameters_mean', data=self.training_wg.glitch_params_mean)
+                f.create_dataset('glitch_parameters_std', data=self.training_wg.glitch_params_std)
             f.create_dataset('waveforms_mean', data=self.training_wg.means)
             f.create_dataset('waveforms_std', data=self.training_wg.stds)
             f.create_dataset('Vh_real', data=self.training_wg.svd.Vh.real)
@@ -484,8 +485,9 @@ class PosteriorModel(object):
 
         self.testing_wg.params_mean = f['parameters_mean'][:]
         self.testing_wg.params_std = f['parameters_std'][:]
-        self.testing_wg.glitch_params_mean = f['glitch_parameters_mean'][:]
-        self.testing_wg.glitch_params_std = f['glitch_parameters_std'][:]
+        if self.testing_wg.add_glitch:
+            self.testing_wg.glitch_params_mean = f['glitch_parameters_mean'][:]
+            self.testing_wg.glitch_params_std = f['glitch_parameters_std'][:]
         self.testing_wg.means = f['waveforms_mean'][:]
         self.testing_wg.stds = f['waveforms_std'][:]
         Vh = f['Vh_real'][:] + 1j*f['Vh_imag'][:]
@@ -521,10 +523,16 @@ class PosteriorModel(object):
         params_samples = self.testing_wg.post_process_parameters(x_samples.cpu().numpy())
         # params_samples = self.training_wg.post_process_parameters(x_samples.numpy())
 
-        det = int(self.testing_wg.glitch_detector[idx])
+        if self.testing_wg.add_glitch:
+            det = int(self.testing_wg.glitch_detector[idx])
 
-        #slice = [0,1,10] + [i for i in range(15,27)]
-        slice = [0, 1, 10] + [i for i in range(15+6*det, 21+6*det)]
+            #slice = [0,1,10] + [i for i in range(15,27)]
+            slice = [0, 1, 10] + [i for i in range(15+6*det, 21+6*det)]
+        else:
+
+            # no glitch is added
+            slice = [0, 1, 10]
+
 
         if plot:
             corner.corner(params_samples[:,slice], truths=params_true[slice])
