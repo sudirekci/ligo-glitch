@@ -23,26 +23,26 @@ import pandas as pd
 
 
 """
-python -m gwpe train new nde \
-    --data_dir /home/su/Documents/glitch_dataset/ \
-    --model_dir /home/su/Documents/normalizing_flows/models/test/ \
+python gwpe.py train new nde \
+    --data_dir /home/su.direkci/glitch_project/glitch_dataset/ \
+    --model_dir /home/su.direkci/glitch_project/models/test/ \
     --nbins 8 \
     --num_transform_blocks 10 \
     --nflows 15 \
     --batch_norm \
     --lr 0.0002 \
-    --epochs 5 \
+    --epochs 250 \
     --hidden_dims 512 \
     --activation elu \
     --lr_anneal_method cosine \
-    --batch_size 128 \
+    --batch_size 512 \
     
     
-python -m gwpe test \
+python gwpe.py test \
     --data_dir /home/su.direkci/glitch_project/glitch_dataset/ \
-    --model_dir /home/su.direkci/glitch_project/models/overfitted_model/ \
+    --model_dir /home/su.direkci/glitch_project/models/overfitted_model6/ \
     --test_on_training_data \
-    --epoch 2000 \
+    --epoch 4000 \
 """
 
 
@@ -173,7 +173,7 @@ class PosteriorModel(object):
             # input_dim = self.wfd.nparams !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             # context_dim = self.wfd.context_dim !!!!!!!!!!!!!!!!!!!!!!!!!!!
             context_dim = 400
-            input_dim = 27
+            input_dim = 15
 
             self.model = model_creator(input_dim=input_dim,
                                        context_dim=context_dim,
