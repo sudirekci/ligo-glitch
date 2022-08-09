@@ -24,14 +24,14 @@ import pandas as pd
 
 """
 python gwpe.py train new nde \
-    --data_dir /home/su.direkci/glitch_project/glitch_dataset/ \
-    --model_dir /home/su.direkci/glitch_project/models/test/ \
+    --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_w_noise/ \
+    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/overfit1/ \
     --nbins 8 \
     --num_transform_blocks 10 \
     --nflows 15 \
     --batch_norm \
     --lr 0.0002 \
-    --epochs 250 \
+    --epochs 2000 \
     --hidden_dims 512 \
     --activation elu \
     --lr_anneal_method cosine \
