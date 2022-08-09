@@ -9,7 +9,7 @@ from pycbc.fft import backend_support
 
 backend_support.set_backend(['mkl'])
 
-dataset_len = 20
+dataset_len = 100
 path_to_glitschen = '/home/su/Documents/glitschen-main/'
 
 dataset = waveform_dataset.WaveformGenerator(dataset_len=dataset_len, path_to_glitschen=path_to_glitschen,
@@ -189,15 +189,40 @@ def test_SVD():
 
     dataset = waveform_dataset.WaveformGenerator(dataset_len=dataset_len, path_to_glitschen=path_to_glitschen,
                                                  extrinsic_at_train=False, tomte_to_blip=1, domain='FD',
-                                                 svd_no_basis_coeffs=svd_no_basis_coeffs)
+                                                 svd_no_basis_coeffs=svd_no_basis_coeffs, add_noise=True)
 
     dataset.construct_signal_dataset(perform_svd=True)
-    Vh  = dataset.svd.Vh
+    Vh = dataset.svd.Vh
 
-    for i in range(0, svd_no_basis_coeffs):
-        plt.figure()
-        plt.plot(dataset.freqs[1:], np.abs(Vh[i]))
-        plt.show()
+    # for i in range(0, svd_no_basis_coeffs):
+    #     plt.figure()
+    #     plt.plot(dataset.freqs[1:], np.abs(Vh[i]))
+    #     plt.show()
+
+    plt.figure()
+    plt.title('Real parts of basis coeffs')
+    for i in range(0, dataset_len):
+        for j in range(0, dataset.no_detectors):
+            plt.scatter(np.arange(start=1, stop=svd_no_basis_coeffs+1),
+                        np.real(dataset.detector_signals[j, i, :]))
+
+    plt.figure()
+    plt.title('Imaginary parts of basis coeffs')
+    for i in range(0, dataset_len):
+        for j in range(0, dataset.no_detectors):
+            plt.scatter(np.arange(start=1, stop=svd_no_basis_coeffs+1),
+                        np.imag(dataset.detector_signals[j, i, :]))
+
+    plt.show()
+
+    for i in range(0, dataset_len):
+        for j in range(0, dataset.no_detectors):
+            plt.figure()
+            plt.scatter(np.arange(start=1, stop=svd_no_basis_coeffs+1),
+                        np.real(dataset.detector_signals[j, i, :]))
+            plt.scatter(np.arange(start=1, stop=svd_no_basis_coeffs + 1),
+                        np.imag(dataset.detector_signals[j, i, :]))
+            plt.show()
 
 
 
@@ -263,10 +288,10 @@ def test_saving_loading():
 
 # test_noise()
 
-test_signals()
+#test_signals()
 
 # test_waveform_dataset()
 
-# test_SVD()
+test_SVD()
 
 # test_saving_loading()
