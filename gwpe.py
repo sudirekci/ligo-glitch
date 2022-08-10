@@ -31,10 +31,10 @@ python gwpe.py train new nde \
     --nflows 15 \
     --batch_norm \
     --lr 0.5 \
-    --epochs 5 \
+    --epochs 2 \
     --hidden_dims 512 \
     --activation elu \
-    --lr_anneal_method cosine \
+    --no_lr_annealing \
     --batch_size 500 \
     
 python gwpe.py train existing \
@@ -274,9 +274,6 @@ class PosteriorModel(object):
         if self.scheduler is not None:
             dict1['scheduler_state_dict'] = self.scheduler.state_dict()
 
-        print('333')
-        print(self.optimizer.state_dict()['param_groups'][0])
-
         torch.save(dict1, p / filename)
 
         if not os.path.exists(p/aux_filename):
@@ -438,9 +435,6 @@ class PosteriorModel(object):
             print('Learning rate: {:e}'.format(self.optimizer.state_dict()
                                                ['param_groups'][0]['lr']))
 
-            print('573')
-            print(self.optimizer.state_dict()['param_groups'][0])
-
             if self.model_type == 'nde':
                 train_loss = nde_flows.train_epoch(
                     self.model,
@@ -460,14 +454,10 @@ class PosteriorModel(object):
                     add_noise,
                     snr_annealing)
 
-            print('659')
-            print(self.optimizer.state_dict()['param_groups'][0])
 
             if self.scheduler is not None:
                 self.scheduler.step()
 
-            print('487')
-            print(self.optimizer.state_dict()['param_groups'][0])
 
             self.epoch = epoch + 1
             self.train_history.append(train_loss)
@@ -489,13 +479,10 @@ class PosteriorModel(object):
                         writer = csv.writer(f, delimiter='\t')
                         writer.writerow([epoch, train_loss, test_loss])
 
-            print('251')
-            print(self.optimizer.state_dict()['param_groups'][0])
 
             if save_once_in is not None and (self.epoch-1) % save_once_in == 0:
                 print('Saving model')
                 self.save_model()
-
 
 
     def init_waveform_supp(self, aux_filename='waveforms_supplementary.hdf5'):
