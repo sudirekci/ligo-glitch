@@ -30,8 +30,8 @@ python gwpe.py train new nde \
     --num_transform_blocks 10 \
     --nflows 15 \
     --batch_norm \
-    --lr 0.0002 \
-    --epochs 50 \
+    --lr 0.5 \
+    --epochs 1 \
     --hidden_dims 512 \
     --activation elu \
     --lr_anneal_method cosine \
@@ -477,6 +477,8 @@ class PosteriorModel(object):
                     with open(p / 'history.txt', 'a') as f:
                         writer = csv.writer(f, delimiter='\t')
                         writer.writerow([epoch, train_loss, test_loss])
+
+            print(self.optimizer.state_dict()['param_groups'][0])
 
             if save_once_in is not None and (self.epoch-1) % save_once_in == 0:
                 print('Saving model')
