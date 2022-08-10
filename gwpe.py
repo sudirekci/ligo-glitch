@@ -24,18 +24,18 @@ import pandas as pd
 
 """
 python gwpe.py train new nde \
-    --data_dir /home/su.direkci/glitch_project/glitch_dataset/ \
-    --model_dir /home/su.direkci/glitch_project/models/overfitted_model/ \
+    --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_w_noise/ \
+    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/existing/ \
     --nbins 8 \
     --num_transform_blocks 10 \
     --nflows 15 \
     --batch_norm \
     --lr 0.0002 \
-    --epochs 5 \
+    --epochs 50 \
     --hidden_dims 512 \
     --activation elu \
     --lr_anneal_method cosine \
-    --batch_size 64 \
+    --batch_size 512 \
     
 python gwpe.py train existing \
     --data_dir /home/su.direkci/glitch_project/glitch_dataset/ \
@@ -177,7 +177,7 @@ class PosteriorModel(object):
         if not existing:
             # input_dim = self.wfd.nparams !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             # context_dim = self.wfd.context_dim !!!!!!!!!!!!!!!!!!!!!!!!!!!
-            context_dim = 40
+            context_dim = 400
             input_dim = 15
 
             self.model = model_creator(input_dim=input_dim,
