@@ -40,14 +40,14 @@ python gwpe.py train new nde \
 python gwpe.py train existing \
     --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_w_noise/ \
     --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/existing/ \
-    --epochs 50 \
+    --epochs 10 \
     
     
 python gwpe.py test \
     --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_w_noise/ \
     --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/existing/ \
     --test_on_training_data \
-    --epoch 50 \
+    --epoch 10 \
 """
 
 
@@ -228,7 +228,6 @@ class PosteriorModel(object):
             elif anneal_method == 'cosine':
                 self.scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
                     self.optimizer,
-                    eta_min=1e-9,
                     T_max=10000,
                 )
             elif anneal_method == 'cosineWR':
