@@ -366,7 +366,7 @@ class PosteriorModel(object):
         self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
 
         print('***************')
-        print(checkpoint['optimizer_state_dict']['param_groups'][0]['lr'])
+        print(checkpoint['optimizer_state_dict']['param_groups'])
 
         if scheduler_present_in_checkpoint:
             self.scheduler.load_state_dict(checkpoint['scheduler_state_dict'])
