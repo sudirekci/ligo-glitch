@@ -31,7 +31,7 @@ python gwpe.py train new nde \
     --nflows 15 \
     --batch_norm \
     --lr 0.5 \
-    --epochs 1 \
+    --epochs 5 \
     --hidden_dims 512 \
     --activation elu \
     --lr_anneal_method cosine \
@@ -274,6 +274,7 @@ class PosteriorModel(object):
         if self.scheduler is not None:
             dict1['scheduler_state_dict'] = self.scheduler.state_dict()
 
+        print('333')
         print(self.optimizer.state_dict()['param_groups'][0])
 
         torch.save(dict1, p / filename)
@@ -437,6 +438,9 @@ class PosteriorModel(object):
             print('Learning rate: {:e}'.format(self.optimizer.state_dict()
                                                ['param_groups'][0]['lr']))
 
+            print('573')
+            print(self.optimizer.state_dict()['param_groups'][0])
+
             if self.model_type == 'nde':
                 train_loss = nde_flows.train_epoch(
                     self.model,
@@ -447,6 +451,7 @@ class PosteriorModel(object):
                     output_freq,
                     add_noise,
                     snr_annealing)
+
                 test_loss = nde_flows.test_epoch(
                     self.model,
                     self.test_loader,
@@ -455,8 +460,14 @@ class PosteriorModel(object):
                     add_noise,
                     snr_annealing)
 
+            print('659')
+            print(self.optimizer.state_dict()['param_groups'][0])
+
             if self.scheduler is not None:
                 self.scheduler.step()
+
+            print('487')
+            print(self.optimizer.state_dict()['param_groups'][0])
 
             self.epoch = epoch + 1
             self.train_history.append(train_loss)
@@ -478,6 +489,7 @@ class PosteriorModel(object):
                         writer = csv.writer(f, delimiter='\t')
                         writer.writerow([epoch, train_loss, test_loss])
 
+            print('251')
             print(self.optimizer.state_dict()['param_groups'][0])
 
             if save_once_in is not None and (self.epoch-1) % save_once_in == 0:
