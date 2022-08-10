@@ -342,9 +342,6 @@ class PosteriorModel(object):
         model_type = checkpoint['model_type']
         model_hyperparams = checkpoint['model_hyperparams']
 
-        print('*************************')
-        print(model_hyperparams)
-        print('*************************')
 
         # Load model
         self.construct_model(model_type, existing=True, **model_hyperparams)
@@ -362,10 +359,6 @@ class PosteriorModel(object):
                        ['initial_lr'])
         else:
             flow_lr = None
-
-        print('Flow lr: ', str(flow_lr))
-        print(checkpoint['optimizer_state_dict'])
-        print(checkpoint['scheduler_state_dict'])
 
         self.initialize_training(lr_annealing=scheduler_present_in_checkpoint,
                                  flow_lr=flow_lr)
@@ -428,13 +421,13 @@ class PosteriorModel(object):
         # if self.wfd.extrinsic_at_train:
         #     add_noise = False
         # else:
-        #     add_noise = True !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        #     add_noise = True
         add_noise = True
 
         for epoch in range(self.epoch, self.epoch + epochs):
 
-            print('Learning rate: {}'.format(
-                self.optimizer.state_dict()['param_groups'][0]['lr']))
+            print('Learning rate: {:e}'.format(self.optimizer.state_dict()
+                                               ['param_groups'][0]['lr']))
 
             if self.model_type == 'nde':
                 train_loss = nde_flows.train_epoch(
