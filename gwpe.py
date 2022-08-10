@@ -25,13 +25,13 @@ import pandas as pd
 """
 python gwpe.py train new nde \
     --data_dir /home/su.direkci/glitch_project/small_dataset_no_glitch_w_noise/ \
-    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/small_dataset_nflows_3/ \
-    --nbins 2 \
+    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/small_dataset_nflows_15/ \
+    --nbins 8 \
     --num_transform_blocks 10 \
-    --nflows 3 \
+    --nflows 15 \
     --batch_norm \
     --lr 0.0002 \
-    --epochs 1500 \
+    --epochs 2500 \
     --hidden_dims 512 \
     --activation elu \
     --lr_anneal_method cosine \
@@ -39,15 +39,15 @@ python gwpe.py train new nde \
     
 python gwpe.py train existing \
     --data_dir /home/su.direkci/glitch_project/small_dataset_no_glitch_w_noise/ \
-    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/small_dataset_nflows_3/ \
-    --epochs 1500 \
+    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/small_dataset_nflows_15/ \
+    --epochs 2000 \
     
     
 python gwpe.py test \
     --data_dir /home/su.direkci/glitch_project/small_dataset_no_glitch_w_noise/ \
-    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/small_dataset_nflows_3/ \
+    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/small_dataset_nflows_15/ \
     --test_on_training_data \
-    --epoch 1000 \
+    --epoch 2500 \
 """
 
 
@@ -366,7 +366,7 @@ class PosteriorModel(object):
 
         # Set the epoch to the correct value. This is needed to resume
         # training.
-        self.epoch = checkpoint['epoch']
+        self.epoch = self.epoch_to_use+1
 
 
         # Store the list of detectors the model was trained with
