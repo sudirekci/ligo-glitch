@@ -35,19 +35,19 @@ python gwpe.py train new nde \
     --hidden_dims 512 \
     --activation elu \
     --lr_anneal_method cosine \
-    --batch_size 512 \
+    --batch_size 500 \
     
 python gwpe.py train existing \
-    --data_dir /home/su.direkci/glitch_project/glitch_dataset/ \
-    --model_dir /home/su.direkci/glitch_project/models/overfitted_model/ \
-    --epochs 100 \
+    --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_w_noise/ \
+    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/existing/ \
+    --epochs 50 \
     
     
 python gwpe.py test \
-    --data_dir /home/su.direkci/glitch_project/glitch_dataset/ \
-    --model_dir /home/su.direkci/glitch_project/models/overfitted_model/ \
+    --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_w_noise/ \
+    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/existing/ \
     --test_on_training_data \
-    --epoch 2000 \
+    --epoch 50 \
 """
 
 
@@ -351,6 +351,10 @@ class PosteriorModel(object):
         # Load optimizer
         scheduler_present_in_checkpoint = ('scheduler_state_dict' in
                                            checkpoint.keys())
+
+        print('*******************')
+        print('Scheduler present :', scheduler_present_in_checkpoint)
+        print('*******************')
 
         # If the optimizer has more than 1 param_group, then we built it with
         # flow_lr different from lr
