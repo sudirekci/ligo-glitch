@@ -369,7 +369,6 @@ class PosteriorModel(object):
 
         self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
 
-        print('***************')
         print(checkpoint['optimizer_state_dict']['param_groups'])
 
         if scheduler_present_in_checkpoint:
@@ -435,6 +434,7 @@ class PosteriorModel(object):
 
             print('Learning rate: {:e}'.format(self.optimizer.state_dict()
                                                ['param_groups'][0]['lr']))
+            print(self.optimizer.state_dict())
 
             if self.model_type == 'nde':
                 train_loss = nde_flows.train_epoch(
