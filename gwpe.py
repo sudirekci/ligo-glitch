@@ -47,7 +47,7 @@ python gwpe.py test \
     --data_dir /home/su.direkci/glitch_project/glitch_dataset/ \
     --model_dir /home/su.direkci/glitch_project/models/overfitted_model/ \
     --test_on_training_data \
-    --epoch 2100 \
+    --epoch 2000 \
 """
 
 
@@ -364,6 +364,9 @@ class PosteriorModel(object):
                                  flow_lr=flow_lr)
 
         self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+
+        print('***************')
+        print(checkpoint['optimizer_state_dict']['param_groups'][0]['lr'])
 
         if scheduler_present_in_checkpoint:
             self.scheduler.load_state_dict(checkpoint['scheduler_state_dict'])
