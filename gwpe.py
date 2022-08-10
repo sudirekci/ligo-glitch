@@ -274,6 +274,8 @@ class PosteriorModel(object):
         if self.scheduler is not None:
             dict1['scheduler_state_dict'] = self.scheduler.state_dict()
 
+        print(self.optimizer.state_dict()['param_groups'][0])
+
         torch.save(dict1, p / filename)
 
         if not os.path.exists(p/aux_filename):
@@ -434,7 +436,6 @@ class PosteriorModel(object):
 
             print('Learning rate: {:e}'.format(self.optimizer.state_dict()
                                                ['param_groups'][0]['lr']))
-            print(self.optimizer.state_dict()['param_groups'][0])
 
             if self.model_type == 'nde':
                 train_loss = nde_flows.train_epoch(
