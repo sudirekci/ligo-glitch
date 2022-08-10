@@ -25,13 +25,13 @@ import pandas as pd
 """
 python gwpe.py train new nde \
     --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_w_noise/ \
-    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/existing/ \
+    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/overfit1/ \
     --nbins 8 \
     --num_transform_blocks 10 \
     --nflows 15 \
     --batch_norm \
     --lr 0.0002 \
-    --epochs 10 \
+    --epochs 10000 \
     --hidden_dims 512 \
     --activation elu \
     --lr_anneal_method cosine \
@@ -47,7 +47,7 @@ python gwpe.py test \
     --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_w_noise/ \
     --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/existing/ \
     --test_on_training_data \
-    --epoch 10 \
+    --epoch 20 \
 """
 
 
@@ -226,7 +226,6 @@ class PosteriorModel(object):
                     step_size=steplr_step_size,
                     gamma=steplr_gamma)
             elif anneal_method == 'cosine':
-                print('COSINE')
                 self.scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
                     self.optimizer,
                     T_max=10000,
@@ -353,9 +352,6 @@ class PosteriorModel(object):
         scheduler_present_in_checkpoint = ('scheduler_state_dict' in
                                            checkpoint.keys())
 
-        print('*******************')
-        print('Scheduler present :', scheduler_present_in_checkpoint)
-        print('*******************')
 
         # If the optimizer has more than 1 param_group, then we built it with
         # flow_lr different from lr
@@ -370,7 +366,6 @@ class PosteriorModel(object):
 
         self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
 
-        print(checkpoint['optimizer_state_dict']['param_groups'])
 
         if scheduler_present_in_checkpoint:
             self.scheduler.load_state_dict(checkpoint['scheduler_state_dict'])
