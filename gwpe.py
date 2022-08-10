@@ -24,30 +24,30 @@ import pandas as pd
 
 """
 python gwpe.py train new nde \
-    --data_dir /home/su.direkci/glitch_project/small_dataset_no_glitch_w_noise/ \
-    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/small_dataset_nflows_15/ \
+    --data_dir /home/su.direkci/glitch_project/glitch_dataset/ \
+    --model_dir /home/su.direkci/glitch_project/models/overfitted_model/ \
     --nbins 8 \
     --num_transform_blocks 10 \
     --nflows 15 \
     --batch_norm \
     --lr 0.0002 \
-    --epochs 2500 \
+    --epochs 5 \
     --hidden_dims 512 \
     --activation elu \
     --lr_anneal_method cosine \
     --batch_size 64 \
     
 python gwpe.py train existing \
-    --data_dir /home/su.direkci/glitch_project/small_dataset_no_glitch_w_noise/ \
-    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/small_dataset_nflows_15/ \
-    --epochs 2000 \
+    --data_dir /home/su.direkci/glitch_project/glitch_dataset/ \
+    --model_dir /home/su.direkci/glitch_project/models/overfitted_model/ \
+    --epochs 100 \
     
     
 python gwpe.py test \
-    --data_dir /home/su.direkci/glitch_project/small_dataset_no_glitch_w_noise/ \
-    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/small_dataset_nflows_15/ \
+    --data_dir /home/su.direkci/glitch_project/glitch_dataset/ \
+    --model_dir /home/su.direkci/glitch_project/models/overfitted_model/ \
     --test_on_training_data \
-    --epoch 2500 \
+    --epoch 2100 \
 """
 
 
@@ -342,6 +342,10 @@ class PosteriorModel(object):
         model_type = checkpoint['model_type']
         model_hyperparams = checkpoint['model_hyperparams']
 
+        print('*************************')
+        print(model_hyperparams)
+        print('*************************')
+
         # Load model
         self.construct_model(model_type, existing=True, **model_hyperparams)
         self.model.load_state_dict(checkpoint['model_state_dict'])
@@ -358,9 +362,16 @@ class PosteriorModel(object):
                        ['initial_lr'])
         else:
             flow_lr = None
+
+        print('Flow lr: ', str(flow_lr))
+        print(checkpoint['optimizer_state_dict'])
+        print(checkpoint['scheduler_state_dict'])
+
         self.initialize_training(lr_annealing=scheduler_present_in_checkpoint,
                                  flow_lr=flow_lr)
+
         self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+
         if scheduler_present_in_checkpoint:
             self.scheduler.load_state_dict(checkpoint['scheduler_state_dict'])
 
