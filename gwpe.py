@@ -30,11 +30,11 @@ python gwpe.py train new nde \
     --num_transform_blocks 10 \
     --nflows 15 \
     --batch_norm \
-    --lr 0.5 \
-    --epochs 2 \
+    --lr 0.0002 \
+    --epochs 10 \
     --hidden_dims 512 \
     --activation elu \
-    --no_lr_annealing \
+    --lr_anneal_method cosine \
     --batch_size 500 \
     
 python gwpe.py train existing \
@@ -228,7 +228,8 @@ class PosteriorModel(object):
             elif anneal_method == 'cosine':
                 self.scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
                     self.optimizer,
-                    T_max=total_epochs,
+                    eta_min=1e-9,
+                    T_max=10000,
                 )
             elif anneal_method == 'cosineWR':
                 self.scheduler = (
