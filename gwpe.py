@@ -226,6 +226,7 @@ class PosteriorModel(object):
                     step_size=steplr_step_size,
                     gamma=steplr_gamma)
             elif anneal_method == 'cosine':
+                print('COSINE')
                 self.scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
                     self.optimizer,
                     T_max=10000,
