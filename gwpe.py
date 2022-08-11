@@ -24,30 +24,30 @@ import pandas as pd
 
 """
 python gwpe.py train new nde \
-    --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_w_noise/ \
-    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/overfit1/ \
+    --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_w_noise_10k/ \
+    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/overfit10k/ \
     --nbins 8 \
     --num_transform_blocks 10 \
     --nflows 15 \
     --batch_norm \
     --lr 0.0002 \
-    --epochs 10000 \
+    --epochs 2 \
     --hidden_dims 512 \
     --activation elu \
-    --lr_anneal_method cosine \
+    --no_lr_annealing \
     --batch_size 500 \
     
 python gwpe.py train existing \
     --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_w_noise/ \
-    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/existing/ \
+    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/overfit1k/ \
     --epochs 10 \
     
     
 python gwpe.py test \
     --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_w_noise/ \
-    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/existing/ \
+    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/overfit10k/ \
     --test_on_training_data \
-    --epoch 20 \
+    --epoch 10000 \
 """
 
 
@@ -77,6 +77,7 @@ class PosteriorModel(object):
         self.test_on_training_data = None
         self.epoch_to_use = None
         self.batch_size = None
+        self.annealing = 'None'
 
         if use_cuda and torch.cuda.is_available():
             self.device = torch.device('cuda')
@@ -306,6 +307,7 @@ class PosteriorModel(object):
 
             f.write('learning rate'+'\t'+'%s\n'% (self.lr))
             f.write('batch size'+'\t'+'%d\n'% (self.batch_size))
+            f.write('annealing method    ' + self.annealing)
             f.close()
 
 
@@ -758,6 +760,7 @@ def main():
 
             print('\nInitial learning rate', args.lr)
             if args.lr_annealing is True:
+                pm.annealing = args.lr_anneal_method
                 if args.lr_anneal_method == 'step':
                     print('Stepping learning rate by', args.steplr_gamma,
                           'every', args.steplr_step_size, 'epochs')
