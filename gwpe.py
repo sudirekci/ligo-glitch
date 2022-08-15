@@ -429,7 +429,9 @@ class PosteriorModel(object):
         add_noise = True
 
         start = self.epoch
+        print('START ', start)
         end = self.epoch + epochs
+        print('END ', end)
 
         for epoch in range(start, end):
 
@@ -806,7 +808,8 @@ def main():
         if args.save_once_in != -1:
             save_once_in = args.save_once_in
         else:
-            save_once_in = args.epochs
+            # save at the very end
+            save_once_in = args.epochs + pm.epoch
 
         if args.save:
             pm.train(args.epochs,
