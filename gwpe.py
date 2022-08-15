@@ -40,7 +40,8 @@ python gwpe.py train new nde \
 python gwpe.py train existing \
     --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_w_noise/ \
     --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/existing/ \
-    --epochs 100 \
+    --epochs 58 
+    --save_once_in \
     
     
 python gwpe.py test \
@@ -806,7 +807,7 @@ def main():
         start_time = time.time()
 
         if args.save_once_in != -1:
-            save_once_in = args.save_once_in + pm.epoch - 1
+            save_once_in = args.save_once_in
         else:
             # save at the very end
             save_once_in = args.epochs + pm.epoch - 1
