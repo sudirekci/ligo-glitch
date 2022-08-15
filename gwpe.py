@@ -480,8 +480,8 @@ class PosteriorModel(object):
                         writer = csv.writer(f, delimiter='\t')
                         writer.writerow([epoch, train_loss, test_loss])
 
-            if save_once_in is not None and (epoch-start) % save_once_in == 0:
-                print('Saving model')
+            if save_once_in is not None and (epoch+1-start) % save_once_in == 0:
+                print('Saving model\n')
                 self.save_model()
 
         # save the model at the end
