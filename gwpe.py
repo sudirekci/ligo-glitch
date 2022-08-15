@@ -806,10 +806,10 @@ def main():
         start_time = time.time()
 
         if args.save_once_in != -1:
-            save_once_in = args.save_once_in
+            save_once_in = args.save_once_in + pm.epoch - 1
         else:
             # save at the very end
-            save_once_in = args.epochs + pm.epoch
+            save_once_in = args.epochs + pm.epoch - 1
 
         if args.save:
             pm.train(args.epochs,
