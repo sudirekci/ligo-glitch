@@ -40,8 +40,8 @@ python gwpe.py train new nde \
 python gwpe.py train existing \
     --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_w_noise/ \
     --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/existing/ \
-    --epochs 58 
-    --save_once_in \
+    --epochs 58 \
+    --save_once_in 50 \
     
     
 python gwpe.py test \
@@ -430,9 +430,7 @@ class PosteriorModel(object):
         add_noise = True
 
         start = self.epoch
-        print('START ', start)
         end = self.epoch + epochs
-        print('END ', end)
 
         for epoch in range(start, end):
 
@@ -482,9 +480,13 @@ class PosteriorModel(object):
                         writer = csv.writer(f, delimiter='\t')
                         writer.writerow([epoch, train_loss, test_loss])
 
-            if save_once_in is not None and (self.epoch-1) % save_once_in == 0:
+            if save_once_in is not None and (epoch-start) % save_once_in == 0:
                 print('Saving model')
                 self.save_model()
+
+        # save the model at the end
+        print('Saving model')
+        self.save_model()
 
 
     def init_waveform_supp(self, aux_filename='waveforms_supplementary.hdf5'):
@@ -810,7 +812,7 @@ def main():
             save_once_in = args.save_once_in
         else:
             # save at the very end
-            save_once_in = args.epochs + pm.epoch - 1
+            save_once_in = None
 
         if args.save:
             pm.train(args.epochs,
