@@ -31,7 +31,7 @@ python gwpe.py train new nde \
     --nflows 15 \
     --batch_norm \
     --lr 0.0002 \
-    --epochs 2 \
+    --epochs 2000 \
     --hidden_dims 512 \
     --activation elu \
     --no_lr_annealing \
@@ -39,15 +39,15 @@ python gwpe.py train new nde \
     
 python gwpe.py train existing \
     --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_w_noise/ \
-    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/overfit1k/ \
-    --epochs 10 \
+    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/existing/ \
+    --epochs 100 \
     
     
 python gwpe.py test \
     --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_w_noise/ \
-    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/overfit10k/ \
+    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/existing/ \
     --test_on_training_data \
-    --epoch 10000 \
+    --epoch 120 \
 """
 
 
@@ -428,7 +428,10 @@ class PosteriorModel(object):
         #     add_noise = True
         add_noise = True
 
-        for epoch in range(self.epoch, self.epoch + epochs):
+        start = self.epoch
+        end = self.epoch + epochs
+
+        for epoch in range(start, end):
 
             print('Learning rate: {:e}'.format(self.optimizer.state_dict()
                                                ['param_groups'][0]['lr']))
@@ -456,8 +459,7 @@ class PosteriorModel(object):
             if self.scheduler is not None:
                 self.scheduler.step()
 
-
-            self.epoch = epoch + 1
+            self.epoch += 1
             self.train_history.append(train_loss)
             self.test_history.append(test_loss)
 
@@ -476,7 +478,6 @@ class PosteriorModel(object):
                     with open(p / 'history.txt', 'a') as f:
                         writer = csv.writer(f, delimiter='\t')
                         writer.writerow([epoch, train_loss, test_loss])
-
 
             if save_once_in is not None and (self.epoch-1) % save_once_in == 0:
                 print('Saving model')
