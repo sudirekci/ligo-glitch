@@ -25,17 +25,17 @@ import pandas as pd
 """
 python gwpe.py train new nde \
     --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_w_noise/ \
-    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/overfit1k_3/ \
+    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/overfit1k_4/ \
     --nbins 8 \
     --num_transform_blocks 10 \
     --nflows 15 \
     --batch_norm \
     --lr 0.0002 \
-    --epochs 4000 \
+    --epochs 8000 \
     --hidden_dims 512 \
     --activation elu \
     --no_lr_annealing \
-    --batch_size 100 \
+    --batch_size 1000 \
     
 python gwpe.py train existing \
     --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_w_noise/ \
@@ -218,9 +218,9 @@ class PosteriorModel(object):
         if self.model is None:
             raise NameError('Construct model before initializing training.')
 
-        # self.optimizer = torch.optim.Adam(self.model.parameters(), lr=lr)
+        self.optimizer = torch.optim.Adam(self.model.parameters(), lr=lr)
 
-        self.optimizer = torch.optim.SGD(self.model.parameters(), lr=lr)
+        # self.optimizer = torch.optim.SGD(self.model.parameters(), lr=lr)
 
         if lr_annealing is True:
             if anneal_method == 'step':
