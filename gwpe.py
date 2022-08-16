@@ -218,7 +218,9 @@ class PosteriorModel(object):
         if self.model is None:
             raise NameError('Construct model before initializing training.')
 
-        self.optimizer = torch.optim.Adam(self.model.parameters(), lr=lr)
+        # self.optimizer = torch.optim.Adam(self.model.parameters(), lr=lr)
+
+        self.optimizer = torch.optim.SGD(self.model.parameters(), lr=lr)
 
         if lr_annealing is True:
             if anneal_method == 'step':
@@ -521,7 +523,7 @@ class PosteriorModel(object):
 
 
 
-    def evaluate(self, idx, nsamples=50000, plot=True):
+    def evaluate(self, idx, nsamples=100000, plot=True):
         """Evaluate the model on a noisy waveform.
         Args:
             idx         index of the waveform, from a noisy waveform
