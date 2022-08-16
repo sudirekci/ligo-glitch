@@ -24,31 +24,30 @@ import pandas as pd
 
 """
 python gwpe.py train new nde \
-    --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_w_noise_10k/ \
-    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/overfit10k/ \
+    --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_w_noise/ \
+    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/overfit1k_3/ \
     --nbins 8 \
     --num_transform_blocks 10 \
     --nflows 15 \
     --batch_norm \
     --lr 0.0002 \
-    --epochs 2000 \
+    --epochs 4000 \
     --hidden_dims 512 \
     --activation elu \
     --no_lr_annealing \
-    --batch_size 500 \
+    --batch_size 100 \
     
 python gwpe.py train existing \
     --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_w_noise/ \
-    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/existing/ \
-    --epochs 58 \
-    --save_once_in 50 \
-    
+    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/overfit1k_3/ \
+    --epochs 4000 \
+
     
 python gwpe.py test \
     --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_w_noise/ \
-    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/existing/ \
+    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/overfit1k_3/ \
     --test_on_training_data \
-    --epoch 120 \
+    --epoch 16000 \
 """
 
 
@@ -522,7 +521,7 @@ class PosteriorModel(object):
 
 
 
-    def evaluate(self, idx, nsamples=10000, plot=True):
+    def evaluate(self, idx, nsamples=50000, plot=True):
         """Evaluate the model on a noisy waveform.
         Args:
             idx         index of the waveform, from a noisy waveform
