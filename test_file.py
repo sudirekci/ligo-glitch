@@ -13,7 +13,8 @@ dataset_len = 100
 path_to_glitschen = '/home/su/Documents/glitschen-main/'
 
 dataset = waveform_dataset.WaveformGenerator(dataset_len=dataset_len, path_to_glitschen=path_to_glitschen,
-                                             extrinsic_at_train=False, tomte_to_blip=1, domain='FD')
+                                             extrinsic_at_train=False, tomte_to_blip=1, domain='FD', add_glitch=False,
+                                             add_noise=False)
 
 
 def inner_colored(freqseries1, freqseries2):
@@ -23,17 +24,16 @@ def inner_colored(freqseries1, freqseries2):
 
 
 def inner_whitened(freqseries1, freqseries2):
-
     psd = 1.0
     inner = np.sum(freqseries1 * np.conjugate(freqseries2)) / psd
 
     return np.real(inner) * 4. * 0.25
 
 
-def plot_signals(dataset=None,index=0,domain='TD', loglog=False):
+def plot_signals(dataset=None, index=0, domain='TD', loglog=False):
 
     dataset_domain = dataset.domain
-    arr = dataset.detector_signals[:,index,:]
+    arr = dataset.detector_signals[:, index, :]
 
     fd_axis = dataset.freqs[1:]
     td_axis = np.linspace(-dataset.duration / 2., dataset.duration / 2.,
@@ -63,7 +63,8 @@ def plot_signals(dataset=None,index=0,domain='TD', loglog=False):
 
         elif domain == 'TD':
 
-            signals = np.fft.irfft(np.pad(arr, ((0, 0), (1, 0)), 'constant'))*dataset.df*dataset.length/np.sqrt(dataset.bandwidth)
+            signals = np.fft.irfft(np.pad(arr, ((0, 0), (1, 0)), 'constant')) * dataset.df * dataset.length / np.sqrt(
+                dataset.bandwidth)
 
             plt.figure()
             plt.plot(td_axis, signals[0])
@@ -87,10 +88,7 @@ def plot_signals(dataset=None,index=0,domain='TD', loglog=False):
             print('TODO')
 
 
-
-
 def test_noise():
-
     dataset_len = 20
 
     dataset = waveform_dataset.WaveformGenerator(dataset_len=dataset_len, path_to_glitschen=path_to_glitschen,
@@ -98,11 +96,11 @@ def test_noise():
 
     dataset.initialize()
 
-    white_noise = np.fft.rfft(np.random.normal(0,1,8192)*1./8192)
+    white_noise = np.fft.rfft(np.random.normal(0, 1, 8192) * 1. / 8192)
 
     print('White noise SNR: ', str(np.sqrt(inner_whitened(white_noise, white_noise))))
 
-    normalized_noise = np.pad(white_noise[dataset.fft_mask]*dataset.dt*(dataset.psd[dataset.fft_mask])
+    normalized_noise = np.pad(white_noise[dataset.fft_mask] * dataset.dt * (dataset.psd[dataset.fft_mask])
                               ** (0.5), (1, 0), 'constant')
     normalized_noise /= np.sqrt(inner_colored(normalized_noise, normalized_noise))
 
@@ -110,25 +108,21 @@ def test_noise():
     variates = []
 
     for k in range(0, 1000):
+        white_noise = np.random.normal(0, 1, 8192)
 
-        white_noise = np.random.normal(0,1,8192)
-
-        colored_noise = np.pad(np.fft.rfft(white_noise)[dataset.fft_mask]*dataset.dt*(dataset.psd[dataset.fft_mask]
-                                                                    )**(0.5), (1,0),'constant')
+        colored_noise = np.pad(np.fft.rfft(white_noise)[dataset.fft_mask] * dataset.dt * (dataset.psd[dataset.fft_mask]
+        ) ** (0.5), (1, 0), 'constant')
 
         variates.append(inner_colored(colored_noise, normalized_noise))
 
-    x = np.linspace(-3,3,1000)
+    x = np.linspace(-3, 3, 1000)
     plt.figure()
     plt.hist(np.array(variates), bins=30, density=True)
-    plt.plot(x, 1/np.sqrt(2*np.pi)*np.exp(-x**2/2))
+    plt.plot(x, 1 / np.sqrt(2 * np.pi) * np.exp(-x ** 2 / 2))
     plt.show()
 
 
-
 def test_signals():
-
-
     dataset_domain = 'FD'
     dataset_len = 100
 
@@ -140,7 +134,6 @@ def test_signals():
 
     params = dataset.params
     glitch_params = dataset.glitch_params
-
 
     def find_glitch_type(param):
         if int(param) == 0:
@@ -166,24 +159,21 @@ def test_signals():
         # print('tc GW signal:')
         # print(params[i][dataset.EXTRINSIC_PARAMS['tc']])
         print('Glitch params:')
-        #print(glitch_params[i])
+        # print(glitch_params[i])
         print('SNRs:')
-        print(dataset.snrs[0,i])
-        print(dataset.snrs[1,i])
-        #print(dataset.SNR_whitened(dataset.detector_signals[0,i,:]))
+        print(dataset.snrs[0, i])
+        print(dataset.snrs[1, i])
+        # print(dataset.SNR_whitened(dataset.detector_signals[0,i,:]))
 
         plot_signals(dataset=dataset, index=i, domain='FD', loglog=False)
 
         # print('Glitch type:')
         # print(find_glitch_type(glitch_params[i][dataset.GLITCH_PARAMS['glitch_type']]))
 
-
         print('-----------------------------------------------')
 
 
-
 def test_SVD():
-
     dataset_len = 20
     svd_no_basis_coeffs = 5
 
@@ -203,14 +193,14 @@ def test_SVD():
     plt.title('Real parts of basis coeffs')
     for i in range(0, dataset_len):
         for j in range(0, dataset.no_detectors):
-            plt.scatter(np.arange(start=1, stop=svd_no_basis_coeffs+1),
+            plt.scatter(np.arange(start=1, stop=svd_no_basis_coeffs + 1),
                         np.real(dataset.detector_signals[j, i, :]))
 
     plt.figure()
     plt.title('Imaginary parts of basis coeffs')
     for i in range(0, dataset_len):
         for j in range(0, dataset.no_detectors):
-            plt.scatter(np.arange(start=1, stop=svd_no_basis_coeffs+1),
+            plt.scatter(np.arange(start=1, stop=svd_no_basis_coeffs + 1),
                         np.imag(dataset.detector_signals[j, i, :]))
 
     plt.show()
@@ -218,22 +208,20 @@ def test_SVD():
     for i in range(0, dataset_len):
         for j in range(0, dataset.no_detectors):
             plt.figure()
-            plt.scatter(np.arange(start=1, stop=svd_no_basis_coeffs+1),
+            plt.scatter(np.arange(start=1, stop=svd_no_basis_coeffs + 1),
                         np.real(dataset.detector_signals[j, i, :]))
             plt.scatter(np.arange(start=1, stop=svd_no_basis_coeffs + 1),
                         np.imag(dataset.detector_signals[j, i, :]))
             plt.show()
 
 
-
 def test_waveform_dataset():
-
     dataset1 = waveform_dataset.WaveformGenerator(dataset_len=100, path_to_glitschen=path_to_glitschen,
-                                                 extrinsic_at_train=False, tomte_to_blip=1, domain='FD',
+                                                  extrinsic_at_train=False, tomte_to_blip=1, domain='FD',
                                                   add_glitch=True)
 
     dataset2 = waveform_dataset.WaveformGenerator(dataset_len=10, path_to_glitschen=path_to_glitschen,
-                                                 extrinsic_at_train=False, tomte_to_blip=1, domain='FD',
+                                                  extrinsic_at_train=False, tomte_to_blip=1, domain='FD',
                                                   add_glitch=True)
 
     dataset1.construct_signal_dataset(perform_svd=True)
@@ -250,24 +238,23 @@ def test_waveform_dataset():
     print('testing dataset prepared')
 
     tr = []
-    tr2 =[]
+    tr2 = []
     for i in range(0, 10):
-        #print(testing_dataset.__getitem__(i))
+        # print(testing_dataset.__getitem__(i))
         x, y = testing_dataset.__getitem__(i)
         tr.append(x.cpu().detach().numpy())
         tr2.append(y.cpu().detach().numpy())
 
         print(y)
 
-    #tr = torch.cat(tr, -1).cpu().detach().numpy()
-    tr = np.reshape(np.asarray(tr), (10,400))
+    # tr = torch.cat(tr, -1).cpu().detach().numpy()
+    tr = np.reshape(np.asarray(tr), (10, 400))
     tr2 = np.reshape(np.asarray(tr2), (10, 27))
     # print(np.std(tr, axis=0))
     # print(np.std(tr2, axis=0))
 
 
 def test_saving_loading():
-
     dataset1 = waveform_dataset.WaveformGenerator(dataset_len=100, path_to_glitschen=path_to_glitschen,
                                                   extrinsic_at_train=False, tomte_to_blip=1, domain='FD',
                                                   add_glitch=True)
@@ -283,15 +270,19 @@ def test_saving_loading():
     print(dataset2.glitch_params)
 
 
-
 # dataset.initialize()
 
 # test_noise()
 
-#test_signals()
+# test_signals()
 
 # test_waveform_dataset()
 
-test_SVD()
+# test_SVD()
 
 # test_saving_loading()
+
+
+dataset.construct_signal_dataset()
+for i in range(0, dataset_len):
+    plot_signals(dataset=dataset, index=i)

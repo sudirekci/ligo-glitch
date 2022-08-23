@@ -25,29 +25,29 @@ import pandas as pd
 """
 python gwpe.py train new nde \
     --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_w_noise/ \
-    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/overfit1k_4/ \
+    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/overfit1k_8/ \
     --nbins 8 \
     --num_transform_blocks 10 \
     --nflows 15 \
     --batch_norm \
-    --lr 0.0002 \
+    --lr 0.00005 \
     --epochs 8000 \
-    --hidden_dims 512 \
+    --hidden_dims 1024 \
     --activation elu \
-    --no_lr_annealing \
-    --batch_size 1000 \
+    --lr_anneal_method cosine \
+    --batch_size 100 \
     
 python gwpe.py train existing \
     --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_w_noise/ \
-    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/overfit1k_3/ \
+    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/overfit1k_7/ \
     --epochs 4000 \
 
     
 python gwpe.py test \
     --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_w_noise/ \
-    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/overfit1k_3/ \
+    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/overfit1k_5/ \
     --test_on_training_data \
-    --epoch 16000 \
+    --epoch 2000 \
 """
 
 
@@ -231,7 +231,7 @@ class PosteriorModel(object):
             elif anneal_method == 'cosine':
                 self.scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
                     self.optimizer,
-                    T_max=10000,
+                    T_max=16000,
                 )
             elif anneal_method == 'cosineWR':
                 self.scheduler = (
