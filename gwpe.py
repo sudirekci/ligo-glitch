@@ -45,7 +45,7 @@ python gwpe.py train existing \
     
 python gwpe.py test \
     --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_w_noise/ \
-    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/overfit1k_8/ \
+    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/overfit1k_7/ \
     --test_on_training_data \
     --epoch 2000 \
 """
