@@ -43,7 +43,7 @@ class WaveformGenerator:
     REF_TIME = 1e5
     SOLAR_MASS = 1.9891e+30
 
-    def __init__(self, sampling_frequency=2048., duration=8., fmin=20., dataset_len=100000,
+    def __init__(self, sampling_frequency=2048., duration=4., fmin=10., dataset_len=100000,
                  path_to_glitschen='/home/su/Documents/glitschen-main/',
                  q=5, winlen=0.5, approximant='IMRPhenomPv2', priors=None, detectors=None, tomte_to_blip=1,
                  extrinsic_at_train=False, directory='/home/su/Documents/glitch_dataset/', glitch_sigma=1, domain='FD',
@@ -65,36 +65,41 @@ class WaveformGenerator:
 
         if priors is None:
             # default prior
+
+            random_params = [1.0429295589696281, 1.7028325372216926, 1.8257602814945424,
+                             1.9250026229299193, 0.3791082086039006, 2.3982402045325695,
+                             1.5821720611850834, 0.22185528973413104, 1.1183599396287693]
+
             self.priors = np.zeros((self.INTRINSIC_LEN + self.EXTRINSIC_LEN + 1, 2))
             self.priors[self.INTRINSIC_PARAMS['mass1']] = [10., 80.]
             self.priors[self.INTRINSIC_PARAMS['mass2']] = [10., 80.]
             self.priors[self.EXTRINSIC_PARAMS['distance']] = [100., 1000.]
-            self.priors[self.INTRINSIC_PARAMS['phase']] = [0.0, 0.0]
+            self.priors[self.INTRINSIC_PARAMS['phase']] = [random_params[0], random_params[0]]
             self.priors[self.INTRINSIC_PARAMS['a1']] = [0.0, 0.0]
             self.priors[self.INTRINSIC_PARAMS['a2']] = [0.0, 0.0]
-            self.priors[self.INTRINSIC_PARAMS['theta1']] = [0.0, 0.0]
-            self.priors[self.INTRINSIC_PARAMS['theta2']] = [0.0, 0.0]
-            self.priors[self.INTRINSIC_PARAMS['phi_12']] = [0.0, 0.0]
-            self.priors[self.INTRINSIC_PARAMS['phi_JL']] = [0.0, 0.0]
-            self.priors[self.INTRINSIC_PARAMS['theta_JN']] = [0.0, 0.0]
+            self.priors[self.INTRINSIC_PARAMS['theta1']] = [random_params[1], random_params[1]]
+            self.priors[self.INTRINSIC_PARAMS['theta2']] = [random_params[2], random_params[2]]
+            self.priors[self.INTRINSIC_PARAMS['phi_12']] = [random_params[3], random_params[3]]
+            self.priors[self.INTRINSIC_PARAMS['phi_JL']] = [random_params[4], random_params[4]]
+            self.priors[self.INTRINSIC_PARAMS['theta_JN']] = [random_params[5], random_params[5]]
             self.priors[self.EXTRINSIC_PARAMS['tc']] = [0.0, 0.0]
-            self.priors[self.EXTRINSIC_PARAMS['right_ascension']] = [0.0, 0.0]
-            self.priors[self.EXTRINSIC_PARAMS['declination']] = [0.0, 0.0]
-            self.priors[self.EXTRINSIC_PARAMS['pol_angle']] = [0.0, 0.0]
+            self.priors[self.EXTRINSIC_PARAMS['right_ascension']] = [random_params[6], random_params[6]]
+            self.priors[self.EXTRINSIC_PARAMS['declination']] = [random_params[7], random_params[7]]
+            self.priors[self.EXTRINSIC_PARAMS['pol_angle']] = [random_params[8], random_params[8]]
             self.priors[self.GLITCH_PARAMS['time']] = [-1.5, 1.5]
 
             #self.priors[self.INTRINSIC_PARAMS['phase']] = [0.0, 2 * np.pi]
             #self.priors[self.INTRINSIC_PARAMS['a1']] = [0., 0.88]
             #self.priors[self.INTRINSIC_PARAMS['a2']] = [0., 0.88]
-            #self.priors[self.INTRINSIC_PARAMS['theta1']] = [0.0, np.pi]
-            #self.priors[self.INTRINSIC_PARAMS['theta2']] = [0.0, np.pi]
-            #self.priors[self.INTRINSIC_PARAMS['phi_12']] = [0.0, 2 * np.pi]
-            #self.priors[self.INTRINSIC_PARAMS['phi_JL']] = [0.0, 2 * np.pi]
-            #self.priors[self.INTRINSIC_PARAMS['theta_JN']] = [0.0, np.pi]
+            #self.priors[self.INTRINSIC_PARAMS['theta1']] = [0.0, np.pi] 1.7028325372216926
+            #self.priors[self.INTRINSIC_PARAMS['theta2']] = [0.0, np.pi] 1.8257602814945424
+            #self.priors[self.INTRINSIC_PARAMS['phi_12']] = [0.0, 2 * np.pi] 1.9250026229299193
+            #self.priors[self.INTRINSIC_PARAMS['phi_JL']] = [0.0, 2 * np.pi] 0.3791082086039006
+            #self.priors[self.INTRINSIC_PARAMS['theta_JN']] = [0.0, np.pi] 2.3982402045325695
             #self.priors[self.EXTRINSIC_PARAMS['tc']] = [-0.1, 0.1]
-            #self.priors[self.EXTRINSIC_PARAMS['right_ascension']] = [0.0, 2 * np.pi]
-            #self.priors[self.EXTRINSIC_PARAMS['declination']] = [-np.pi / 2.0, np.pi / 2.0]
-            #self.priors[self.EXTRINSIC_PARAMS['pol_angle']] = [0.0, np.pi]
+            #self.priors[self.EXTRINSIC_PARAMS['right_ascension']] = [0.0, 2 * np.pi] 1.5821720611850834
+            #self.priors[self.EXTRINSIC_PARAMS['declination']] = [-np.pi / 2.0, np.pi / 2.0] 0.22185528973413104
+            #self.priors[self.EXTRINSIC_PARAMS['pol_angle']] = [0.0, np.pi] 1.1183599396287693
             #self.priors[self.GLITCH_PARAMS['time']] = [-1.5, 1.5]
         else:
             self.priors = priors
