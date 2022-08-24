@@ -30,12 +30,12 @@ python gwpe.py train new nde \
     --num_transform_blocks 10 \
     --nflows 15 \
     --batch_norm \
-    --lr 0.0002 \
+    --lr 0.00001 \
     --epochs 4000 \
     --hidden_dims 512 \
     --activation elu \
     --lr_anneal_method cosine \
-    --batch_size 100 \
+    --batch_size 1000 \
     
 python gwpe.py train existing \
     --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_w_noise/ \
