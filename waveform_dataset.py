@@ -43,7 +43,7 @@ class WaveformGenerator:
     REF_TIME = 1e5
     SOLAR_MASS = 1.9891e+30
 
-    def __init__(self, sampling_frequency=2048., duration=8., fmin=20., dataset_len=100000,
+    def __init__(self, sampling_frequency=2048., duration=8., fmin=10., dataset_len=100000,
                  path_to_glitschen='/home/su/Documents/glitschen-main/',
                  q=5, winlen=0.5, approximant='IMRPhenomPv2', priors=None, detectors=None, tomte_to_blip=1,
                  extrinsic_at_train=False, directory='/home/su/Documents/glitch_dataset/', glitch_sigma=1, domain='FD',
