@@ -50,7 +50,7 @@ python gwpe.py test \
     --epoch 2000 \
 """
 
-parameter_labels = [r'$m_1$',r'$m_2$, 'r'$\phi_c$',r'$a_1$',r'$a_2$',r'$t_1$',r'$t_2$',
+parameter_labels = [r'$m_1$',r'$m_2$', r'$\phi_c$',r'$a_1$',r'$a_2$',r'$t_1$',r'$t_2$',
                     r'$\phi_{12}$',r'$\phi_{jl}$',r'$\theta_{JN}$',r'$d_L$',r'$t_c$',
                     r'$\alpha$',r'$\delta$',r'$\psi$', r'$t_{g1}$',r'$c_{11}$',
                     r'$c_{12}$',r'$c_{13}$',r'$c_{14}$',r'$c_{15}$',r'$t_{g2}$',
@@ -564,12 +564,9 @@ class PosteriorModel(object):
             # no glitch is added
             slice = [0, 1, 10]
 
-        print('********************')
-        print('ZOOM IN RANGE')
         percentile_low = np.percentile(params_samples[:,slice], 16, axis=0)
         percentile_high = np.percentile(params_samples[:, slice], 84, axis=0)
         range = np.stack((percentile_low, percentile_high), axis=1)
-        print('********************')
 
         if plot:
             corner.corner(params_samples[:,slice], truths=params_true[slice],
