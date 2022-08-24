@@ -47,7 +47,10 @@ class WaveformGenerator:
                  path_to_glitschen='/home/su/Documents/glitschen-main/',
                  q=5, winlen=0.5, approximant='IMRPhenomPv2', priors=None, detectors=None, tomte_to_blip=1,
                  extrinsic_at_train=False, directory='/home/su/Documents/glitch_dataset/', glitch_sigma=1, domain='FD',
-                 svd_no_basis_coeffs=100, add_glitch=False, add_noise=False):
+                 svd_no_basis_coeffs=100, add_glitch=False, add_noise=False, noise_real_to_sig=1):
+
+        # ratio of noise realizations to signals
+        self.noise_real_to_sig = int(noise_real_to_sig)
 
         self.stds = None
         self.means = None
@@ -67,8 +70,8 @@ class WaveformGenerator:
             self.priors[self.INTRINSIC_PARAMS['mass2']] = [10., 80.]
             self.priors[self.EXTRINSIC_PARAMS['distance']] = [100., 1000.]
             self.priors[self.INTRINSIC_PARAMS['phase']] = [np.pi/3-1e-8, np.pi/3+1e-8]
-            self.priors[self.INTRINSIC_PARAMS['a1']] = [0.2-1e-8, 0.2+1e-8]
-            self.priors[self.INTRINSIC_PARAMS['a2']] = [0.2-1e-8, 0.2+1e-8]
+            self.priors[self.INTRINSIC_PARAMS['a1']] = [0.0, 0.0+1e-8]
+            self.priors[self.INTRINSIC_PARAMS['a2']] = [0.0, 0.0+1e-8]
             self.priors[self.INTRINSIC_PARAMS['theta1']] = [np.pi/5-1e-8, np.pi/5+1e-8]
             self.priors[self.INTRINSIC_PARAMS['theta2']] = [np.pi/10-1e-8, np.pi/10+1e-8]
             self.priors[self.INTRINSIC_PARAMS['phi_12']] = [np.pi/12.-1e-8, np.pi/12.+1e-8]
@@ -295,6 +298,25 @@ class WaveformGenerator:
                         np.sqrt(self.bandwidth)
 
             self.projection_strains[j] += noise
+
+
+    def add_noise_to_detector_signals(self):
+
+        if self.noise_real_to_sig != 1:
+
+            # repeat signals
+            self.detector_signals = np.repeat(self.detector_signals, self.noise_real_to_sig, axis=1)
+
+        for l in range(0, self.dataset_len):
+            for j in range(0, self.no_detectors):
+                if self.domain == 'TD':
+                    noise = np.random.normal(0, scale=1.0, size=int(self.length))
+                elif self.domain == 'FD':
+                    noise = np.fft.rfft(np.random.normal(0, scale=1.0, size=int(self.length)))[self.fft_mask]*self.dt*\
+                            np.sqrt(self.bandwidth)
+
+                self.detector_signals[j, l, :] += noise
+
 
 
 
@@ -581,12 +603,14 @@ class WaveformGenerator:
 
             if Vh is None:
                 self.svd.generate_basis(np.reshape(self.detector_signals,
-                                               (self.no_detectors * self.dataset_len, int(self.length / 2))))
+                                               (self.no_detectors * self.dataset_len*self.noise_real_to_sig,
+                                                int(self.length / 2))))
 
-            data = np.zeros((self.no_detectors, self.dataset_len, self.svd_no_basis_coeffs), dtype=np.complex_)
+            data = np.zeros((self.no_detectors, self.dataset_len*self.noise_real_to_sig,
+                             self.svd_no_basis_coeffs), dtype=np.complex_)
 
             for d in range(0, self.no_detectors):
-                for i in range(0, self.dataset_len):
+                for i in range(0, self.dataset_len*self.noise_real_to_sig):
 
                     data[d, i, :] = self.svd.basis_coeffs(self.detector_signals[d, i, :])
 
@@ -640,9 +664,6 @@ class WaveformGenerator:
                 hp, hc = self.compute_hp_hc(i)
                 snrs = self.project_hp_hc(hp, hc, i)
 
-                if self.add_noise:
-                    self.add_noise_to_projection_strains()
-
                 if self.add_glitch:
                     det, params = self.add_glitch_to_projection_strains()
                     self.glitch_params[i, det*len(self.GLITCH_PARAMS):(det+1)*len(self.GLITCH_PARAMS)] = params
@@ -651,6 +672,10 @@ class WaveformGenerator:
                 for j in range(0, self.no_detectors):
                     self.detector_signals[j, i, :] = self.projection_strains[j]
                     self.snrs[j, i] = snrs[j]
+
+            # if we want to have multiple noise realizations for the same signal
+            if self.add_noise:
+                self.add_noise_to_detector_signals()
 
         self.calculate_params_statistics()
 
@@ -733,7 +758,7 @@ class WaveformGenerator:
 
 
 
-    def provide_sample(self, idx):
+    def provide_sample(self, idx1):
 
         if self.extrinsic_at_train:
 
@@ -744,6 +769,8 @@ class WaveformGenerator:
             params = None
 
         else:
+
+            idx = idx1 // self.noise_real_to_sig
 
             params = np.nan_to_num((self.params[idx] - self.params_mean) / self.params_std)
 
@@ -757,7 +784,7 @@ class WaveformGenerator:
             wfs = []
             for d in range(0, self.no_detectors):
 
-                wf = self.detector_signals[d, idx, :]
+                wf = self.detector_signals[d, idx1, :]
 
                 if self.domain == 'TD':
 
@@ -868,7 +895,7 @@ class WaveformDatasetTorch(Dataset):
 
     def __len__(self):
 
-        return self.wfg.dataset_len
+        return self.wfg.dataset_len*self.wfg.noise_real_to_sig
 
     def __getitem__(self, idx):
 

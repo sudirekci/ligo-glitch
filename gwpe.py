@@ -24,15 +24,15 @@ import pandas as pd
 
 """
 python gwpe.py train new nde \
-    --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_w_noise/ \
+    --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_w_noise_random/ \
     --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/overfit1k_8/ \
     --nbins 8 \
     --num_transform_blocks 10 \
     --nflows 15 \
     --batch_norm \
-    --lr 0.00005 \
-    --epochs 8000 \
-    --hidden_dims 1024 \
+    --lr 0.0002 \
+    --epochs 4000 \
+    --hidden_dims 512 \
     --activation elu \
     --lr_anneal_method cosine \
     --batch_size 100 \
@@ -45,10 +45,16 @@ python gwpe.py train existing \
     
 python gwpe.py test \
     --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_w_noise/ \
-    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/overfit1k_5/ \
+    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/overfit1k_8/ \
     --test_on_training_data \
     --epoch 2000 \
 """
+
+parameter_labels = [r'$m_1$',r'$m_2$, 'r'$\phi_c$',r'$a_1$',r'$a_2$',r'$t_1$',r'$t_2$',
+                    r'$\phi_{12}$',r'$\phi_{jl}$',r'$\theta_{JN}$',r'$d_L$',r'$t_c$',
+                    r'$\alpha$',r'$\delta$',r'$\psi$', r'$t_{g1}$',r'$c_{11}$',
+                    r'$c_{12}$',r'$c_{13}$',r'$c_{14}$',r'$c_{15}$',r'$t_{g2}$',
+                    r'$c_{21}$',r'$c_{22}$',r'$c_{23}$',r'$c_{24}$',r'$c_{25}$',]
 
 
 class PosteriorModel(object):
@@ -523,7 +529,7 @@ class PosteriorModel(object):
 
 
 
-    def evaluate(self, idx, nsamples=100000, plot=True):
+    def evaluate(self, idx, nsamples=10000, plot=True):
         """Evaluate the model on a noisy waveform.
         Args:
             idx         index of the waveform, from a noisy waveform
@@ -547,7 +553,6 @@ class PosteriorModel(object):
         x_samples = x_samples.to(self.device)
 
         params_samples = self.testing_wg.post_process_parameters(x_samples.cpu().numpy())
-        # params_samples = self.training_wg.post_process_parameters(x_samples.numpy())
 
         if self.testing_wg.add_glitch:
             det = int(self.testing_wg.glitch_detector[idx])
@@ -559,12 +564,23 @@ class PosteriorModel(object):
             # no glitch is added
             slice = [0, 1, 10]
 
+        print('********************')
+        print('ZOOM IN RANGE')
+        percentile_low = np.percentile(params_samples[:,slice], 16, axis=0)
+        percentile_high = np.percentile(params_samples[:, slice], 84, axis=0)
+        range = np.stack((percentile_low, percentile_high), axis=1)
+        print('********************')
 
         if plot:
-            corner.corner(params_samples[:,slice], truths=params_true[slice])
-            #              labels=self.wfd.parameter_labels)
+            corner.corner(params_samples[:,slice], truths=params_true[slice],
+                          labels=parameter_labels)
             # plt.show()
             plt.savefig(self.model_dir+str(idx))
+
+            corner.corner(params_samples[:, slice], truths=params_true[slice],
+                          labels=parameter_labels, range=range)
+            # plt.show()
+            plt.savefig(self.model_dir + str(idx) + '_zoomed')
 
         return params_samples
 
