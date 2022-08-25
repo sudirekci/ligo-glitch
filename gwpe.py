@@ -24,8 +24,8 @@ import pandas as pd
 
 """
 python gwpe.py train new nde \
-    --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_w_noise_8s/ \
-    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/overfit1k_9/ \
+    --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_w_noise_random/ \
+    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/overfit1k_8/ \
     --nbins 8 \
     --num_transform_blocks 10 \
     --nflows 15 \
@@ -44,8 +44,8 @@ python gwpe.py train existing \
 
     
 python gwpe.py test \
-    --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_w_noise/ \
-    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/overfit1k_7/ \
+    --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_w_noise_8s/ \
+    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/overfit1k_9/ \
     --test_on_training_data \
     --epoch 2000 \
 """

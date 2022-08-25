@@ -1,10 +1,11 @@
 import waveform_dataset as wd
 
-directory = '/home/su.direkci/glitch_project/dataset_no_glitch_w_noise_random/'
+directory = '/home/su.direkci/glitch_project/dataset_no_glitch_w_noise_ns_100/'
 path_to_glitschen = '/home/su.direkci/programs/glitschen'
 
-training_wg = wd.WaveformGenerator(dataset_len=1000, add_glitch=False, add_noise=True,
-                                   directory=directory, path_to_glitschen=path_to_glitschen, svd_no_basis_coeffs=100)
+training_wg = wd.WaveformGenerator(dataset_len=10, add_glitch=False, add_noise=True,
+                                   directory=directory, path_to_glitschen=path_to_glitschen, svd_no_basis_coeffs=100,
+                                   noise_real_to_sig=100)
 training_wg.construct_signal_dataset(perform_svd=True, save=True, filename='training_data')
 
 # validation data
