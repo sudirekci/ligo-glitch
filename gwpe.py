@@ -24,8 +24,8 @@ import pandas as pd
 
 """
 python gwpe.py train new nde \
-    --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_w_noise_random/ \
-    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/overfit1k_8/ \
+    --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_w_noise_ns_100/ \
+    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/overfit1k_10/ \
     --nbins 8 \
     --num_transform_blocks 10 \
     --nflows 15 \
@@ -44,8 +44,8 @@ python gwpe.py train existing \
 
     
 python gwpe.py test \
-    --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_w_noise_8s/ \
-    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/overfit1k_9/ \
+    --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_w_noise_ns_100/ \
+    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/overfit1k_10/ \
     --test_on_training_data \
     --epoch 2000 \
 """
@@ -873,7 +873,7 @@ def main():
 
         for i in range(0, 10):
 
-            idx = np.random.randint(0, pm.testing_wg.dataset_len)
+            idx = np.random.randint(0, (pm.testing_wg.dataset_len*pm.testing_wg.noise_real_to_sig))
             # print(idx)
             pm.evaluate(idx, plot=True)
 

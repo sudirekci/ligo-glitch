@@ -793,7 +793,6 @@ class WaveformGenerator:
 
                 if self.domain == 'TD':
 
-                    x = 0
                     print('TODO')
 
                 elif self.domain == 'FD':
