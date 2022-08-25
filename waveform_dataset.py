@@ -712,7 +712,8 @@ class WaveformGenerator:
                   "performed_svd": self.performed_svd,
                   "svd_no_basis_coeffs": self.svd_no_basis_coeffs,
                   "add_glitch": self.add_glitch,
-                  "add_noise": self.add_noise}
+                  "add_noise": self.add_noise,
+                  "noise_real_to_sig": self.noise_real_to_sig}
 
         with open(self.directory + filename + '_config.json', 'w') as f:
             json.dump(config, f)
@@ -849,6 +850,7 @@ class WaveformGenerator:
         self.svd_no_basis_coeffs = obj_params['svd_no_basis_coeffs']
         self.add_glitch = obj_params['add_glitch']
         self.add_noise = obj_params['add_noise']
+        self.noise_real_to_sig = obj_params['noise_real_to_sig']
 
         print('Add glitch is ', self.add_glitch)
 
