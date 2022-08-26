@@ -115,6 +115,8 @@ class Fisher:
                     inner += self._wg.inner_whitened(self.derivatives[self._elements[i]][m,:],
                                                         self.derivatives[self._elements[j]][m,:])
 
+                    print(inner)
+
                 self.F[i, j] = 1./inner
 
         self.F = self.F + self.F.T - np.diag(self.F.diagonal())
