@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 
 class Fisher:
 
-    step_sizes = dict(mass1=1e-6, mass2=1e-6, distance=1e-3)
+    step_sizes = dict(mass1=1e-3, mass2=1e-3, distance=1e-3)
 
     def __init__(self, waveform_generator=None, params=None, elements=None):
 
@@ -110,10 +110,10 @@ class Fisher:
             for j in range(0, i+1):
 
                 inner = 0.
-
                 for m in range(0, self._wg.no_detectors):
+
                     inner += self._wg.inner_whitened(self.derivatives[self._elements[i]][m,:],
-                                                        self.derivatives[self._elements[j]][m,:])
+                                                     self.derivatives[self._elements[j]][m,:])
 
                     print(inner)
 
