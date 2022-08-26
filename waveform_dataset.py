@@ -850,7 +850,6 @@ class WaveformGenerator:
 
     def post_process_parameters(self, x):
 
-
         if not self.add_glitch:
 
             return x*self.params_std+self.params_mean
