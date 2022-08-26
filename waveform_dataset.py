@@ -887,7 +887,10 @@ class WaveformGenerator:
         self.svd_no_basis_coeffs = obj_params['svd_no_basis_coeffs']
         self.add_glitch = obj_params['add_glitch']
         self.add_noise = obj_params['add_noise']
-        self.noise_real_to_sig = obj_params['noise_real_to_sig']
+        try:
+            self.noise_real_to_sig = obj_params['noise_real_to_sig']
+        except:
+            self.noise_real_to_sig = 1
 
         print('Add glitch is ', self.add_glitch)
 
