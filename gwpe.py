@@ -559,6 +559,7 @@ class PosteriorModel(object):
 
         if compute_fisher:
             cov_matrix = self.fisher.compute_fisher_cov(index=idx)
+            print('Covariance matrix:')
             print(cov_matrix)
 
         if self.testing_wg.add_glitch:
