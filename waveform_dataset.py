@@ -363,18 +363,34 @@ class WaveformGenerator:
 
 
 
-    def get_spin_components(self, index):
+    def get_spin_components(self, index, params=None):
 
-        theta_jn = self.params[index][self.INTRINSIC_PARAMS['theta_JN']]
-        mass1 = self.params[index][self.INTRINSIC_PARAMS['mass1']]*self.SOLAR_MASS
-        mass2 = self.params[index][self.INTRINSIC_PARAMS['mass2']]*self.SOLAR_MASS
-        phi_jl = self.params[index][self.INTRINSIC_PARAMS['phi_JL']]
-        phi_12 = self.params[index][self.INTRINSIC_PARAMS['phi_12']]
-        a1 = self.params[index][self.INTRINSIC_PARAMS['a1']]
-        a2 = self.params[index][self.INTRINSIC_PARAMS['a2']]
-        phase = self.params[index][self.INTRINSIC_PARAMS['phase']]
-        tilt_1 = self.params[index][self.INTRINSIC_PARAMS['theta1']]
-        tilt_2 = self.params[index][self.INTRINSIC_PARAMS['theta2']]
+        if params is None:
+
+            theta_jn = self.params[index][self.INTRINSIC_PARAMS['theta_JN']]
+            mass1 = self.params[index][self.INTRINSIC_PARAMS['mass1']] * self.SOLAR_MASS
+            mass2 = self.params[index][self.INTRINSIC_PARAMS['mass2']] * self.SOLAR_MASS
+            phi_jl = self.params[index][self.INTRINSIC_PARAMS['phi_JL']]
+            phi_12 = self.params[index][self.INTRINSIC_PARAMS['phi_12']]
+            a1 = self.params[index][self.INTRINSIC_PARAMS['a1']]
+            a2 = self.params[index][self.INTRINSIC_PARAMS['a2']]
+            phase = self.params[index][self.INTRINSIC_PARAMS['phase']]
+            tilt_1 = self.params[index][self.INTRINSIC_PARAMS['theta1']]
+            tilt_2 = self.params[index][self.INTRINSIC_PARAMS['theta2']]
+
+        else:
+
+            theta_jn = params[self.INTRINSIC_PARAMS['theta_JN']]
+            mass1 = params[self.INTRINSIC_PARAMS['mass1']] * self.SOLAR_MASS
+            mass2 = params[self.INTRINSIC_PARAMS['mass2']] * self.SOLAR_MASS
+            phi_jl = params[self.INTRINSIC_PARAMS['phi_JL']]
+            phi_12 = params[self.INTRINSIC_PARAMS['phi_12']]
+            a1 = params[self.INTRINSIC_PARAMS['a1']]
+            a2 = params[self.INTRINSIC_PARAMS['a2']]
+            phase = params[self.INTRINSIC_PARAMS['phase']]
+            tilt_1 = params[self.INTRINSIC_PARAMS['theta1']]
+            tilt_2 = params[self.INTRINSIC_PARAMS['theta2']]
+
 
         if ((a1 == 0.0 or tilt_1 in [0, np.pi])
                 and (a2 == 0.0 or tilt_2 in [0, np.pi])):
@@ -458,26 +474,38 @@ class WaveformGenerator:
 
 
 
-    def compute_hp_hc(self, index):
+    def compute_hp_hc(self, index, params=None):
         """
         Compute hps and hcs given the intrinsic parameters
         """
 
         # compute spinx, spiny, spinz
-        iota, spin1x, spin1y, spin1z, spin2x, spin2y, spin2z = self.get_spin_components(index)
+        iota, spin1x, spin1y, spin1z, spin2x, spin2y, spin2z = self.get_spin_components(index, params=params)
+
+        if params is None:
+
+            mass1 = self.params[index][self.INTRINSIC_PARAMS['mass1']]
+            mass2 = self.params[index][self.INTRINSIC_PARAMS['mass2']]
+            phase = self.params[index][self.INTRINSIC_PARAMS['phase']]
+
+        else:
+
+            mass1 = params[self.INTRINSIC_PARAMS['mass1']]
+            mass2 = params[self.INTRINSIC_PARAMS['mass2']]
+            phase = params[self.INTRINSIC_PARAMS['phase']]
 
         if self.domain == 'TD':
 
             hp, hc = get_td_waveform(approximant=self.approximant,
-                                     mass1=self.params[index][self.INTRINSIC_PARAMS['mass1']],
-                                     mass2=self.params[index][self.INTRINSIC_PARAMS['mass2']],
+                                     mass1=mass1,
+                                     mass2=mass2,
                                      spin1x=spin1x,
                                      spin1y=spin1y,
                                      spin1z=spin1z,
                                      spin2x=spin2x,
                                      spin2y=spin2y,
                                      spin2z=spin2z,
-                                     coa_phase=self.params[index][self.INTRINSIC_PARAMS['phase']],
+                                     coa_phase=phase,
                                      inclination=iota,
                                      delta_t=self.dt,
                                      f_lower=self.fmin)
@@ -491,15 +519,15 @@ class WaveformGenerator:
         elif self.domain == 'FD':
 
             hp, hc = get_fd_waveform(approximant=self.approximant,
-                                     mass1=self.params[index][self.INTRINSIC_PARAMS['mass1']],
-                                     mass2=self.params[index][self.INTRINSIC_PARAMS['mass2']],
+                                     mass1=mass1,
+                                     mass2=mass2,
                                      spin1x=spin1x,
                                      spin1y=spin1y,
                                      spin1z=spin1z,
                                      spin2x=spin2x,
                                      spin2y=spin2y,
                                      spin2z=spin2z,
-                                     coa_phase=self.params[index][self.INTRINSIC_PARAMS['phase']],
+                                     coa_phase=phase,
                                      inclination=iota,
                                      delta_f=self.df,
                                      f_lower=self.fmin,
@@ -512,16 +540,27 @@ class WaveformGenerator:
 
 
 
-    def project_hp_hc(self, hp, hc, dataset_ind):
+    def project_hp_hc(self, hp, hc, dataset_ind, params=None):
+
+        if params is None:
+
+            distance = self.params[dataset_ind, self.EXTRINSIC_PARAMS['distance']]
+            ra = self.params[dataset_ind, self.EXTRINSIC_PARAMS['right_ascension']]
+            dec = self.params[dataset_ind, self.EXTRINSIC_PARAMS['declination']]
+            polarization = self.params[dataset_ind, self.EXTRINSIC_PARAMS['pol_angle']]
+            tc = self.params[dataset_ind, self.EXTRINSIC_PARAMS['tc']]
+
+        else:
+
+            distance = params[self.EXTRINSIC_PARAMS['distance']]
+            ra = params[self.EXTRINSIC_PARAMS['right_ascension']]
+            dec = params[self.EXTRINSIC_PARAMS['declination']]
+            polarization = params[self.EXTRINSIC_PARAMS['pol_angle']]
+            tc = params[self.EXTRINSIC_PARAMS['tc']]
 
         # divide by the distance
-        hp /= self.params[dataset_ind, self.EXTRINSIC_PARAMS['distance']]
-        hc /= self.params[dataset_ind, self.EXTRINSIC_PARAMS['distance']]
-
-        ra = self.params[dataset_ind, self.EXTRINSIC_PARAMS['right_ascension']]
-        dec = self.params[dataset_ind, self.EXTRINSIC_PARAMS['declination']]
-        polarization = self.params[dataset_ind, self.EXTRINSIC_PARAMS['pol_angle']]
-        tc = self.params[dataset_ind, self.EXTRINSIC_PARAMS['tc']]
+        hp /= distance
+        hc /= distance
 
         snr_list = []
 
@@ -533,11 +572,9 @@ class WaveformGenerator:
             dt = det.time_delay_from_earth_center(ra, dec, self.REF_TIME)
             self.projection_strains[j] = fp * hp + fc * hc
 
+            # time shift and whiten
             snr = self.whiten_strain(j, timeshift=(dt + tc))
             snr_list.append(snr)
-
-        # time shift and whiten
-        # strain = self.whiten_strain(strain, timeshift=(dt+tc)*self.sampling_freq)
 
         # return snrs
         return snr_list

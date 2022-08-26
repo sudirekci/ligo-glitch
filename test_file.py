@@ -6,15 +6,9 @@ import matplotlib.pyplot as plt
 import scipy
 from scipy import signal
 from pycbc.fft import backend_support
+from fisher_info import Fisher
 
 backend_support.set_backend(['mkl'])
-
-dataset_len = 100
-path_to_glitschen = '/home/su/Documents/glitschen-main/'
-
-dataset = waveform_dataset.WaveformGenerator(dataset_len=dataset_len, path_to_glitschen=path_to_glitschen,
-                                             extrinsic_at_train=False, tomte_to_blip=1, domain='FD', add_glitch=False,
-                                             add_noise=False)
 
 
 def inner_colored(freqseries1, freqseries2):
@@ -270,6 +264,48 @@ def test_saving_loading():
     print(dataset2.glitch_params)
 
 
+def test_fisher_step_size(el):
+
+    f = Fisher(waveform_generator=dataset)
+
+    cmap = plt.get_cmap('plasma')
+
+    for i in range(0, dataset_len):
+        f.params = dataset.params[i]
+
+        start = 1e-8
+        end = 1e-3
+
+        ss = np.linspace(start, end, num=100)
+
+        plt.figure()
+
+        for j in range(0, len(ss)):
+            f.step_sizes[el] = ss[j]
+            f.take_derivative(el)
+            color = cmap((ss[j] - start) / (end - start))
+
+            plt.plot(np.abs(f.derivatives['mass1'][0, :]), color=color)
+
+            #plt.scatter(ss[j], np.real(f.derivatives[el][1, 200]), color='red')
+            #plt.scatter(ss[j], np.imag(f.derivatives[el][1, 200]), color='blue')
+
+        plt.show()
+
+
+def test_fisher_cov():
+
+    f = Fisher(waveform_generator=dataset)
+
+    for i in range(0, dataset_len):
+        f.params = dataset.params[i]
+
+        cov = f.compute_fisher_cov()
+
+        print(cov)
+
+
+
 # dataset.initialize()
 
 # test_noise()
@@ -282,7 +318,15 @@ def test_saving_loading():
 
 # test_saving_loading()
 
+dataset_len = 100
+path_to_glitschen = '/home/su/Documents/glitschen-main/'
+
+dataset = waveform_dataset.WaveformGenerator(dataset_len=dataset_len, path_to_glitschen=path_to_glitschen,
+                                             extrinsic_at_train=False, tomte_to_blip=1, domain='FD', add_glitch=False,
+                                             add_noise=True)
 
 dataset.construct_signal_dataset()
-for i in range(0, dataset_len):
-    plot_signals(dataset=dataset, index=i)
+
+# test_fisher_step_size('mass1')
+
+test_fisher_cov()

@@ -14,9 +14,8 @@ import h5py
 import nde_flows
 import waveform_dataset as wd
 
-import plotly.graph_objects as go
-import plotly.express as px
-import pandas as pd
+from fisher_info import Fisher
+
 
 #os.environ['OMP_NUM_THREADS'] = str(1)
 #os.environ['MKL_NUM_THREADS'] = str(1)
@@ -31,7 +30,7 @@ python gwpe.py train new nde \
     --nflows 15 \
     --batch_norm \
     --lr 0.0002 \
-    --epochs 4000 \
+    --epochs 200 \
     --hidden_dims 512 \
     --activation elu \
     --lr_anneal_method cosine \
@@ -84,6 +83,7 @@ class PosteriorModel(object):
         self.epoch_to_use = None
         self.batch_size = None
         self.annealing = 'None'
+        self.fisher = None
 
         if use_cuda and torch.cuda.is_available():
             self.device = torch.device('cuda')
@@ -496,7 +496,7 @@ class PosteriorModel(object):
         self.save_model()
 
 
-    def init_waveform_supp(self, aux_filename='waveforms_supplementary.hdf5'):
+    def init_waveform_supp(self, aux_filename='waveforms_supplementary.hdf5', compute_fisher=False):
 
         p = Path(self.model_dir)
 
@@ -527,9 +527,12 @@ class PosteriorModel(object):
 
         f.close()
 
+        if compute_fisher:
+            self.fisher = Fisher(waveform_generator=self.testing_wg)
 
 
-    def evaluate(self, idx, nsamples=10000, plot=True):
+
+    def evaluate(self, idx, nsamples=10000, plot=True, compute_fisher=False):
         """Evaluate the model on a noisy waveform.
         Args:
             idx         index of the waveform, from a noisy waveform
@@ -553,6 +556,10 @@ class PosteriorModel(object):
         x_samples = x_samples.to(self.device)
 
         params_samples = self.testing_wg.post_process_parameters(x_samples.cpu().numpy())
+
+        if compute_fisher:
+            cov_matrix = self.fisher.compute_fisher_cov(index=idx)
+            print(cov_matrix)
 
         if self.testing_wg.add_glitch:
             det = int(self.testing_wg.glitch_detector[idx])
@@ -689,6 +696,7 @@ def parse_args():
 
     test_parser.add_argument('--epoch', dest='epoch_to_use', default=-1, type=int)
     test_parser.add_argument('--test_on_training_data', dest='test_on_training_data', action='store_true')
+    test_parser.add_argument('--fisher', dest='compute_fisher', action='store_true')
 
     train_subparsers = train_parser.add_subparsers(dest='model_source')
     train_subparsers.required = True
@@ -869,13 +877,13 @@ def main():
 
         # TESTING
         print('Testing is starting...')
-        pm.init_waveform_supp()
+        pm.init_waveform_supp(compute_fisher=args.compute_fisher)
 
         for i in range(0, 10):
 
             idx = np.random.randint(0, (pm.testing_wg.dataset_len*pm.testing_wg.noise_real_to_sig))
             # print(idx)
-            pm.evaluate(idx, plot=True)
+            pm.evaluate(idx, plot=True, compute_fisher=args.compute_fisher)
 
     else:
         print('Wrong mode selected')
