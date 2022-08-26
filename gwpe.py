@@ -43,8 +43,8 @@ python gwpe.py train existing \
 
     
 python gwpe.py test \
-    --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_w_noise_8s/ \
-    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/overfit1k_9/ \
+    --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_w_noise_random/ \
+    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/overfit1k_8/ \
     --test_on_training_data \
     --fisher \
     --epoch 2000 \
@@ -559,7 +559,8 @@ class PosteriorModel(object):
         params_samples = self.testing_wg.post_process_parameters(x_samples.cpu().numpy())
 
         if compute_fisher:
-            cov_matrix = self.fisher.compute_fisher_cov(index=idx)
+            self.fisher.params = self.testing_wg.post_process_parameters(self.testing_wg.params[idx])
+            cov_matrix = self.fisher.compute_fisher_cov()
             print('Covariance matrix:')
             print(cov_matrix)
 
