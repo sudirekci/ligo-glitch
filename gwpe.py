@@ -560,6 +560,7 @@ class PosteriorModel(object):
 
         if compute_fisher:
             self.fisher.params = self.testing_wg.post_process_parameters(self.testing_wg.params[idx])
+            print(self.fisher.params)
             cov_matrix = self.fisher.compute_fisher_cov()
             print('Covariance matrix:')
             print(cov_matrix)
