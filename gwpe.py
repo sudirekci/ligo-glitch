@@ -43,9 +43,10 @@ python gwpe.py train existing \
 
     
 python gwpe.py test \
-    --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_w_noise_ns_100/ \
-    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/overfit1k_10/ \
+    --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_w_noise_8s/ \
+    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/overfit1k_9/ \
     --test_on_training_data \
+    --fisher \
     --epoch 2000 \
 """
 
