@@ -106,7 +106,8 @@ class Fisher:
         for el in self._elements:
             self.take_derivative(el)
 
-        x = 0
+        print(self.derivatives)
+
         for i in range(0, N):
             for j in range(0, i+1):
 
