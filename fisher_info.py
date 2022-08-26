@@ -58,8 +58,8 @@ class Fisher:
         param_low = param - step_size
         param_high = param + step_size
 
-        #print('Element ', el)
-        #print('Step size ', step_size)
+        print('Element ', el)
+        print('Step size ', step_size)
         #print(param_low, param, param_high)
 
         # compute f(x-Δx)
