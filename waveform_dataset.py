@@ -70,6 +70,8 @@ class WaveformGenerator:
                              1.9250026229299193, 0.3791082086039006, 2.3982402045325695,
                              1.5821720611850834, 0.22185528973413104, 1.1183599396287693]
 
+            random_params = np.zeros(9)
+
             self.priors = np.zeros((self.INTRINSIC_LEN + self.EXTRINSIC_LEN + 1, 2))
             self.priors[self.INTRINSIC_PARAMS['mass1']] = [10., 80.]
             self.priors[self.INTRINSIC_PARAMS['mass2']] = [10., 80.]

@@ -559,9 +559,8 @@ class PosteriorModel(object):
         params_samples = self.testing_wg.post_process_parameters(x_samples.cpu().numpy())
 
         if compute_fisher:
-            self.fisher.params = self.testing_wg.params[idx]
-            print(self.fisher.params)
-            cov_matrix = self.fisher.compute_fisher_cov()
+
+            cov_matrix = self.fisher.compute_fisher_cov(index=idx)
             print('Covariance matrix:')
             print(cov_matrix)
 
