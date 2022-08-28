@@ -715,7 +715,7 @@ class WaveformGenerator:
                     self.detector_signals[j, i, :] = self.projection_strains[j]
                     self.snrs[j, i] = snrs[j]
 
-            # if we want to have multiple noise realizations for the same signal
+
             if self.add_noise:
                 self.add_noise_to_detector_signals()
 

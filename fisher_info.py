@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+
 class Fisher:
 
     step_sizes = dict(mass1=1e-6, mass2=1e-6, distance=1e-3)
@@ -60,7 +61,7 @@ class Fisher:
 
         print('Element ', el)
         print('Step size ', step_size)
-        #print(param_low, param, param_high)
+        print(param_low, param, param_high)
 
         # compute f(x-Δx)
         self._params[index] = param_low

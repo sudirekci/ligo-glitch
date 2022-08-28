@@ -37,8 +37,8 @@ python gwpe.py train new nde \
     --batch_size 100 \
     
 python gwpe.py train existing \
-    --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_w_noise/ \
-    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/overfit1k_7/ \
+    --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_w_noise_random/ \
+    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/overfit1k_8/ \
     --epochs 4000 \
 
     
@@ -47,8 +47,7 @@ python gwpe.py test \
     --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/overfit1k_7/ \
     --fisher \
     --test_on_training_data \
-    --fisher \
-    --epoch 2000 \
+    --epoch 8000 \
 """
 
 parameter_labels = np.asarray([r'$m_1$',r'$m_2$', r'$\phi_c$',r'$a_1$',r'$a_2$',r'$t_1$',r'$t_2$',
