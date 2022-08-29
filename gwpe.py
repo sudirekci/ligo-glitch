@@ -43,8 +43,8 @@ python gwpe.py train existing \
 
     
 python gwpe.py test \
-    --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_w_noise/ \
-    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/overfit1k_7/ \
+    --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_w_noise_random/ \
+    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/overfit1k_8/ \
     --fisher \
     --test_on_training_data \
     --epoch 8000 \
@@ -580,23 +580,34 @@ class PosteriorModel(object):
 
         if plot:
             corner.corner(params_samples[:,slice], truths=params_true[slice],
-                          labels=parameter_labels)
+                          labels=parameter_labels[slice])
             # plt.show()
             plt.savefig(self.model_dir+str(idx))
 
-            fig = corner.corner(params_samples[:, slice], truths=params_true[slice],
+            fig1 = corner.corner(params_samples[:, slice], truths=params_true[slice],
                           labels=parameter_labels[slice], range=range)
 
-            print(parameter_labels[slice])
 
             if compute_fisher:
 
                 fisher_samples = np.random.multivariate_normal(params_true[slice], cov_matrix, size=nsamples)
 
+                corner.corner(fisher_samples, color='red', fig=fig1, range=range)
+
+                plt.savefig(self.model_dir + str(idx) + '_zoomed')
+
+                fig = corner.corner(params_samples[:, slice], truths=params_true[slice],
+                                    labels=parameter_labels[slice], range=range)
+
                 corner.corner(fisher_samples, color='red', fig=fig)
 
+                plt.savefig(self.model_dir + str(idx) + '_zoomed_fisher')
+
+            else:
+
+                plt.savefig(self.model_dir + str(idx) + '_zoomed')
+
             # plt.show()
-            plt.savefig(self.model_dir + str(idx) + '_zoomed')
 
         return params_samples
 
