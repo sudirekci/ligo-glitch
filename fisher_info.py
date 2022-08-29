@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 
 class Fisher:
 
-    step_sizes = dict(mass1=1e-8, mass2=1e-8, distance=1e-3)
+    step_sizes = dict(mass1=1e-3, mass2=1e-3, distance=1e-1)
 
     def __init__(self, waveform_generator=None, params=None, elements=None):
 
@@ -49,7 +49,7 @@ class Fisher:
     def take_derivative(self, el):
 
         # for example, el = 'mass1'
-        if el in self.wg.INTRINSIC_PARAMS:
+        if el in self._wg.INTRINSIC_PARAMS:
             index = self._wg.INTRINSIC_PARAMS[el]
         else:
             index = self._wg.EXTRINSIC_PARAMS[el]
@@ -59,9 +59,9 @@ class Fisher:
         param_low = param - step_size
         param_high = param + step_size
 
-        print('Element ', el)
-        print('Step size ', step_size)
-        print(param_low, param, param_high)
+        #print('Element ', el)
+        #print('Step size ', step_size)
+        #print(param)
 
         # compute f(x-Δx)
         self._params[index] = param_low
@@ -116,7 +116,7 @@ class Fisher:
                     inner += self._wg.inner_whitened(self.derivatives[self._elements[i]][m,:],
                                                      self.derivatives[self._elements[j]][m,:])
 
-                    print(inner)
+                    #print(inner)
 
                 self.F[i, j] = 1./inner
 

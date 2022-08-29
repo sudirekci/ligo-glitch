@@ -273,8 +273,8 @@ def test_fisher_step_size(el):
     for i in range(0, dataset_len):
         f.params = dataset.params[i]
 
-        start = 1e-8
-        end = 1e-3
+        start = 1e-2
+        end = 1.
 
         ss = np.linspace(start, end, num=100)
 
@@ -285,7 +285,7 @@ def test_fisher_step_size(el):
             f.take_derivative(el)
             color = cmap((ss[j] - start) / (end - start))
 
-            plt.plot(np.abs(f.derivatives['mass1'][0, :]), color=color)
+            plt.plot(np.abs(f.derivatives[el][0, :]), color=color)
 
             #plt.scatter(ss[j], np.real(f.derivatives[el][1, 200]), color='red')
             #plt.scatter(ss[j], np.imag(f.derivatives[el][1, 200]), color='blue')
@@ -298,9 +298,8 @@ def test_fisher_cov():
     f = Fisher(waveform_generator=dataset)
 
     for i in range(0, dataset_len):
-        f.params = dataset.params[i]
 
-        cov = f.compute_fisher_cov()
+        cov = f.compute_fisher_cov(index=i)
 
         print(cov)
 
@@ -318,15 +317,20 @@ def test_fisher_cov():
 
 # test_saving_loading()
 
-dataset_len = 100
+dataset_len = 10
 path_to_glitschen = '/home/su/Documents/glitschen-main/'
+directory='/home/su/Documents/glitch_dataset/'
 
-dataset = waveform_dataset.WaveformGenerator(dataset_len=dataset_len, path_to_glitschen=path_to_glitschen,
-                                             extrinsic_at_train=False, tomte_to_blip=1, domain='FD', add_glitch=False,
-                                             add_noise=True)
+dataset1 = waveform_dataset.WaveformGenerator(dataset_len=dataset_len, path_to_glitschen=path_to_glitschen,
+                                              extrinsic_at_train=False, tomte_to_blip=1, domain='FD',
+                                              add_glitch=False, add_noise=True, directory=directory,
+                                              svd_no_basis_coeffs=10)
 
-dataset.construct_signal_dataset()
+dataset1.construct_signal_dataset(perform_svd=True, save=True, filename='test')
 
-# test_fisher_step_size('mass1')
+dataset = waveform_dataset.WaveformGenerator(directory=directory)
+dataset.load_data('test')
+
+#test_fisher_step_size('distance')
 
 test_fisher_cov()

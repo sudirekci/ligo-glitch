@@ -425,7 +425,7 @@ class WaveformGenerator:
             snr = self.SNR_colored(signal_fft*self.dt)
 
             self.projection_strains[ind] = np.fft.irfft(np.pad(signal_fft * np.exp(-1j * 2 * np.pi *
-                                                                self.freqs[self.fft_mask] * timeshift) *
+                                                               self.freqs[self.fft_mask] * timeshift) *
                                                                (self.psd[self.fft_mask] * factor) ** (-0.5),
                                                                (1, 0), 'constant'))
 
@@ -462,7 +462,6 @@ class WaveformGenerator:
     def calculate_dataset_statistics(self):
 
         if self.extrinsic_at_train:
-            x = 0
             print('TODO')
         else:
             if self.detector_signals is not None:
