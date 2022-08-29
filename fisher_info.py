@@ -122,7 +122,8 @@ class Fisher:
 
         self.F = self.F + self.F.T - np.diag(self.F.diagonal())
 
-        #print(self.F)
+        print(np.diag(self.F.diagonal()))
+        print(self.F)
 
 
     def compute_fisher_cov(self, index=-1):
