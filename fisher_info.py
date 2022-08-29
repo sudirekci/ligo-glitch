@@ -5,6 +5,8 @@ import matplotlib.pyplot as plt
 class Fisher:
 
     step_sizes = dict(mass1=1e-3, mass2=1e-3, distance=1e-1)
+    #step_sizes = dict(mass1=1e-6, mass2=1e-6, distance=1e-3)
+
 
     def __init__(self, waveform_generator=None, params=None, elements=None):
 
@@ -101,7 +103,7 @@ class Fisher:
         # Fisher info matrix 3x3
         # Fij = (hi, hj)
         N = len(self._elements)
-        self.F = np.zeros((N,N))
+        self.F = np.zeros((N, N))
 
         # take derivatives
         for el in self._elements:
@@ -112,18 +114,14 @@ class Fisher:
 
                 inner = 0.
                 for m in range(0, self._wg.no_detectors):
+                #for m in range(0, 1):
 
                     inner += self._wg.inner_whitened(self.derivatives[self._elements[i]][m,:],
                                                      self.derivatives[self._elements[j]][m,:])
 
-                    #print(inner)
-
-                self.F[i, j] = 1./inner
+                self.F[i, j] = inner
 
         self.F = self.F + self.F.T - np.diag(self.F.diagonal())
-
-        print(np.diag(self.F.diagonal()))
-        print(self.F)
 
 
     def compute_fisher_cov(self, index=-1):
@@ -134,5 +132,5 @@ class Fisher:
 
         self.compute_fisher_matrix(index=index)
         return np.linalg.inv(self.F)
-
+        #return self.F
 

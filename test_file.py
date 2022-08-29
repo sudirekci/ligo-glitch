@@ -10,6 +10,8 @@ from fisher_info import Fisher
 
 backend_support.set_backend(['mkl'])
 
+def is_pos_def(x):
+    return np.all(np.linalg.eigvals(x) >= 0)
 
 def inner_colored(freqseries1, freqseries2):
     inner = np.sum(freqseries1 * np.conjugate(freqseries2) / dataset.psd[dataset.fft_mask])
@@ -303,6 +305,8 @@ def test_fisher_cov():
 
         print(cov)
 
+        print('Positive def: ' , is_pos_def(cov))
+
 
 
 # dataset.initialize()
@@ -326,7 +330,7 @@ dataset1 = waveform_dataset.WaveformGenerator(dataset_len=dataset_len, path_to_g
                                               add_glitch=False, add_noise=True, directory=directory,
                                               svd_no_basis_coeffs=10)
 
-dataset1.construct_signal_dataset(perform_svd=True, save=True, filename='test')
+dataset1.construct_signal_dataset(perform_svd=False, save=True, filename='test')
 
 dataset = waveform_dataset.WaveformGenerator(directory=directory)
 dataset.load_data('test')
