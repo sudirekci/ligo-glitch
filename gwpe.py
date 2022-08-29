@@ -584,26 +584,29 @@ class PosteriorModel(object):
             # plt.show()
             plt.savefig(self.model_dir+str(idx))
 
-            # fig1 = corner.corner(params_samples[:, slice], truths=params_true[slice],
-            #              labels=parameter_labels[slice], range=range)
-
 
             if compute_fisher:
 
                 fisher_samples = np.random.multivariate_normal(params_true[slice], cov_matrix, size=nsamples)
 
-                # corner.corner(fisher_samples, color='red', fig=fig1, range=range)
+                fig1 = corner.corner(fisher_samples, color='red', range=range)
 
-                # plt.savefig(self.model_dir + str(idx) + '_zoomed')
+                corner.corner(params_samples[:, slice], truths=params_true[slice],
+                             labels=parameter_labels[slice], range=range, fig=fig1)
+
+                plt.savefig(self.model_dir + str(idx) + '_zoomed')
 
                 fig = corner.corner(params_samples[:, slice], truths=params_true[slice],
                                     labels=parameter_labels[slice], range=range)
 
                 corner.corner(fisher_samples, color='red', fig=fig)
 
-                plt.savefig(self.model_dir + str(idx) + '_zoomed_fisher')
+                plt.savefig(self.model_dir + str(idx) + '_fisher')
 
             else:
+
+                fig1 = corner.corner(params_samples[:, slice], truths=params_true[slice],
+                             labels=parameter_labels[slice], range=range)
 
                 plt.savefig(self.model_dir + str(idx) + '_zoomed')
 
