@@ -596,12 +596,12 @@ class PosteriorModel(object):
 
                 plt.savefig(self.model_dir + str(idx) + '_zoomed')
 
-                fig = corner.corner(params_samples[:, slice], truths=params_true[slice],
-                                    labels=parameter_labels[slice], range=range)
+                #fig = corner.corner(params_samples[:, slice], truths=params_true[slice],
+                #                    labels=parameter_labels[slice], range=range)
 
-                corner.corner(fisher_samples, color='red', fig=fig)
+                #corner.corner(fisher_samples, color='red', fig=fig)
 
-                plt.savefig(self.model_dir + str(idx) + '_zoomed_fisher')
+                #plt.savefig(self.model_dir + str(idx) + '_zoomed_fisher')
 
             else:
 
