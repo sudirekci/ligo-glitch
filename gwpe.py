@@ -29,25 +29,25 @@ python gwpe.py train new nde \
     --num_transform_blocks 10 \
     --nflows 15 \
     --batch_norm \
-    --lr 0.0002 \
-    --epochs 200 \
+    --lr 0.00005 \
+    --epochs 4000 \
     --hidden_dims 512 \
     --activation elu \
     --lr_anneal_method cosine \
-    --batch_size 100 \
-    
+    --batch_size 1000 \
+
 python gwpe.py train existing \
     --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_w_noise_random/ \
     --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/overfit1k_8/ \
-    --epochs 4000 \
+    --epochs 2000 \
 
-    
+
 python gwpe.py test \
-    --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_w_noise_random/ \
-    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/overfit1k_8/ \
+    --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_w_noise_ns_100/ \
+    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/overfit1k_10/ \
     --fisher \
     --test_on_training_data \
-    --epoch 8000 \
+    --epoch 10000 \
 """
 
 parameter_labels = np.asarray([r'$m_1$',r'$m_2$', r'$\phi_c$',r'$a_1$',r'$a_2$',r'$t_1$',r'$t_2$',
@@ -540,6 +540,8 @@ class PosteriorModel(object):
                         database
             plot        whether to make a corner plot
         """
+
+        idx = idx // self.testing_wg.noise_real_to_sig
 
         if self.testing_wg.add_glitch:
             params_true = np.concatenate((self.testing_wg.params[idx],self.testing_wg.glitch_params[idx]))
