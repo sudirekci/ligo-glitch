@@ -64,11 +64,9 @@ class WaveformGenerator:
         if priors is None:
             # default prior
 
-            random_params = [1.0429295589696281, 1.7028325372216926, 1.8257602814945424,
-                             1.9250026229299193, 0.3791082086039006, 2.3982402045325695,
-                             1.5821720611850834, 0.22185528973413104, 1.1183599396287693]
-
-            random_params = np.zeros(9)
+            random_params = [1.9385764842785942, 1.7498819076505903, 1.9471468704940496,
+                             2.779184216112431, 4.781609102594541, 2.1581020633082915,
+                             6.223352859347546, -0.5153043355101219, 2.871221497023955]
 
             self.priors = np.zeros((self.INTRINSIC_LEN + self.EXTRINSIC_LEN + 1, 2))
             self.priors[self.INTRINSIC_PARAMS['mass1']] = [10., 80.]
@@ -88,18 +86,18 @@ class WaveformGenerator:
             self.priors[self.EXTRINSIC_PARAMS['pol_angle']] = [random_params[8], random_params[8]]
             self.priors[self.GLITCH_PARAMS['time']] = [-1.5, 1.5]
 
-            # self.priors[self.INTRINSIC_PARAMS['phase']] = [0.0, 2 * np.pi]
+            # self.priors[self.INTRINSIC_PARAMS['phase']] = [0.0, 2 * np.pi] 1.9385764842785942
             # self.priors[self.INTRINSIC_PARAMS['a1']] = [0., 0.88]
             # self.priors[self.INTRINSIC_PARAMS['a2']] = [0., 0.88]
-            # self.priors[self.INTRINSIC_PARAMS['theta1']] = [0.0, np.pi] 1.7028325372216926
-            # self.priors[self.INTRINSIC_PARAMS['theta2']] = [0.0, np.pi] 1.8257602814945424
-            # self.priors[self.INTRINSIC_PARAMS['phi_12']] = [0.0, 2 * np.pi] 1.9250026229299193
-            # self.priors[self.INTRINSIC_PARAMS['phi_JL']] = [0.0, 2 * np.pi] 0.3791082086039006
-            # self.priors[self.INTRINSIC_PARAMS['theta_JN']] = [0.0, np.pi] 2.3982402045325695
+            # self.priors[self.INTRINSIC_PARAMS['theta1']] = [0.0, np.pi] 1.7498819076505903
+            # self.priors[self.INTRINSIC_PARAMS['theta2']] = [0.0, np.pi] 1.9471468704940496
+            # self.priors[self.INTRINSIC_PARAMS['phi_12']] = [0.0, 2 * np.pi] 2.779184216112431
+            # self.priors[self.INTRINSIC_PARAMS['phi_JL']] = [0.0, 2 * np.pi] 4.781609102594541
+            # self.priors[self.INTRINSIC_PARAMS['theta_JN']] = [0.0, np.pi] 2.1581020633082915
             # self.priors[self.EXTRINSIC_PARAMS['tc']] = [-0.1, 0.1]
-            # self.priors[self.EXTRINSIC_PARAMS['right_ascension']] = [0.0, 2 * np.pi] 1.5821720611850834
-            # self.priors[self.EXTRINSIC_PARAMS['declination']] = [-np.pi / 2.0, np.pi / 2.0] 0.22185528973413104
-            # self.priors[self.EXTRINSIC_PARAMS['pol_angle']] = [0.0, np.pi] 1.1183599396287693
+            # self.priors[self.EXTRINSIC_PARAMS['right_ascension']] = [0.0, 2 * np.pi] 6.223352859347546
+            # self.priors[self.EXTRINSIC_PARAMS['declination']] = [-np.pi / 2.0, np.pi / 2.0] -0.5153043355101219
+            # self.priors[self.EXTRINSIC_PARAMS['pol_angle']] = [0.0, np.pi] 2.871221497023955
             # self.priors[self.GLITCH_PARAMS['time']] = [-1.5, 1.5]
         else:
             self.priors = priors
@@ -701,8 +699,8 @@ class WaveformGenerator:
         f1.create_dataset("priors", self.priors.shape, dtype='f', data=self.priors)
 
         if self.performed_svd:
-            f1.create_dataset("Vh_real", self.svd.Vh.shape, dtype='f', data=self.svd.Vh.real)
-            f1.create_dataset("Vh_imag", self.svd.Vh.shape, dtype='f', data=self.svd.Vh.imag)
+            f1.create_dataset("Vh_real", self.svd.Vh.shape, dtype='float64', data=self.svd.Vh.real)
+            f1.create_dataset("Vh_imag", self.svd.Vh.shape, dtype='float64', data=self.svd.Vh.imag)
 
         if self.extrinsic_at_train:
             # save hp and hc
@@ -727,9 +725,9 @@ class WaveformGenerator:
                                   dtype='f', data=self.detector_signals)
             elif self.domain == 'FD':
                 f1.create_dataset("signals_real", self.detector_signals.shape,
-                                  dtype='f', data=self.detector_signals.real)
+                                  dtype='float64', data=self.detector_signals.real)
                 f1.create_dataset("signals_imag", self.detector_signals.shape,
-                                  dtype='f', data=self.detector_signals.imag)
+                                  dtype='float64', data=self.detector_signals.imag)
                 f1.create_dataset("snrs", self.snrs.shape, dtype='f', data=self.snrs)
 
             f1.create_dataset("params", self.params.shape,
