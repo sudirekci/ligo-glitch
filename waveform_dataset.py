@@ -699,8 +699,8 @@ class WaveformGenerator:
         f1.create_dataset("priors", self.priors.shape, dtype='f', data=self.priors)
 
         if self.performed_svd:
-            f1.create_dataset("Vh_real", self.svd.Vh.shape, dtype='float64', data=self.svd.Vh.real)
-            f1.create_dataset("Vh_imag", self.svd.Vh.shape, dtype='float64', data=self.svd.Vh.imag)
+            f1.create_dataset("Vh_real", self.svd.Vh.shape, dtype='float32', data=self.svd.Vh.real)
+            f1.create_dataset("Vh_imag", self.svd.Vh.shape, dtype='float32', data=self.svd.Vh.imag)
 
         if self.extrinsic_at_train:
             # save hp and hc
@@ -725,9 +725,9 @@ class WaveformGenerator:
                                   dtype='f', data=self.detector_signals)
             elif self.domain == 'FD':
                 f1.create_dataset("signals_real", self.detector_signals.shape,
-                                  dtype='float64', data=self.detector_signals.real)
+                                  dtype='float32', data=self.detector_signals.real)
                 f1.create_dataset("signals_imag", self.detector_signals.shape,
-                                  dtype='float64', data=self.detector_signals.imag)
+                                  dtype='float32', data=self.detector_signals.imag)
                 f1.create_dataset("snrs", self.snrs.shape, dtype='f', data=self.snrs)
 
             f1.create_dataset("params", self.params.shape,
