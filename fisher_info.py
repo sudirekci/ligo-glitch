@@ -4,9 +4,7 @@ import matplotlib.pyplot as plt
 
 class Fisher:
 
-    step_sizes = dict(mass1=1e-3, mass2=1e-3, distance=1e-1)
-    #step_sizes = dict(mass1=1e-6, mass2=1e-6, distance=1e-3)
-
+    step_sizes = dict(mass1=1e-4, mass2=1e-4, distance=1e-4)
 
     def __init__(self, waveform_generator=None, params=None, elements=None):
 

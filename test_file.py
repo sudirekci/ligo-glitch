@@ -273,24 +273,44 @@ def test_fisher_step_size(el):
     cmap = plt.get_cmap('plasma')
 
     for i in range(0, dataset_len):
-        f.params = dataset.params[i]
 
-        start = 1e-2
-        end = 1.
+        start = 3
+        end = 6
 
         ss = np.linspace(start, end, num=100)
 
-        plt.figure()
+        fig = plt.figure()
+        ax1 = fig.add_subplot(2, 1, 1)
+        ax1.set_xscale('log')
+
+        ax2 = fig.add_subplot(2, 1, 2)
+        ax2.set_xscale('log')
 
         for j in range(0, len(ss)):
-            f.step_sizes[el] = ss[j]
-            f.take_derivative(el)
-            color = cmap((ss[j] - start) / (end - start))
 
-            plt.plot(np.abs(f.derivatives[el][0, :]), color=color)
+            step_size = 1./np.power(10, ss[j])
 
-            #plt.scatter(ss[j], np.real(f.derivatives[el][1, 200]), color='red')
+            f.step_sizes[el] = step_size
+            #f.take_derivative(el)
+            #color = cmap((ss[j] - start) / (end - start))
+
+            f.compute_fisher_matrix(index=i)
+
+            #plt.plot(np.abs(f.derivatives[el][0, :]), color=color)
+
+            ax1.scatter(step_size, f.F[0, 2], color='red')
             #plt.scatter(ss[j], np.imag(f.derivatives[el][1, 200]), color='blue')
+
+
+        for j in range(0, len(ss)):
+
+            step_size = 1. / np.power(10, ss[j])
+
+            f.step_sizes[el] = step_size
+
+            f.compute_fisher_matrix(index=i)
+
+            ax2.scatter(step_size, f.F[2, 2], color='blue')
 
         plt.show()
 
@@ -335,6 +355,10 @@ dataset1.construct_signal_dataset(perform_svd=False, save=True, filename='test')
 dataset = waveform_dataset.WaveformGenerator(directory=directory)
 dataset.load_data('test')
 
-#test_fisher_step_size('distance')
+#test_fisher_step_size('mass1')
 
 test_fisher_cov()
+
+#print(dataset1.params-dataset.params)
+#print('******************************')
+#print(dataset.params)

@@ -30,11 +30,11 @@ python gwpe.py train new nde \
     --nflows 15 \
     --batch_norm \
     --lr 0.00005 \
-    --epochs 4000 \
+    --epochs 500 \
     --hidden_dims 512 \
     --activation elu \
     --lr_anneal_method cosine \
-    --batch_size 1000 \
+    --batch_size 10 \
 
 python gwpe.py train existing \
     --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_w_noise_random/ \
@@ -591,7 +591,7 @@ class PosteriorModel(object):
 
                 fisher_samples = np.random.multivariate_normal(params_true[slice], cov_matrix, size=nsamples)
 
-                fig1 = corner.corner(fisher_samples, color='red', range=range)
+                fig1 = corner.corner(fisher_samples, color='red', range=range, bins=100)
 
                 corner.corner(params_samples[:, slice], truths=params_true[slice],
                              labels=parameter_labels[slice], range=range, fig=fig1)
@@ -601,7 +601,7 @@ class PosteriorModel(object):
                 fig = corner.corner(params_samples[:, slice], truths=params_true[slice],
                                     labels=parameter_labels[slice], range=range)
 
-                corner.corner(fisher_samples, color='red', fig=fig)
+                corner.corner(fisher_samples, color='red', fig=fig, bins=100)
 
                 plt.savefig(self.model_dir + str(idx) + '_fisher')
 

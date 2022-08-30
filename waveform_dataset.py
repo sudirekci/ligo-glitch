@@ -638,6 +638,7 @@ class WaveformGenerator:
 
             self.params = np.zeros((self.dataset_len, self.INTRINSIC_LEN + self.EXTRINSIC_LEN))
             self.detector_signals = np.zeros((self.no_detectors, self.dataset_len, length), dtype=dtype)
+
             if self.add_glitch:
                 self.glitch_params = np.zeros((self.dataset_len, len(self.GLITCH_PARAMS) * self.no_detectors))
                 self.glitch_detector = np.zeros(self.dataset_len)
@@ -653,7 +654,8 @@ class WaveformGenerator:
 
                 if self.add_glitch:
                     det, params = self.add_glitch_to_projection_strains()
-                    self.glitch_params[i, det * len(self.GLITCH_PARAMS):(det + 1) * len(self.GLITCH_PARAMS)] = params
+                    self.glitch_params[i, det * len(self.GLITCH_PARAMS):
+                                          (det + 1) * len(self.GLITCH_PARAMS)] = params
                     self.glitch_detector[i] = int(det)
 
                 for j in range(0, self.no_detectors):
@@ -731,7 +733,7 @@ class WaveformGenerator:
                 f1.create_dataset("snrs", self.snrs.shape, dtype='f', data=self.snrs)
 
             f1.create_dataset("params", self.params.shape,
-                              dtype='f', data=self.params)
+                              dtype='float64', data=self.params)
             if self.add_glitch:
                 f1.create_dataset("glitch_params", self.glitch_params.shape,
                                   dtype='f', data=self.glitch_params)
