@@ -23,18 +23,18 @@ from fisher_info import Fisher
 
 """
 python gwpe.py train new nde \
-    --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_w_noise_ns_100/ \
-    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/overfit1k_10/ \
+    --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_3d_100k/ \
+    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/3d_1/ \
     --nbins 8 \
     --num_transform_blocks 10 \
     --nflows 15 \
     --batch_norm \
-    --lr 0.00005 \
+    --lr 0.0002 \
     --epochs 500 \
     --hidden_dims 512 \
     --activation elu \
     --lr_anneal_method cosine \
-    --batch_size 10 \
+    --batch_size 100 \
 
 python gwpe.py train existing \
     --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_w_noise_random/ \
@@ -238,7 +238,7 @@ class PosteriorModel(object):
             elif anneal_method == 'cosine':
                 self.scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
                     self.optimizer,
-                    T_max=16000,
+                    T_max=8000,
                 )
             elif anneal_method == 'cosineWR':
                 self.scheduler = (
