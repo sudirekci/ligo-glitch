@@ -413,6 +413,9 @@ class WaveformGenerator:
             self.glitch_params_mean = np.mean(self.glitch_params, axis=0)
             self.glitch_params_std = np.std(self.glitch_params, axis=0)
 
+        # REMOVE THIS WHEN TRAINING WITH 15 PARAMS
+        self.params_std[self.params_std<1e-2] = 0
+
         print('****************************')
         print(self.params_mean)
         print(self.params_std)
