@@ -41,6 +41,8 @@ class WaveformGenerator:
     REF_TIME = 1e5
     SOLAR_MASS = 1.9891e+30
 
+    slice = np.asarray([0, 1, 10])
+
     def __init__(self, sampling_frequency=2048., duration=4., fmin=10., dataset_len=100000,
                  path_to_glitschen='/home/su/Documents/glitschen-main/',
                  q=5, winlen=0.5, approximant='IMRPhenomPv2', priors=None, detectors=None, tomte_to_blip=1,
@@ -414,7 +416,7 @@ class WaveformGenerator:
             self.glitch_params_std = np.std(self.glitch_params, axis=0)
 
         # REMOVE THIS WHEN TRAINING WITH 15 PARAMS
-        self.params_std[self.params_std<1e-2] = 0.
+        self.params_std[self.params_std<1e-2] = np.inf
 
         print('****************************')
         print(self.params_mean)
