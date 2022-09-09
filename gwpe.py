@@ -24,22 +24,22 @@ from fisher_info import Fisher
 """
 python gwpe.py train new nde \
     --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_3d_100k/ \
-    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/3d_1/ \
+    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/3d_2/ \
     --nbins 2 \
-    --num_transform_blocks 4 \
+    --num_transform_blocks 10 \
     --nflows 3 \
     --batch_norm \
     --lr 0.0008 \
-    --epochs 25 \
-    --hidden_dims 256
+    --epochs 50 \
+    --hidden_dims 512
     --activation elu \
     --lr_anneal_method cosine \
     --batch_size 100 \
 
 python gwpe.py train existing \
-    --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_w_noise_random/ \
-    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/overfit1k_8/ \
-    --epochs 2000 \
+    --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_3d_100k/ \
+    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/3d_1/ \
+    --epochs 25 \
 
 
 python gwpe.py test \
@@ -238,7 +238,7 @@ class PosteriorModel(object):
             elif anneal_method == 'cosine':
                 self.scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
                     self.optimizer,
-                    T_max=500,
+                    T_max=100,
                 )
             elif anneal_method == 'cosineWR':
                 self.scheduler = (
