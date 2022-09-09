@@ -104,8 +104,6 @@ class Fisher:
         if index != -1:
             self._params = np.copy(self._wg.params[index, :])
 
-        print(self._params)
-
         # Fisher info matrix 3x3
         # Fij = (hi, hj)
         N = len(self._elements)
@@ -130,7 +128,8 @@ class Fisher:
                 self.F[i, j] = inner
 
         #for m in range(0, self._wg.no_detectors):
-        #    self.F[m] = self.F[m] + self.F[m].T - np.diag(self.F[m].diagonal())
+        self.F = self.F + self.F.T - np.diag(self.F.diagonal())
+
         return self.F
 
 
