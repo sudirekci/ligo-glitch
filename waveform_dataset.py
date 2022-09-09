@@ -413,6 +413,12 @@ class WaveformGenerator:
             self.glitch_params_mean = np.mean(self.glitch_params, axis=0)
             self.glitch_params_std = np.std(self.glitch_params, axis=0)
 
+        print('****************************')
+        print(self.params_mean)
+        print(self.params_std)
+        print('****************************')
+
+
     def calculate_dataset_statistics(self):
 
         if self.extrinsic_at_train:

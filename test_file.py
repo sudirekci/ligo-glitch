@@ -324,8 +324,25 @@ def test_fisher_cov():
         cov = f.compute_fisher_cov(index=i)
 
         print(cov)
-
         print('Positive def: ' , is_pos_def(cov))
+
+
+def test_fisher_rms():
+
+    f = Fisher(waveform_generator=dataset)
+
+    for i in range(0, dataset_len):
+
+        cov = f.compute_fisher_cov(index=i)
+
+        f.compute_theoretical_rms(index=i)
+        print('Theoretical RMS:', f.th_rms)
+        f.compute_calc_rms()
+        print('Calculated RMS:', f.calc_rms)
+        np.set_printoptions(suppress=True)
+        #np.set_printoptions(precision=3)
+        print('Percentage errors: ', (f.th_rms-f.calc_rms)/f.calc_rms*100)
+
 
 
 
@@ -345,20 +362,24 @@ dataset_len = 10
 path_to_glitschen = '/home/su/Documents/glitschen-main/'
 directory='/home/su/Documents/glitch_dataset/'
 
-dataset1 = waveform_dataset.WaveformGenerator(dataset_len=dataset_len, path_to_glitschen=path_to_glitschen,
+dataset = waveform_dataset.WaveformGenerator(dataset_len=dataset_len, path_to_glitschen=path_to_glitschen,
                                               extrinsic_at_train=False, tomte_to_blip=1, domain='FD',
                                               add_glitch=False, add_noise=True, directory=directory,
                                               svd_no_basis_coeffs=10)
 
-dataset1.construct_signal_dataset(perform_svd=False, save=True, filename='test')
+dataset.construct_signal_dataset(perform_svd=False, save=True, filename='test')
 
-dataset = waveform_dataset.WaveformGenerator(directory=directory)
-dataset.load_data('test')
+dataset1 = waveform_dataset.WaveformGenerator(directory=directory)
+dataset1.load_data('test')
 
 #test_fisher_step_size('mass1')
 
-test_fisher_cov()
+print(dataset.snrs)
+dataset.no_detectors = 2
+
+test_fisher_rms()
 
 #print(dataset1.params-dataset.params)
 #print('******************************')
 #print(dataset.params)
+
