@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 class Fisher:
 
     step_sizes = dict(mass1=1e-4, mass2=1e-4, distance=1e-4)
+    sm_to_sec = 4.926*10**(-6)
 
     def __init__(self, waveform_generator=None, params=None, elements=None):
 
@@ -18,7 +19,15 @@ class Fisher:
         self._elements = elements
 
         self.F = None
+        self.F_inv = None
         self.derivatives = {key: None for key in elements}
+        self.th_rms = None
+        self.calc_rms = None
+
+        self.psd = np.zeros(len(self._wg.freqs))
+        self.psd[self._wg.freqs<10] = np.inf
+        f0 = 70
+        self.psd = 3*10**(-48)*((f0/self._wg.freqs)**4+2*(1+self._wg.freqs**2/f0**2))
 
 
     @property
@@ -59,9 +68,6 @@ class Fisher:
         param_low = param - step_size
         param_high = param + step_size
 
-        #print('Element ', el)
-        #print('Step size ', step_size)
-        #print(param)
 
         # compute f(x-Δx)
         self._params[index] = param_low
@@ -117,9 +123,13 @@ class Fisher:
                     inner += self._wg.inner_whitened(self.derivatives[self._elements[i]][m,:],
                                                      self.derivatives[self._elements[j]][m,:])
 
+                    #self.F[m, i, j] = self._wg.inner_whitened(self.derivatives[self._elements[i]][m,:],
+                    #                                 self.derivatives[self._elements[j]][m,:])
                 self.F[i, j] = inner
 
-        self.F = self.F + self.F.T - np.diag(self.F.diagonal())
+        #for m in range(0, self._wg.no_detectors):
+        #    self.F[m] = self.F[m] + self.F[m].T - np.diag(self.F[m].diagonal())
+        return self.F
 
 
     def compute_fisher_cov(self, index=-1):
@@ -129,6 +139,115 @@ class Fisher:
             return -1
 
         self.compute_fisher_matrix(index=index)
-        return np.linalg.inv(self.F)
-        #return self.F
+
+        # self.F_inv = 1./np.sum(1./np.linalg.inv(self.F), axis=0)
+        self.F_inv = np.linalg.inv(self.F)
+
+        return self.F_inv
+
+    def compute_theoretical_rms(self, index):
+
+        self._params = np.copy(self._wg.params[index, :])
+
+        # th[0] = ΔM1/M1, th[1] = ΔM2/M2, th[2] = ΔD/D
+        self.th_rms = np.zeros(3)
+
+        self.th_rms[2] = 1./np.sqrt(self._wg.snrs[0, index]**2+self._wg.snrs[1, index]**2)
+        # self.th_rms[2] = 1./np.sqrt(self._wg.snrs[0, index]**2)
+
+        hp, hc = self._wg.compute_hp_hc(index)
+        self._wg.project_hp_hc(hp, hc, index, whiten=False)
+
+        h = self._wg.projection_strains.copy()
+
+        m1 = self._params[self._wg.INTRINSIC_PARAMS['mass1']]*self.sm_to_sec
+        m2 = self._params[self._wg.INTRINSIC_PARAMS['mass2']]*self.sm_to_sec
+
+        M = (m1+m2)
+        mu = m1*m2/M
+        chirp_mass = (m1*m2)**(3/5)/M**(1/5)
+
+        f = self._wg.freqs[self._wg.fft_mask]
+
+        x = (np.pi*M*f)**(2/3)
+
+        derivs = np.zeros((5, self._wg.no_detectors, len(self._wg.projection_strains[0])),
+                                                     dtype=np.complex64)
+        f0 = 10
+
+        for i in range(0, self._wg.no_detectors):
+
+            derivs[0, i, :] = 1j*(0.75*np.power(8*np.pi*chirp_mass*f,-5./3)*h[i]*
+                             ((-3715./756+55*mu/(6*M))*x+24*np.pi*np.power(x, 3./2)))
+            derivs[1, i, :] = -1j*(5/4*np.power(8*np.pi*chirp_mass*f,-5./3)*h[i]*
+                              (1.+55*mu/(6*M)*x+8*np.pi*np.power(x, 3./2)))
+            derivs[2, i, :] = -1j*h[i]
+            derivs[3, i, :] = 2*np.pi*1j*f/f0*h[i]
+            derivs[4, i, :] = h[i]
+
+        rms_th = np.zeros((5, 5))
+
+        for i in range(0, 4):
+            for j in range(0, i+1):
+
+                inner = 0.
+                for m in range(0, self._wg.no_detectors):
+
+                    inner += self._wg.inner_colored(derivs[i, m, :]*1e6, derivs[j, m, :])
+
+                    # inner += self._wg.inner_colored(derivs[i, m, :],
+                    #                               derivs[j, m+1//self._wg.no_detectors, :])
+
+                rms_th[i, j] = inner*1e-6
+
+        inner = 0.
+        for m in range(0, self._wg.no_detectors):
+            inner += self._wg.inner_colored(derivs[4, m, :] * 1e6, derivs[4, m, :])
+
+            # inner += self._wg.inner_colored(derivs[i, m, :],
+            #                               derivs[j, m+1//self._wg.no_detectors, :])
+
+        rms_th[4, 4] = inner * 1e-6
+
+        print('RMS BEFORE INVERSION')
+        print(rms_th + rms_th.T - np.diag(rms_th.diagonal()))
+
+        print("1/SNR", 1./np.sqrt(self._wg.snrs[0,index]**2+self._wg.snrs[1,index]**2))
+
+        rms_th = np.linalg.inv(rms_th + rms_th.T - np.diag(rms_th.diagonal()))
+
+        print('M1', m1/self.sm_to_sec)
+        print('M2', m2 / self.sm_to_sec)
+
+        print(np.sqrt(rms_th))
+
+        print('MU RMS %')
+        #print(np.sqrt(1./(1./rms_th[0, 0, 0]+1./rms_th[1, 0, 0])))
+        print(np.sqrt(rms_th[0, 0])*100)
+        print('CHIRP RMS %')
+        #print(np.sqrt(1./(1./rms_th[0, 1, 1]+1./rms_th[1, 1, 1])))
+        print(np.sqrt(rms_th[1, 1])*100)
+
+        mu_rms_sqrt = np.sqrt(rms_th[0, 0])*mu
+
+        self.th_rms[0] = mu_rms_sqrt*np.abs((M*(mu-3*m1))/(2*mu*(m1-m2)))/m1
+        self.th_rms[1] = mu_rms_sqrt*np.abs((M*(mu-3*m2))/(2*mu*(m1-m2)))/m2
+
+
+    def compute_calc_rms(self):
+
+        # assume that Fisher matrix etc. are already calculated
+        self.calc_rms = np.zeros(3)
+
+        self.calc_rms[0] = np.sqrt(self.F_inv[0, 0])/self._params[self._wg.INTRINSIC_PARAMS['mass1']]
+        self.calc_rms[1] = np.sqrt(self.F_inv[1, 1]) / self._params[self._wg.INTRINSIC_PARAMS['mass2']]
+        self.calc_rms[2] = np.sqrt(self.F_inv[2, 2]) / self._params[self._wg.EXTRINSIC_PARAMS['distance']]
+
+
+    def inner(self, freqseries1, freqseries2):
+
+        inner = np.sum(freqseries1 * np.conjugate(freqseries2) / self.psd[self._wg.fft_mask])
+
+        return np.real(inner) * 4. * self._wg.df
+
 

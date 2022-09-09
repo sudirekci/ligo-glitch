@@ -69,9 +69,9 @@ class WaveformGenerator:
                              6.223352859347546, -0.5153043355101219, 2.871221497023955]
 
             self.priors = np.zeros((self.INTRINSIC_LEN + self.EXTRINSIC_LEN + 1, 2))
-            self.priors[self.INTRINSIC_PARAMS['mass1']] = [10., 80.]
-            self.priors[self.INTRINSIC_PARAMS['mass2']] = [10., 80.]
-            self.priors[self.EXTRINSIC_PARAMS['distance']] = [100., 1000.]
+            self.priors[self.INTRINSIC_PARAMS['mass1']] = [2., 10.]
+            self.priors[self.INTRINSIC_PARAMS['mass2']] = [2., 10.]
+            self.priors[self.EXTRINSIC_PARAMS['distance']] = [150., 200.]
             self.priors[self.INTRINSIC_PARAMS['phase']] = [random_params[0], random_params[0]]
             self.priors[self.INTRINSIC_PARAMS['a1']] = [0.0, 0.0]
             self.priors[self.INTRINSIC_PARAMS['a2']] = [0.0, 0.0]
@@ -383,11 +383,10 @@ class WaveformGenerator:
 
             snr = self.SNR_colored(signal_fft * self.dt)
 
-            self.projection_strains[ind] = np.fft.irfft(np.pad(signal_fft * np.exp(-1j * 2 * np.pi *
-                                                                                   self.freqs[
-                                                                                       self.fft_mask] * timeshift) *
-                                                               (self.psd[self.fft_mask] * factor) ** (-0.5),
-                                                               (1, 0), 'constant'))
+            self.projection_strains[ind] = np.fft.irfft(np.pad(signal_fft *
+                                                np.exp(-1j * 2 * np.pi * self.freqs[self.fft_mask]
+                                                * timeshift) *(self.psd[self.fft_mask] *
+                                                factor) ** (-0.5),(1, 0), 'constant'))
 
         elif self.domain == 'FD':
 
@@ -492,7 +491,7 @@ class WaveformGenerator:
 
         return hp, hc
 
-    def project_hp_hc(self, hp, hc, dataset_ind, params=None):
+    def project_hp_hc(self, hp, hc, dataset_ind, params=None, whiten=True):
 
         if params is None:
 
@@ -525,8 +524,9 @@ class WaveformGenerator:
             self.projection_strains[j] = fp * hp + fc * hc
 
             # time shift and whiten
-            snr = self.whiten_strain(j, timeshift=(dt + tc))
-            snr_list.append(snr)
+            if whiten:
+                snr = self.whiten_strain(j, timeshift=(dt + tc))
+                snr_list.append(snr)
 
         # return snrs
         return snr_list
@@ -555,14 +555,16 @@ class WaveformGenerator:
 
         # sample distance with power law
         distance_ind = self.EXTRINSIC_PARAMS['distance']
-        self.params[:, distance_ind] = power_law_rvs(length=self.dataset_len, dmin=self.priors[distance_ind, 0],
+        self.params[:, distance_ind] = power_law_rvs(length=self.dataset_len,
+                                                     dmin=self.priors[distance_ind, 0],
                                                      dmax=self.priors[distance_ind, 1])
 
         # sample the rest uniformly
         for key, value in self.EXTRINSIC_PARAMS.items():
             if key != 'distance':
                 self.params[:, value] = np.random.uniform(self.priors[value, 0],
-                                                          self.priors[value, 1], self.dataset_len)
+                                                          self.priors[value, 1],
+                                                          self.dataset_len)
 
     def perform_svd(self, Vh=None):
 
@@ -591,7 +593,8 @@ class WaveformGenerator:
 
             if Vh is None:
                 self.svd.generate_basis(np.reshape(self.detector_signals,
-                                                   (self.no_detectors * self.dataset_len * self.noise_real_to_sig,
+                                                   (self.no_detectors * self.dataset_len *
+                                                    self.noise_real_to_sig,
                                                     int(self.length / 2))))
 
             data = np.zeros((self.no_detectors, self.dataset_len * self.noise_real_to_sig,
@@ -756,6 +759,9 @@ class WaveformGenerator:
 
             params = np.nan_to_num((self.params[idx] - self.params_mean) / self.params_std)
 
+            if idx//10000 == 0:
+                print(params)
+
             if self.add_glitch:
                 glitch_params = np.nan_to_num((self.glitch_params[idx] - self.glitch_params_mean) /
                                               self.glitch_params_std)
@@ -851,7 +857,7 @@ class WaveformGenerator:
 
             elif self.domain == 'FD':
                 self.detector_signals = f2['signals_real'][:, :] + f2['signals_imag'][:, :] * 1j
-                self.snrs = f2['snrs']
+                self.snrs = f2['snrs'][:, :]
 
             self.params = f2['params'][:, :]
 

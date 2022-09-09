@@ -25,16 +25,16 @@ from fisher_info import Fisher
 python gwpe.py train new nde \
     --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_3d_100k/ \
     --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/3d_1/ \
-    --nbins 8 \
-    --num_transform_blocks 10 \
-    --nflows 15 \
+    --nbins 2 \
+    --num_transform_blocks 2 \
+    --nflows 3 \
     --batch_norm \
-    --lr 0.0002 \
-    --epochs 100 \
-    --hidden_dims 512 \
+    --lr 0.0008 \
+    --epochs 25 \
+    --hidden_dims 16 \
     --activation elu \
     --lr_anneal_method cosine \
-    --batch_size 100 \
+    --batch_size 50 \
 
 python gwpe.py train existing \
     --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_w_noise_random/ \
