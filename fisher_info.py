@@ -104,6 +104,8 @@ class Fisher:
         if index != -1:
             self._params = np.copy(self._wg.params[index, :])
 
+        print(self._params)
+
         # Fisher info matrix 3x3
         # Fij = (hi, hj)
         N = len(self._elements)

@@ -26,15 +26,15 @@ python gwpe.py train new nde \
     --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_3d_100k/ \
     --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/3d_1/ \
     --nbins 2 \
-    --num_transform_blocks 2 \
+    --num_transform_blocks 4 \
     --nflows 3 \
     --batch_norm \
     --lr 0.0008 \
     --epochs 25 \
-    --hidden_dims 16 \
+    --hidden_dims 256
     --activation elu \
     --lr_anneal_method cosine \
-    --batch_size 50 \
+    --batch_size 100 \
 
 python gwpe.py train existing \
     --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_w_noise_random/ \
@@ -43,8 +43,8 @@ python gwpe.py train existing \
 
 
 python gwpe.py test \
-    --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_w_noise_ns_100/ \
-    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/overfit1k_10/ \
+    --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_3d_100k/ \
+    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/3d_1/ \
     --fisher \
     --test_on_training_data \
     --epoch 10000 \
