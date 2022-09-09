@@ -770,8 +770,8 @@ class WaveformGenerator:
 
             params = np.nan_to_num((self.params[idx] - self.params_mean) / self.params_std)
 
-            if idx//10000 == 0:
-                print(params)
+            #if idx//10000 == 0:
+            #    print(params)
 
             if self.add_glitch:
                 glitch_params = np.nan_to_num((self.glitch_params[idx] - self.glitch_params_mean) /
