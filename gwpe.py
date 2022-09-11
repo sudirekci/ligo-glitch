@@ -24,13 +24,13 @@ from fisher_info import Fisher
 """
 python gwpe.py train new nde \
     --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_3d_100k/ \
-    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/3d_2/ \
+    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/3d_3/ \
     --nbins 2 \
     --num_transform_blocks 10 \
     --nflows 3 \
     --batch_norm \
-    --lr 0.0008 \
-    --epochs 50 \
+    --lr 0.0002 \
+    --epochs 75 \
     --hidden_dims 512
     --activation elu \
     --lr_anneal_method cosine \
@@ -38,13 +38,13 @@ python gwpe.py train new nde \
 
 python gwpe.py train existing \
     --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_3d_100k/ \
-    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/3d_1/ \
+    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/3d_2/ \
     --epochs 25 \
 
 
 python gwpe.py test \
     --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_3d_100k/ \
-    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/3d_1/ \
+    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/3d_2/ \
     --fisher \
     --test_on_training_data \
     --epoch 10000 \
@@ -586,17 +586,16 @@ class PosteriorModel(object):
             # plt.show()
             plt.savefig(self.model_dir+str(idx))
 
-
             if compute_fisher:
 
                 fisher_samples = np.random.multivariate_normal(params_true[slice], cov_matrix, size=nsamples)
 
-                fig1 = corner.corner(fisher_samples, color='red', range=range, bins=100)
+                # fig1 = corner.corner(fisher_samples, color='red', range=range, bins=100)
 
-                corner.corner(params_samples[:, slice], truths=params_true[slice],
-                             labels=parameter_labels[slice], range=range, fig=fig1)
+                # corner.corner(params_samples[:, slice], truths=params_true[slice],
+                #              labels=parameter_labels[slice], range=range, fig=fig1)
 
-                plt.savefig(self.model_dir + str(idx) + '_zoomed')
+                # plt.savefig(self.model_dir + str(idx) + '_zoomed')
 
                 fig = corner.corner(params_samples[:, slice], truths=params_true[slice],
                                     labels=parameter_labels[slice], range=range)
@@ -608,7 +607,7 @@ class PosteriorModel(object):
             else:
 
                 fig1 = corner.corner(params_samples[:, slice], truths=params_true[slice],
-                             labels=parameter_labels[slice], range=range)
+                                     labels=parameter_labels[slice], range=range)
 
                 plt.savefig(self.model_dir + str(idx) + '_zoomed')
 
