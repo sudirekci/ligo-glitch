@@ -1,6 +1,7 @@
 import torch
 
 import waveform_dataset as waveform_dataset
+import waveform_dataset_3p as waveform_dataset_3p
 import numpy as np
 import matplotlib.pyplot as plt
 import scipy
@@ -358,26 +359,30 @@ def test_fisher_rms():
 
 # test_saving_loading()
 
-dataset_len = 10
+dataset_len = 100
 path_to_glitschen = '/home/su/Documents/glitschen-main/'
 directory='/home/su/Documents/glitch_dataset/'
 
-dataset = waveform_dataset.WaveformGenerator(dataset_len=dataset_len, path_to_glitschen=path_to_glitschen,
+dataset1 = waveform_dataset_3p.WaveformGenerator(dataset_len=dataset_len, path_to_glitschen=path_to_glitschen,
                                               extrinsic_at_train=False, tomte_to_blip=1, domain='FD',
                                               add_glitch=False, add_noise=True, directory=directory,
-                                              svd_no_basis_coeffs=10)
+                                              svd_no_basis_coeffs=100)
 
-dataset.construct_signal_dataset(perform_svd=False, save=True, filename='test')
+dataset1.construct_signal_dataset(perform_svd=True, save=True, filename='test')
 
-dataset1 = waveform_dataset.WaveformGenerator(directory=directory)
-dataset1.load_data('test')
+dataset = waveform_dataset_3p.WaveformGenerator(directory=directory)
+dataset.load_data('test')
 
 #test_fisher_step_size('mass1')
 
-print(dataset.snrs)
-dataset.no_detectors = 2
+#print(dataset.snrs)
+#print(dataset.params)
+print(dataset.params_std)
+#print(dataset.params)
+print(dataset.other_params)
+print(dataset.provide_sample(5))
 
-test_fisher_rms()
+#test_fisher_rms()
 
 #print(dataset1.params-dataset.params)
 #print('******************************')

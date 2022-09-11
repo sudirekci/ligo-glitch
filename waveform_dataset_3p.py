@@ -30,12 +30,14 @@ def power_law_rvs(n=2, length=10, dmin=100., dmax=1000.):
 
 
 class WaveformGenerator:
-    INTRINSIC_PARAMS = dict(mass1=0, mass2=1, phase=2, a1=3, a2=4, theta1=5, theta2=6, phi_12=7, phi_JL=8,
-                            theta_JN=9)
+    INTRINSIC_PARAMS = dict(mass1=0, mass2=1)
     INTRINSIC_LEN = len(INTRINSIC_PARAMS)
-    EXTRINSIC_PARAMS = dict(distance=10, tc=11, right_ascension=12, declination=13, pol_angle=14)
+    EXTRINSIC_PARAMS = dict(distance=2)
     EXTRINSIC_LEN = len(EXTRINSIC_PARAMS)
-    GLITCH_PARAMS = dict(time=15, z1=3, z2=4, z3=5, z4=6, z5=7)
+    OTHER_PARAMS = dict(phase=0, a1=1, a2=2, theta1=3, theta2=4, phi_12=5, phi_JL=6,
+                            theta_JN=7, tc=8, right_ascension=9, declination=10, pol_angle=11)
+    OTHER_PARAMS_LEN = len(OTHER_PARAMS)
+    GLITCH_PARAMS = dict(time=3, z1=10, z2=11, z3=12, z4=13, z5=14)
     DETECTORS = dict(H1=0, L1=1)
 
     REF_TIME = 1e5
@@ -74,35 +76,25 @@ class WaveformGenerator:
             self.priors[self.INTRINSIC_PARAMS['mass1']] = [5., 10.]
             self.priors[self.INTRINSIC_PARAMS['mass2']] = [5., 10.]
             self.priors[self.EXTRINSIC_PARAMS['distance']] = [40., 50.]
-            self.priors[self.INTRINSIC_PARAMS['phase']] = [random_params[0], random_params[0]]
-            self.priors[self.INTRINSIC_PARAMS['a1']] = [0.0, 0.0]
-            self.priors[self.INTRINSIC_PARAMS['a2']] = [0.0, 0.0]
-            self.priors[self.INTRINSIC_PARAMS['theta1']] = [random_params[1], random_params[1]]
-            self.priors[self.INTRINSIC_PARAMS['theta2']] = [random_params[2], random_params[2]]
-            self.priors[self.INTRINSIC_PARAMS['phi_12']] = [random_params[3], random_params[3]]
-            self.priors[self.INTRINSIC_PARAMS['phi_JL']] = [random_params[4], random_params[4]]
-            self.priors[self.INTRINSIC_PARAMS['theta_JN']] = [random_params[5], random_params[5]]
-            self.priors[self.EXTRINSIC_PARAMS['tc']] = [0.0, 0.0]
-            self.priors[self.EXTRINSIC_PARAMS['right_ascension']] = [random_params[6], random_params[6]]
-            self.priors[self.EXTRINSIC_PARAMS['declination']] = [random_params[7], random_params[7]]
-            self.priors[self.EXTRINSIC_PARAMS['pol_angle']] = [random_params[8], random_params[8]]
             self.priors[self.GLITCH_PARAMS['time']] = [-1.5, 1.5]
 
-            # self.priors[self.INTRINSIC_PARAMS['phase']] = [0.0, 2 * np.pi] 1.9385764842785942
-            # self.priors[self.INTRINSIC_PARAMS['a1']] = [0., 0.88]
-            # self.priors[self.INTRINSIC_PARAMS['a2']] = [0., 0.88]
-            # self.priors[self.INTRINSIC_PARAMS['theta1']] = [0.0, np.pi] 1.7498819076505903
-            # self.priors[self.INTRINSIC_PARAMS['theta2']] = [0.0, np.pi] 1.9471468704940496
-            # self.priors[self.INTRINSIC_PARAMS['phi_12']] = [0.0, 2 * np.pi] 2.779184216112431
-            # self.priors[self.INTRINSIC_PARAMS['phi_JL']] = [0.0, 2 * np.pi] 4.781609102594541
-            # self.priors[self.INTRINSIC_PARAMS['theta_JN']] = [0.0, np.pi] 2.1581020633082915
-            # self.priors[self.EXTRINSIC_PARAMS['tc']] = [-0.1, 0.1]
-            # self.priors[self.EXTRINSIC_PARAMS['right_ascension']] = [0.0, 2 * np.pi] 6.223352859347546
-            # self.priors[self.EXTRINSIC_PARAMS['declination']] = [-np.pi / 2.0, np.pi / 2.0] -0.5153043355101219
-            # self.priors[self.EXTRINSIC_PARAMS['pol_angle']] = [0.0, np.pi] 2.871221497023955
-            # self.priors[self.GLITCH_PARAMS['time']] = [-1.5, 1.5]
         else:
             self.priors = priors
+
+        self.other_params = np.zeros(self.OTHER_PARAMS_LEN)
+        self.other_params[self.OTHER_PARAMS['phase']] = random_params[0]
+
+        self.other_params[self.OTHER_PARAMS['a1']] = 0.0
+        self.other_params[self.OTHER_PARAMS['a2']] = 0.0
+        self.other_params[self.OTHER_PARAMS['theta1']] = random_params[1]
+        self.other_params[self.OTHER_PARAMS['theta2']] = random_params[2]
+        self.other_params[self.OTHER_PARAMS['phi_12']] = random_params[3]
+        self.other_params[self.OTHER_PARAMS['phi_JL']] = random_params[4]
+        self.other_params[self.OTHER_PARAMS['theta_JN']] = random_params[5]
+        self.other_params[self.OTHER_PARAMS['tc']] = 0.0
+        self.other_params[self.OTHER_PARAMS['right_ascension']] = random_params[6]
+        self.other_params[self.OTHER_PARAMS['declination']] = random_params[7]
+        self.other_params[self.OTHER_PARAMS['pol_angle']] = random_params[8]
 
         self.sampling_freq = sampling_frequency
         self.duration = duration
@@ -333,29 +325,22 @@ class WaveformGenerator:
 
         if params is None:
 
-            theta_jn = self.params[index][self.INTRINSIC_PARAMS['theta_JN']]
             mass1 = self.params[index][self.INTRINSIC_PARAMS['mass1']] * self.SOLAR_MASS
             mass2 = self.params[index][self.INTRINSIC_PARAMS['mass2']] * self.SOLAR_MASS
-            phi_jl = self.params[index][self.INTRINSIC_PARAMS['phi_JL']]
-            phi_12 = self.params[index][self.INTRINSIC_PARAMS['phi_12']]
-            a1 = self.params[index][self.INTRINSIC_PARAMS['a1']]
-            a2 = self.params[index][self.INTRINSIC_PARAMS['a2']]
-            phase = self.params[index][self.INTRINSIC_PARAMS['phase']]
-            tilt_1 = self.params[index][self.INTRINSIC_PARAMS['theta1']]
-            tilt_2 = self.params[index][self.INTRINSIC_PARAMS['theta2']]
 
         else:
 
-            theta_jn = params[self.INTRINSIC_PARAMS['theta_JN']]
             mass1 = params[self.INTRINSIC_PARAMS['mass1']] * self.SOLAR_MASS
             mass2 = params[self.INTRINSIC_PARAMS['mass2']] * self.SOLAR_MASS
-            phi_jl = params[self.INTRINSIC_PARAMS['phi_JL']]
-            phi_12 = params[self.INTRINSIC_PARAMS['phi_12']]
-            a1 = params[self.INTRINSIC_PARAMS['a1']]
-            a2 = params[self.INTRINSIC_PARAMS['a2']]
-            phase = params[self.INTRINSIC_PARAMS['phase']]
-            tilt_1 = params[self.INTRINSIC_PARAMS['theta1']]
-            tilt_2 = params[self.INTRINSIC_PARAMS['theta2']]
+
+        theta_jn = self.other_params[self.OTHER_PARAMS['theta_JN']]
+        phi_jl = self.other_params[self.OTHER_PARAMS['phi_JL']]
+        phi_12 = self.other_params[self.OTHER_PARAMS['phi_12']]
+        a1 = self.other_params[self.OTHER_PARAMS['a1']]
+        a2 = self.other_params[self.OTHER_PARAMS['a2']]
+        phase = self.other_params[self.OTHER_PARAMS['phase']]
+        tilt_1 = self.other_params[self.OTHER_PARAMS['theta1']]
+        tilt_2 = self.other_params[self.OTHER_PARAMS['theta2']]
 
         if ((a1 == 0.0 or tilt_1 in [0, np.pi])
                 and (a2 == 0.0 or tilt_2 in [0, np.pi])):
@@ -411,14 +396,6 @@ class WaveformGenerator:
             self.params_mean = np.mean(self.params, axis=0)
             self.params_std = np.std(self.params, axis=0)
 
-            # REMOVE THIS WHEN TRAINING WITH 15 PARAMS
-            self.params_std[self.params_std < 1e-2] = np.inf
-
-            print('****************************')
-            print(self.params_mean)
-            print(self.params_std)
-            print('****************************')
-
         if self.add_glitch and self.glitch_params is not None:
             self.glitch_params_mean = np.mean(self.glitch_params, axis=0)
             self.glitch_params_std = np.std(self.glitch_params, axis=0)
@@ -450,13 +427,13 @@ class WaveformGenerator:
 
             mass1 = self.params[index][self.INTRINSIC_PARAMS['mass1']]
             mass2 = self.params[index][self.INTRINSIC_PARAMS['mass2']]
-            phase = self.params[index][self.INTRINSIC_PARAMS['phase']]
 
         else:
 
             mass1 = params[self.INTRINSIC_PARAMS['mass1']]
             mass2 = params[self.INTRINSIC_PARAMS['mass2']]
-            phase = params[self.INTRINSIC_PARAMS['phase']]
+
+        phase = self.other_params[self.OTHER_PARAMS['phase']]
 
         if self.domain == 'TD':
 
@@ -507,18 +484,15 @@ class WaveformGenerator:
         if params is None:
 
             distance = self.params[dataset_ind, self.EXTRINSIC_PARAMS['distance']]
-            ra = self.params[dataset_ind, self.EXTRINSIC_PARAMS['right_ascension']]
-            dec = self.params[dataset_ind, self.EXTRINSIC_PARAMS['declination']]
-            polarization = self.params[dataset_ind, self.EXTRINSIC_PARAMS['pol_angle']]
-            tc = self.params[dataset_ind, self.EXTRINSIC_PARAMS['tc']]
 
         else:
 
             distance = params[self.EXTRINSIC_PARAMS['distance']]
-            ra = params[self.EXTRINSIC_PARAMS['right_ascension']]
-            dec = params[self.EXTRINSIC_PARAMS['declination']]
-            polarization = params[self.EXTRINSIC_PARAMS['pol_angle']]
-            tc = params[self.EXTRINSIC_PARAMS['tc']]
+
+        ra = self.other_params[self.OTHER_PARAMS['right_ascension']]
+        dec = self.other_params[self.OTHER_PARAMS['declination']]
+        polarization = self.other_params[self.OTHER_PARAMS['pol_angle']]
+        tc = self.other_params[self.OTHER_PARAMS['tc']]
 
         # divide by the distance
         hp /= distance
@@ -728,6 +702,8 @@ class WaveformGenerator:
 
             f1.create_dataset("intrinsic_params", self.params.shape,
                               dtype='f', data=self.params)
+            f1.create_dataset("other_params", self.other_params.shape,
+                              dtype='f', data=self.other_params)
 
         else:
             # save signals
@@ -744,6 +720,9 @@ class WaveformGenerator:
 
             f1.create_dataset("params", self.params.shape,
                               dtype='float64', data=self.params)
+            f1.create_dataset("other_params", self.other_params.shape,
+                              dtype='float64', data=self.other_params)
+
             if self.add_glitch:
                 f1.create_dataset("glitch_params", self.glitch_params.shape,
                                   dtype='f', data=self.glitch_params)
@@ -859,6 +838,7 @@ class WaveformGenerator:
                 self.hc = f2['hc_real'][:, :] + f2['hc_imag'][:, :] * 1j
 
             self.params = f2['intrinsic_params'][:, :]  # this array will need to increase in size
+            self.other_params = f2['other_params'][:]
 
         else:
             if self.domain == 'TD':
@@ -869,6 +849,7 @@ class WaveformGenerator:
                 self.snrs = f2['snrs'][:, :]
 
             self.params = f2['params'][:, :]
+            self.other_params = f2['other_params'][:]
 
             if self.add_glitch:
                 self.glitch_params = f2['glitch_params'][:]

@@ -24,30 +24,30 @@ from fisher_info import Fisher
 """
 python gwpe.py train new nde \
     --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_3d_100k/ \
-    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/3d_3/ \
+    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/3d_4/ \
     --nbins 2 \
-    --num_transform_blocks 10 \
+    --num_transform_blocks 5 \
     --nflows 3 \
     --batch_norm \
     --lr 0.0002 \
-    --epochs 75 \
-    --hidden_dims 512
+    --epochs 100 \
+    --hidden_dims 256
     --activation elu \
     --lr_anneal_method cosine \
     --batch_size 100 \
 
 python gwpe.py train existing \
     --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_3d_100k/ \
-    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/3d_2/ \
-    --epochs 25 \
+    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/3d_4/ \
+    --epochs 100 \
 
 
 python gwpe.py test \
     --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_3d_100k/ \
-    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/3d_2/ \
+    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/3d_4/ \
     --fisher \
     --test_on_training_data \
-    --epoch 10000 \
+    --epoch 350 \
 """
 
 parameter_labels = np.asarray([r'$m_1$',r'$m_2$', r'$\phi_c$',r'$a_1$',r'$a_2$',r'$t_1$',r'$t_2$',
@@ -186,7 +186,7 @@ class PosteriorModel(object):
             # input_dim = self.wfd.nparams !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             # context_dim = self.wfd.context_dim !!!!!!!!!!!!!!!!!!!!!!!!!!!
             context_dim = 400
-            input_dim = 15
+            input_dim = 3
 
             self.model = model_creator(input_dim=input_dim,
                                        context_dim=context_dim,

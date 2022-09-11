@@ -184,9 +184,8 @@ class Fisher:
                               (1.+55*mu/(6*M)*x+8*np.pi*np.power(x, 3./2)))
             derivs[2, i, :] = -1j*h[i]
             derivs[3, i, :] = 2*np.pi*1j*f/f0*h[i]
-            derivs[4, i, :] = h[i]
 
-        rms_th = np.zeros((5, 5))
+        rms_th = np.zeros((4, 4))
 
         for i in range(0, 4):
             for j in range(0, i+1):
@@ -194,21 +193,13 @@ class Fisher:
                 inner = 0.
                 for m in range(0, self._wg.no_detectors):
 
-                    inner += self._wg.inner_colored(derivs[i, m, :]*1e6, derivs[j, m, :])
+                    inner += self._wg.inner_colored(derivs[i, m, :], derivs[j, m, :])
 
                     # inner += self._wg.inner_colored(derivs[i, m, :],
                     #                               derivs[j, m+1//self._wg.no_detectors, :])
 
-                rms_th[i, j] = inner*1e-6
+                rms_th[i, j] = inner
 
-        inner = 0.
-        for m in range(0, self._wg.no_detectors):
-            inner += self._wg.inner_colored(derivs[4, m, :] * 1e6, derivs[4, m, :])
-
-            # inner += self._wg.inner_colored(derivs[i, m, :],
-            #                               derivs[j, m+1//self._wg.no_detectors, :])
-
-        rms_th[4, 4] = inner * 1e-6
 
         print('RMS BEFORE INVERSION')
         print(rms_th + rms_th.T - np.diag(rms_th.diagonal()))
@@ -229,7 +220,7 @@ class Fisher:
         #print(np.sqrt(1./(1./rms_th[0, 1, 1]+1./rms_th[1, 1, 1])))
         print(np.sqrt(rms_th[1, 1])*100)
 
-        mu_rms_sqrt = np.sqrt(rms_th[0, 0])*mu
+        mu_rms_sqrt = np.sqrt(rms_th[0, 0])*mu/10
 
         self.th_rms[0] = mu_rms_sqrt*np.abs((M*(mu-3*m1))/(2*mu*(m1-m2)))/m1
         self.th_rms[1] = mu_rms_sqrt*np.abs((M*(mu-3*m2))/(2*mu*(m1-m2)))/m2
