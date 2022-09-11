@@ -23,14 +23,14 @@ from fisher_info import Fisher
 
 """
 python gwpe.py train new nde \
-    --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_3d_100k/ \
-    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/3d_4/ \
+    --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_3d_3p_100k/ \
+    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/3d_5/ \
     --nbins 2 \
     --num_transform_blocks 5 \
     --nflows 3 \
     --batch_norm \
-    --lr 0.0002 \
-    --epochs 100 \
+    --lr 0.002 \
+    --epochs 30 \
     --hidden_dims 256
     --activation elu \
     --lr_anneal_method cosine \
@@ -43,7 +43,7 @@ python gwpe.py train existing \
 
 
 python gwpe.py test \
-    --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_3d_100k/ \
+    --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_3d_3p_100k/ \
     --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/3d_4/ \
     --fisher \
     --test_on_training_data \
@@ -574,7 +574,7 @@ class PosteriorModel(object):
         else:
 
             # no glitch is added
-            slice = [0, 1, 10]
+            slice = [0, 1, 2]
 
         percentile_low = np.percentile(params_samples[:,slice], 16, axis=0)
         percentile_high = np.percentile(params_samples[:, slice], 84, axis=0)
