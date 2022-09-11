@@ -12,7 +12,7 @@ import numpy as np
 import h5py
 
 import nde_flows
-import waveform_dataset as wd
+import waveform_dataset_3p as wd
 
 from fisher_info import Fisher
 
@@ -44,7 +44,7 @@ python gwpe.py train existing \
 
 python gwpe.py test \
     --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_3d_3p_100k/ \
-    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/3d_4/ \
+    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/3d_5/ \
     --fisher \
     --test_on_training_data \
     --epoch 350 \
