@@ -635,7 +635,6 @@ class WaveformGenerator:
             self.sample_extrinsic()
 
             for i in range(0, self.dataset_len):
-                print('computinggggg 2')
                 hp, hc = self.compute_hp_hc(i)
                 snrs = self.project_hp_hc(hp, hc, i)
 
