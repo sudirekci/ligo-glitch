@@ -689,7 +689,7 @@ def plot_gauss_contours(params_true, cov_matrix, ind1, ind2, ax):
         for j in range(X.shape[1]):
             pdf[i, j] = distr.pdf([X[i, j], Y[i, j]])
 
-    ax.contourf(X+mean_1, Y+mean_2, pdf*200, alpha=0.8)
+    ax.contour(X+mean_1, Y+mean_2, pdf*200, colors='blue')
 
 
 class Nestedspace(argparse.Namespace):
