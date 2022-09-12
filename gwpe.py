@@ -31,12 +31,12 @@ python gwpe.py train new nde \
     --num_transform_blocks 2 \
     --nflows 3 \
     --batch_norm \
-    --lr 0.001 \
-    --epochs 20 \
-    --hidden_dims 256 \
+    --lr 0.0002 \
+    --epochs 50 \
+    --hidden_dims 64 \
     --activation elu \
     --lr_anneal_method cosine \
-    --batch_size 100 \
+    --batch_size 50 \
 
 python gwpe.py train existing \
     --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_3d_3p_100k/ \
@@ -592,7 +592,7 @@ class PosteriorModel(object):
 
             if compute_fisher:
 
-                fisher_samples = np.random.multivariate_normal(params_true[slice], cov_matrix, size=nsamples)
+                # fisher_samples = np.random.multivariate_normal(params_true[slice], cov_matrix, size=nsamples)
 
                 # fig1 = corner.corner(fisher_samples, color='red', range=range, bins=100)
 
@@ -617,10 +617,9 @@ class PosteriorModel(object):
 
                     for l in range(k+1, 3):
 
-                        print(3*l+k)
                         plot_gauss_contours(params_true, cov_matrix, k, l, axes[3*l+k])
 
-                corner.corner(fisher_samples, color='red', fig=fig, bins=100, hist_kwargs={"density":True})
+                # corner.corner(fisher_samples, color='red', fig=fig, bins=100, hist_kwargs={"density":True})
 
                 plt.savefig(self.model_dir + str(idx) + '_fisher')
 
@@ -689,7 +688,7 @@ def plot_gauss_contours(params_true, cov_matrix, ind1, ind2, ax):
         for j in range(X.shape[1]):
             pdf[i, j] = distr.pdf([X[i, j], Y[i, j]])
 
-    ax.contour(X+mean_1, Y+mean_2, pdf*200, colors='blue')
+    ax.contour(X+mean_1, Y+mean_2, pdf, colors='red')
 
 
 class Nestedspace(argparse.Namespace):
