@@ -600,8 +600,7 @@ class PosteriorModel(object):
                 # plt.savefig(self.model_dir + str(idx) + '_zoomed')
 
                 fig = corner.corner(params_samples[:, slice], truths=params_true[slice],
-                                    labels=parameter_labels[slice], range=range, density=True,
-                                    stacked=True)
+                                    labels=parameter_labels[slice], range=range, plot_density=True)
 
                 axes = fig.get_axes()
                 print(axes)
@@ -609,7 +608,7 @@ class PosteriorModel(object):
                 y = np.ones(len(x))*0.8
                 axes[8].plot(x, y, 'r')
                 y = np.ones(len(x)) * 0.8
-                axes[8].plot(x, y*100, 'g')
+                axes[8].plot(x, y*200, 'g')
 
 
                 # corner.corner(fisher_samples, color='red', fig=fig, bins=100)
