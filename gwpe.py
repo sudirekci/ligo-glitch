@@ -681,10 +681,10 @@ def plot_gauss_contours(params_true, cov_matrix, ind1, ind2, ax):
     # Generating a meshgrid complacent with
     # the 3-sigma boundary
     mean_1, mean_2 = params_true[ind1], params_true[ind2]
-    sigma_1, sigma_2 = cov[0, 0], cov[1, 1]
+    sigma_1, sigma_2 = np.sqrt(cov[0, 0]), np.sqrt(cov[1, 1])
 
-    x = np.linspace(-3 * sigma_1, 3 * sigma_1, num=100)
-    y = np.linspace(-3 * sigma_2, 3 * sigma_2, num=100)
+    x = np.linspace(-5 * sigma_1, 5 * sigma_1, num=100)
+    y = np.linspace(-5 * sigma_2, 5 * sigma_2, num=100)
     X, Y = np.meshgrid(x, y)
 
     pdf = np.zeros(X.shape)
@@ -692,7 +692,7 @@ def plot_gauss_contours(params_true, cov_matrix, ind1, ind2, ax):
         for j in range(X.shape[1]):
             pdf[i, j] = distr.pdf([X[i, j], Y[i, j]])
 
-    ax.contourf(X+mean_1, Y+mean_2, pdf)
+    ax.contourf(X+mean_1, Y+mean_2, pdf, alpha=0.5)
 
 
 class Nestedspace(argparse.Namespace):
