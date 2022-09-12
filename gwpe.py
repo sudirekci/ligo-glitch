@@ -50,11 +50,13 @@ python gwpe.py test \
     --epoch 350 \
 """
 
-parameter_labels = np.asarray([r'$m_1$',r'$m_2$', r'$\phi_c$',r'$a_1$',r'$a_2$',r'$t_1$',r'$t_2$',
-                    r'$\phi_{12}$',r'$\phi_{jl}$',r'$\theta_{JN}$',r'$d_L$',r'$t_c$',
-                    r'$\alpha$',r'$\delta$',r'$\psi$', r'$t_{g1}$',r'$c_{11}$',
-                    r'$c_{12}$',r'$c_{13}$',r'$c_{14}$',r'$c_{15}$',r'$t_{g2}$',
-                    r'$c_{21}$',r'$c_{22}$',r'$c_{23}$',r'$c_{24}$',r'$c_{25}$'])
+#parameter_labels = np.asarray([r'$m_1$',r'$m_2$', r'$\phi_c$',r'$a_1$',r'$a_2$',r'$t_1$',r'$t_2$',
+#                    r'$\phi_{12}$',r'$\phi_{jl}$',r'$\theta_{JN}$',r'$d_L$',r'$t_c$',
+#                    r'$\alpha$',r'$\delta$',r'$\psi$', r'$t_{g1}$',r'$c_{11}$',
+#                    r'$c_{12}$',r'$c_{13}$',r'$c_{14}$',r'$c_{15}$',r'$t_{g2}$',
+#                    r'$c_{21}$',r'$c_{22}$',r'$c_{23}$',r'$c_{24}$',r'$c_{25}$'])
+
+parameter_labels = np.asarray([r'$m_1$',r'$m_2$', r'$\d_L$'])
 
 
 class PosteriorModel(object):
