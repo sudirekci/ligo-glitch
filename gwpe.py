@@ -56,7 +56,7 @@ python gwpe.py test \
 #                    r'$c_{12}$',r'$c_{13}$',r'$c_{14}$',r'$c_{15}$',r'$t_{g2}$',
 #                    r'$c_{21}$',r'$c_{22}$',r'$c_{23}$',r'$c_{24}$',r'$c_{25}$'])
 
-parameter_labels = np.asarray([r'$m_1$',r'$m_2$', r'$\d_L$'])
+parameter_labels = np.asarray([r'$m_1$',r'$m_2$', r'$d_L$'])
 
 
 class PosteriorModel(object):
@@ -604,7 +604,8 @@ class PosteriorModel(object):
 
                 axes = fig.get_axes()
                 print(axes)
-                axes
+                x = np.random.random(100)*5
+                axes[0].plot(x, 5*x)
 
                 # corner.corner(fisher_samples, color='red', fig=fig, bins=100)
 
