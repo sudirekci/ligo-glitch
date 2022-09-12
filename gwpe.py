@@ -620,7 +620,7 @@ class PosteriorModel(object):
                         print(3*l+k)
                         plot_gauss_contours(params_true, cov_matrix, k, l, axes[3*l+k])
 
-                corner.corner(fisher_samples, color='red', fig=fig, bins=100)
+                corner.corner(fisher_samples, color='red', fig=fig, bins=100, hist_kwargs={"density":True})
 
                 plt.savefig(self.model_dir + str(idx) + '_fisher')
 
@@ -689,7 +689,7 @@ def plot_gauss_contours(params_true, cov_matrix, ind1, ind2, ax):
         for j in range(X.shape[1]):
             pdf[i, j] = distr.pdf([X[i, j], Y[i, j]])
 
-    ax.contourf(X+mean_1, Y+mean_2, pdf, alpha=0.8)
+    ax.contourf(X+mean_1, Y+mean_2, pdf*20, alpha=0.8)
 
 
 class Nestedspace(argparse.Namespace):
