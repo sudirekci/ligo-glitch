@@ -267,7 +267,7 @@ def test_saving_loading():
     print(dataset2.glitch_params)
 
 
-def test_fisher_step_size(el):
+def test_fisher_step_size(el, ind1, ind2):
 
     f = Fisher(waveform_generator=dataset)
 
@@ -299,7 +299,8 @@ def test_fisher_step_size(el):
 
             #plt.plot(np.abs(f.derivatives[el][0, :]), color=color)
 
-            ax1.scatter(step_size, f.F[0, 2], color='red')
+            ax1.scatter(step_size, f.F[ind1, ind1], color='red')
+            ax1.set_title(str(ind1)+' '+str(ind1))
             #plt.scatter(ss[j], np.imag(f.derivatives[el][1, 200]), color='blue')
 
 
@@ -311,7 +312,8 @@ def test_fisher_step_size(el):
 
             f.compute_fisher_matrix(index=i)
 
-            ax2.scatter(step_size, f.F[2, 2], color='blue')
+            ax2.scatter(step_size, f.F[ind1, ind2], color='blue')
+            ax2.set_title(str(ind1) + ' ' + str(ind2))
 
         plt.show()
 
@@ -373,14 +375,10 @@ dataset1.construct_signal_dataset(perform_svd=True, save=True, filename='test')
 dataset = waveform_dataset_3p.WaveformGenerator(directory=directory)
 dataset.load_data('test')
 
-#test_fisher_step_size('mass1')
+test_fisher_step_size('distance', 2, 0)
 
 #print(dataset.snrs)
-#print(dataset.params)
-print(dataset.params_std)
-#print(dataset.params)
-print(dataset.other_params)
-print(dataset.provide_sample(5))
+
 
 #test_fisher_rms()
 

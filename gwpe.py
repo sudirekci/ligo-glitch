@@ -26,17 +26,17 @@ from scipy.stats import multivariate_normal
 """
 python gwpe.py train new nde \
     --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_3d_3p_100k/ \
-    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/3d_6/ \
+    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/3d_10/ \
     --nbins 2 \
     --num_transform_blocks 2 \
     --nflows 3 \
     --batch_norm \
     --lr 0.0002 \
-    --epochs 50 \
-    --hidden_dims 64 \
+    --epochs 40 \
+    --hidden_dims 32 \
     --activation elu \
     --lr_anneal_method cosine \
-    --batch_size 50 \
+    --batch_size 100 \
 
 python gwpe.py train existing \
     --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_3d_3p_100k/ \
@@ -46,7 +46,7 @@ python gwpe.py train existing \
 
 python gwpe.py test \
     --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_3d_3p_100k/ \
-    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/3d_6/ \
+    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/3d_8/ \
     --fisher \
     --test_on_training_data \
     --epoch 350 \
@@ -610,8 +610,8 @@ class PosteriorModel(object):
                 # fisher 1d histograms
                 for k in range(0,3):
 
-                    x = np.linspace(norm.ppf(0.001, loc=params_true[k], scale=np.sqrt(cov_matrix[k,k])),
-                                    norm.ppf(0.999,loc=params_true[k], scale=np.sqrt(cov_matrix[k,k])), 500)
+                    x = np.linspace(norm.ppf(0.0001, loc=params_true[k], scale=np.sqrt(cov_matrix[k,k])),
+                                    norm.ppf(0.9999,loc=params_true[k], scale=np.sqrt(cov_matrix[k,k])), 500)
 
                     axes[4*k].plot(x, norm.pdf(x, loc=params_true[k], scale=np.sqrt(cov_matrix[k,k])),'r-')
 

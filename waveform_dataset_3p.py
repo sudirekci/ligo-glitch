@@ -620,8 +620,6 @@ class WaveformGenerator:
         else:
             # compute hps and hcs, sample extrinsic, project, add glitch and noise
 
-            print('computinggggg 1')
-
             self.params = np.zeros((self.dataset_len, self.INTRINSIC_LEN + self.EXTRINSIC_LEN))
             self.detector_signals = np.zeros((self.no_detectors, self.dataset_len, length), dtype=dtype)
 
@@ -654,7 +652,6 @@ class WaveformGenerator:
         self.calculate_params_statistics()
 
         if perform_svd:
-            print('computinggggg 3')
             self.perform_svd()
             print('SVD performed')
 
