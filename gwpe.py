@@ -667,6 +667,7 @@ def plot_gauss_contours(params_true, cov_matrix, ind1, ind2, ax):
 
     print('ind1', ind1)
     print('ind2', ind2)
+    print(ind2*3+ind1)
 
     # Initializing the covariance matrix
     cov = np.asarray([[cov_matrix[ind1, ind1], cov_matrix[ind1, ind2]],
