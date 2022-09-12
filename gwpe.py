@@ -592,7 +592,7 @@ class PosteriorModel(object):
 
             if compute_fisher:
 
-                # fisher_samples = np.random.multivariate_normal(params_true[slice], cov_matrix, size=nsamples)
+                fisher_samples = np.random.multivariate_normal(params_true[slice], cov_matrix, size=nsamples)
 
                 # fig1 = corner.corner(fisher_samples, color='red', range=range, bins=100)
 
@@ -620,7 +620,7 @@ class PosteriorModel(object):
                         print(3*l+k)
                         plot_gauss_contours(params_true, cov_matrix, k, l, axes[3*l+k])
 
-                # corner.corner(fisher_samples, color='red', fig=fig, bins=100)
+                corner.corner(fisher_samples, color='red', fig=fig, bins=100)
 
                 plt.savefig(self.model_dir + str(idx) + '_fisher')
 
@@ -667,9 +667,6 @@ def plot_gauss_contours(params_true, cov_matrix, ind1, ind2, ax):
 
     random_seed = 1000
 
-    print('ind1', ind1)
-    print('ind2', ind2)
-
     # Initializing the covariance matrix
     cov = np.asarray([[cov_matrix[ind1, ind1], cov_matrix[ind1, ind2]],
                       [cov_matrix[ind1, ind2], cov_matrix[ind2, ind2]]])
@@ -692,7 +689,7 @@ def plot_gauss_contours(params_true, cov_matrix, ind1, ind2, ax):
         for j in range(X.shape[1]):
             pdf[i, j] = distr.pdf([X[i, j], Y[i, j]])
 
-    ax.contourf(X+mean_1, Y+mean_2, pdf, alpha=0.5)
+    ax.contourf(X+mean_1, Y+mean_2, pdf, alpha=0.8)
 
 
 class Nestedspace(argparse.Namespace):
