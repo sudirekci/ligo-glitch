@@ -615,7 +615,7 @@ class PosteriorModel(object):
 
                     axes[4*k].plot(x, norm.pdf(x, loc=params_true[k], scale=np.sqrt(cov_matrix[k,k])),'r-')
 
-                    ind2 = (k+1)//3
+                    ind2 = (k+1)%3
                     plot_gauss_contours(params_true, cov_matrix, k, ind2, axes[ind2*3+k])
 
                 # corner.corner(fisher_samples, color='red', fig=fig, bins=100)
