@@ -666,7 +666,8 @@ def plot_gauss_contours(params_true, cov_matrix, ind1, ind2, ax):
     random_seed = 1000
 
     # Initializing the covariance matrix
-    cov = cov_matrix[[ind1, ind2], [ind1, ind2]]
+    cov = np.asarray([[cov_matrix[ind1, ind1], cov_matrix[ind1, ind2]],
+                      [cov_matrix[ind1, ind2], cov_matrix[ind2, ind2]]])
 
     # Generating a Gaussian bivariate distribution
     # with given mean and covariance matrix
