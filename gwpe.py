@@ -24,27 +24,27 @@ from fisher_info import Fisher
 """
 python gwpe.py train new nde \
     --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_3d_3p_100k/ \
-    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/3d_5/ \
+    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/3d_6/ \
     --nbins 2 \
-    --num_transform_blocks 5 \
+    --num_transform_blocks 2 \
     --nflows 3 \
     --batch_norm \
-    --lr 0.002 \
-    --epochs 30 \
-    --hidden_dims 256
+    --lr 0.001 \
+    --epochs 20 \
+    --hidden_dims 256 \
     --activation elu \
     --lr_anneal_method cosine \
     --batch_size 100 \
 
 python gwpe.py train existing \
-    --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_3d_100k/ \
-    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/3d_4/ \
-    --epochs 100 \
+    --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_3d_3p_100k/ \
+    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/3d_6/ \
+    --epochs 20 \
 
 
 python gwpe.py test \
     --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_3d_3p_100k/ \
-    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/3d_5/ \
+    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/3d_6/ \
     --fisher \
     --test_on_training_data \
     --epoch 350 \
@@ -602,7 +602,11 @@ class PosteriorModel(object):
                 fig = corner.corner(params_samples[:, slice], truths=params_true[slice],
                                     labels=parameter_labels[slice], range=range)
 
-                corner.corner(fisher_samples, color='red', fig=fig, bins=100)
+                axes = fig.get_axes()
+                print(axes)
+                axes
+
+                # corner.corner(fisher_samples, color='red', fig=fig, bins=100)
 
                 plt.savefig(self.model_dir + str(idx) + '_fisher')
 
