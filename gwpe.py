@@ -15,6 +15,7 @@ import nde_flows
 import waveform_dataset_3p as wd
 
 from fisher_info import Fisher
+from scipy.stats import norm
 
 
 #os.environ['OMP_NUM_THREADS'] = str(1)
@@ -600,16 +601,17 @@ class PosteriorModel(object):
                 # plt.savefig(self.model_dir + str(idx) + '_zoomed')
 
                 fig = corner.corner(params_samples[:, slice], truths=params_true[slice],
-                                    labels=parameter_labels[slice], range=range, plot_density=True)
+                                    labels=parameter_labels[slice], range=range, density=True)
 
                 axes = fig.get_axes()
-                print(axes)
-                x = np.random.random(100)*100
-                y = np.ones(len(x))*0.8
-                axes[8].plot(x, y, 'r')
-                y = np.ones(len(x)) * 0.8
-                axes[8].plot(x, y*200, 'g')
 
+                # fisher 1d histograms
+                for k in range(0, 3):
+
+                    x = np.linspace(norm.ppf(0.16, loc=params_true[k], scale=np.sqrt(cov_matrix[k,k])),
+                                    norm.ppf(0.84,loc=params_true[k], scale=np.sqrt(cov_matrix[k,k])), 100)
+
+                    axes[4*k].plot(x, norm.pdf(x, loc=params_true[k], scale=np.sqrt(cov_matrix[k,k])),'r-')
 
                 # corner.corner(fisher_samples, color='red', fig=fig, bins=100)
 
