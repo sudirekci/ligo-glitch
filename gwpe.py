@@ -617,6 +617,7 @@ class PosteriorModel(object):
 
                     for l in range(k+1, 3):
 
+                        print(3*l+k)
                         plot_gauss_contours(params_true, cov_matrix, k, l, axes[3*l+k])
 
                 # corner.corner(fisher_samples, color='red', fig=fig, bins=100)
@@ -672,7 +673,6 @@ def plot_gauss_contours(params_true, cov_matrix, ind1, ind2, ax):
     # Initializing the covariance matrix
     cov = np.asarray([[cov_matrix[ind1, ind1], cov_matrix[ind1, ind2]],
                       [cov_matrix[ind1, ind2], cov_matrix[ind2, ind2]]])
-    print('cov', cov)
 
     # Generating a Gaussian bivariate distribution
     # with given mean and covariance matrix
