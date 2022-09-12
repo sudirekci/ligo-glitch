@@ -605,11 +605,8 @@ class PosteriorModel(object):
                 axes = fig.get_axes()
                 print(axes)
                 x = np.random.random(100)*20
-                axes[0].plot(x, x)
-                axes[1].plot(x, x)
-                axes[2].plot(x, x)
-                axes[3].plot(x, x)
-                axes[4].plot(x, x)
+                y = np.ones(len(x))
+                axes[8].plot(x, y)
 
 
                 # corner.corner(fisher_samples, color='red', fig=fig, bins=100)
