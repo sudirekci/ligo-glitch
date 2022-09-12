@@ -590,7 +590,7 @@ class PosteriorModel(object):
 
             if compute_fisher:
 
-                fisher_samples = np.random.multivariate_normal(params_true[slice], cov_matrix, size=nsamples)
+                # fisher_samples = np.random.multivariate_normal(params_true[slice], cov_matrix, size=nsamples)
 
                 # fig1 = corner.corner(fisher_samples, color='red', range=range, bins=100)
 
@@ -604,9 +604,11 @@ class PosteriorModel(object):
 
                 axes = fig.get_axes()
                 print(axes)
-                x = np.random.random(100)*40
+                x = np.random.random(100)*100
                 y = np.ones(len(x))*0.8
-                axes[8].plot(x, y)
+                axes[8].plot(x, y, 'r')
+                y = np.ones(len(x)) * 0.8
+                axes[8].plot(x, y*100, 'g')
 
 
                 # corner.corner(fisher_samples, color='red', fig=fig, bins=100)
