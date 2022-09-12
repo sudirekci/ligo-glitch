@@ -604,8 +604,8 @@ class PosteriorModel(object):
 
                 axes = fig.get_axes()
                 print(axes)
-                x = np.random.random(100)*20
-                y = np.ones(len(x))
+                x = np.random.random(100)*40
+                y = np.ones(len(x))*0.8
                 axes[8].plot(x, y)
 
 
