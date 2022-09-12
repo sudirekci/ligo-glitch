@@ -581,7 +581,7 @@ class PosteriorModel(object):
 
         percentile_low = np.percentile(params_samples[:,slice], 16, axis=0)
         percentile_high = np.percentile(params_samples[:, slice], 84, axis=0)
-        range = np.stack((percentile_low, percentile_high), axis=1)
+        range1 = np.stack((percentile_low, percentile_high), axis=1)
 
         if plot:
             corner.corner(params_samples[:,slice], truths=params_true[slice],
@@ -601,12 +601,12 @@ class PosteriorModel(object):
                 # plt.savefig(self.model_dir + str(idx) + '_zoomed')
 
                 fig = corner.corner(params_samples[:, slice], truths=params_true[slice],
-                                    labels=parameter_labels[slice], range=range, density=True)
+                                    labels=parameter_labels[slice], range=range1, density=True)
 
                 axes = fig.get_axes()
 
                 # fisher 1d histograms
-                for k in range(0, 3):
+                for k in range(0,3):
 
                     x = np.linspace(norm.ppf(0.16, loc=params_true[k], scale=np.sqrt(cov_matrix[k,k])),
                                     norm.ppf(0.84,loc=params_true[k], scale=np.sqrt(cov_matrix[k,k])), 100)
@@ -620,7 +620,7 @@ class PosteriorModel(object):
             else:
 
                 fig1 = corner.corner(params_samples[:, slice], truths=params_true[slice],
-                                     labels=parameter_labels[slice], range=range)
+                                     labels=parameter_labels[slice], range=range1)
 
                 plt.savefig(self.model_dir + str(idx) + '_zoomed')
 
