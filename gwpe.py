@@ -670,7 +670,7 @@ def plot_gauss_contours(params_true, cov_matrix, ind1, ind2, ax):
 
     # Generating a Gaussian bivariate distribution
     # with given mean and covariance matrix
-    distr = multivariate_normal(cov=cov, seed=random_seed)
+    distr = multivariate_normal(mean=[0., 0.], cov=cov, seed=random_seed)
 
     # Generating a meshgrid complacent with
     # the 3-sigma boundary
