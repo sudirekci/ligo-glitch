@@ -16,6 +16,7 @@ import waveform_dataset_3p as wd
 
 from fisher_info import Fisher
 from scipy.stats import norm
+from scipy.stats import multivariate_normal
 
 
 #os.environ['OMP_NUM_THREADS'] = str(1)
@@ -609,10 +610,13 @@ class PosteriorModel(object):
                 # fisher 1d histograms
                 for k in range(0,3):
 
-                    x = np.linspace(norm.ppf(0.01, loc=params_true[k], scale=np.sqrt(cov_matrix[k,k])),
-                                    norm.ppf(0.99,loc=params_true[k], scale=np.sqrt(cov_matrix[k,k])), 500)
+                    x = np.linspace(norm.ppf(0.001, loc=params_true[k], scale=np.sqrt(cov_matrix[k,k])),
+                                    norm.ppf(0.999,loc=params_true[k], scale=np.sqrt(cov_matrix[k,k])), 500)
 
                     axes[4*k].plot(x, norm.pdf(x, loc=params_true[k], scale=np.sqrt(cov_matrix[k,k])),'r-')
+
+                    ind2 = (k+1)//3
+                    plot_gauss_contours(params_true, cov_matrix, k, ind2, axes[ind2*3+k])
 
                 # corner.corner(fisher_samples, color='red', fig=fig, bins=100)
 
@@ -655,6 +659,34 @@ def print_gpu_info(num_gpus):
             print(torch.cuda.get_device_name(0))
 
         print('*******************')
+
+
+def plot_gauss_contours(params_true, cov_matrix, ind1, ind2, ax):
+
+    random_seed = 1000
+
+    # Initializing the covariance matrix
+    cov = cov_matrix[[ind1, ind2], [ind1, ind2]]
+
+    # Generating a Gaussian bivariate distribution
+    # with given mean and covariance matrix
+    distr = multivariate_normal(cov=cov, seed=random_seed)
+
+    # Generating a meshgrid complacent with
+    # the 3-sigma boundary
+    mean_1, mean_2 = params_true[ind1], params_true[ind2]
+    sigma_1, sigma_2 = cov[0, 0], cov[1, 1]
+
+    x = np.linspace(-3 * sigma_1, 3 * sigma_1, num=100)
+    y = np.linspace(-3 * sigma_2, 3 * sigma_2, num=100)
+    X, Y = np.meshgrid(x, y)
+
+    pdf = np.zeros(X.shape)
+    for i in range(X.shape[0]):
+        for j in range(X.shape[1]):
+            pdf[i, j] = distr.pdf([X[i, j], Y[i, j]])
+
+    ax.contourf(X+mean_1, Y+mean_2, pdf)
 
 
 class Nestedspace(argparse.Namespace):
