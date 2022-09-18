@@ -26,27 +26,28 @@ from scipy.stats import multivariate_normal
 """
 python gwpe.py train new nde \
     --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_3d_3p_100k/ \
-    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/3d_10/ \
+    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/3d_13/ \
     --nbins 2 \
-    --num_transform_blocks 2 \
+    --num_transform_blocks 1 \
     --nflows 3 \
     --batch_norm \
     --lr 0.0002 \
-    --epochs 40 \
+    --epochs 50 \
     --hidden_dims 32 \
     --activation elu \
     --lr_anneal_method cosine \
-    --batch_size 100 \
+    --batch_size 50 \
 
 python gwpe.py train existing \
     --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_3d_3p_100k/ \
-    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/3d_6/ \
-    --epochs 20 \
+    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/3d_13/ \
+    --epochs 25 \
+    --batch_size 50 \
 
 
 python gwpe.py test \
     --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_3d_3p_100k/ \
-    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/3d_8/ \
+    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/3d_13/ \
     --fisher \
     --test_on_training_data \
     --epoch 350 \
@@ -566,7 +567,7 @@ class PosteriorModel(object):
 
         if compute_fisher:
 
-            cov_matrix = self.fisher.compute_fisher_cov(index=idx)
+            cov_matrix = self.fisher.compute_theoretical_cov(index=idx)
             print('Covariance matrix:')
             print(cov_matrix)
 

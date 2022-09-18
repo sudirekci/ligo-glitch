@@ -130,6 +130,9 @@ class Fisher:
         #for m in range(0, self._wg.no_detectors):
         self.F = self.F + self.F.T - np.diag(self.F.diagonal())
 
+        #print('Analytical (m1 m2) Fisher Matrix')
+        #print(self.F)
+
         return self.F
 
 
@@ -143,6 +146,9 @@ class Fisher:
 
         # self.F_inv = 1./np.sum(1./np.linalg.inv(self.F), axis=0)
         self.F_inv = np.linalg.inv(self.F)
+
+        #print('Calculated Fisher')
+        #print(self.F)
 
         return self.F_inv
 
@@ -168,12 +174,20 @@ class Fisher:
         mu = m1*m2/M
         chirp_mass = (m1*m2)**(3/5)/M**(1/5)
 
+        # print('M1', m1/self.sm_to_sec)
+        # print('M2', m2 / self.sm_to_sec)
+        # print('MU', mu / self.sm_to_sec)
+        # print('CHIRP MASS', chirp_mass / self.sm_to_sec)
+        #
+        # print("SNR", np.sqrt(self._wg.snrs[0, index] ** 2 + self._wg.snrs[1, index] ** 2))
+        # print("1/SNR", 1./np.sqrt(self._wg.snrs[0,index]**2+self._wg.snrs[1,index]**2))
+
         f = self._wg.freqs[self._wg.fft_mask]
 
         x = (np.pi*M*f)**(2/3)
 
-        derivs = np.zeros((5, self._wg.no_detectors, len(self._wg.projection_strains[0])),
-                                                     dtype=np.complex64)
+        derivs = np.zeros((4, self._wg.no_detectors, len(self._wg.projection_strains[0])),
+                                                         dtype=np.complex64)
         f0 = 10
 
         for i in range(0, self._wg.no_detectors):
@@ -185,10 +199,10 @@ class Fisher:
             derivs[2, i, :] = -1j*h[i]
             derivs[3, i, :] = 2*np.pi*1j*f/f0*h[i]
 
-        rms_th = np.zeros((4, 4))
+        th_fisher = np.zeros((2, 2))
 
-        for i in range(0, 4):
-            for j in range(0, i+1):
+        for i in range(0, 2):
+            for j in range(0, 2):
 
                 inner = 0.
                 for m in range(0, self._wg.no_detectors):
@@ -198,32 +212,50 @@ class Fisher:
                     # inner += self._wg.inner_colored(derivs[i, m, :],
                     #                               derivs[j, m+1//self._wg.no_detectors, :])
 
-                rms_th[i, j] = inner
+                th_fisher[i, j] = inner
 
 
-        print('RMS BEFORE INVERSION')
-        print(rms_th + rms_th.T - np.diag(rms_th.diagonal()))
+        print('Theoretical FISHER')
+        #th_fisher = th_fisher + th_fisher.T - np.diag(th_fisher.diagonal())
+        #print(th_fisher[0:2,0:2])
 
-        print("1/SNR", 1./np.sqrt(self._wg.snrs[0,index]**2+self._wg.snrs[1,index]**2))
+        th_cov = np.linalg.inv(th_fisher)
 
-        rms_th = np.linalg.inv(rms_th + rms_th.T - np.diag(rms_th.diagonal()))
+        print('THEORETICAL COV. MATRIX')
+        #print(th_cov[0:2,0:2])
 
-        print('M1', m1/self.sm_to_sec)
-        print('M2', m2 / self.sm_to_sec)
-
-        print(np.sqrt(rms_th))
-
-        print('MU RMS %')
+        #print('MU RMS')
         #print(np.sqrt(1./(1./rms_th[0, 0, 0]+1./rms_th[1, 0, 0])))
-        print(np.sqrt(rms_th[0, 0])*100)
-        print('CHIRP RMS %')
+        #print(np.sqrt(rms_th[0, 0]))
+        #print('CHIRP RMS %')
         #print(np.sqrt(1./(1./rms_th[0, 1, 1]+1./rms_th[1, 1, 1])))
-        print(np.sqrt(rms_th[1, 1])*100)
+        #print(np.sqrt(rms_th[1, 1])*100)
 
-        mu_rms_sqrt = np.sqrt(rms_th[0, 0])*mu/10
+        mu_rms = np.sqrt(th_cov[0, 0])
 
-        self.th_rms[0] = mu_rms_sqrt*np.abs((M*(mu-3*m1))/(2*mu*(m1-m2)))/m1
-        self.th_rms[1] = mu_rms_sqrt*np.abs((M*(mu-3*m2))/(2*mu*(m1-m2)))/m2
+        self.th_rms[0] = mu_rms*np.abs((M*(mu-3*m1))/(2*mu*(m1-m2)))*mu/m1
+        self.th_rms[1] = mu_rms*np.abs((M*(mu-3*m2))/(2*mu*(m1-m2)))*mu/m2
+
+        return th_fisher
+
+    def compute_theoretical_cov(self, index):
+
+        th_fisher = self.compute_theoretical_rms(index)
+        th_cov = np.zeros((3,3))
+
+        m1 = self._params[self._wg.INTRINSIC_PARAMS['mass1']]
+        m2 = self._params[self._wg.INTRINSIC_PARAMS['mass2']]
+        distance = self._params[self._wg.EXTRINSIC_PARAMS['distance']]
+
+        J = np.asarray([[m2/(m1**2+m1*m2), m1/(m2**2+m1*m2)],
+                        [(2*m1+3*m2)/(5*m1**2+5*m1*m2), (3*m1+2*m2)/(5*m2**2+5*m1*m2)]])
+
+        m1_m2_fisher = np.dot(np.dot(J.T, th_fisher), J)
+        th_cov[0:2, 0:2] = np.linalg.inv(m1_m2_fisher)
+
+        th_cov[2,2] = (self.th_rms[2]*distance)**2
+
+        return th_cov
 
 
     def compute_calc_rms(self):
@@ -236,10 +268,109 @@ class Fisher:
         self.calc_rms[2] = np.sqrt(self.F_inv[2, 2]) / self._params[self._wg.EXTRINSIC_PARAMS['distance']]
 
 
-    def inner(self, freqseries1, freqseries2):
+    def compute_analytical_rms(self, index):
 
-        inner = np.sum(freqseries1 * np.conjugate(freqseries2) / self.psd[self._wg.fft_mask])
+        self._params = np.copy(self._wg.params[index, :])
 
-        return np.real(inner) * 4. * self._wg.df
+        # th[0] = ΔM1/M1, th[1] = ΔM2/M2, th[2] = ΔD/D
+        self.analy_rms = np.zeros(3)
 
+        self.analy_rms[2] = 1./np.sqrt(self._wg.snrs[0, index]**2+self._wg.snrs[1, index]**2)
+
+        m1 = self._params[self._wg.INTRINSIC_PARAMS['mass1']]
+        m2 = self._params[self._wg.INTRINSIC_PARAMS['mass2']]
+        distance = self._params[self._wg.EXTRINSIC_PARAMS['distance']]
+
+        M = (m1+m2)
+        mu = m1*m2/M
+        chirp_mass = (m1*m2)**(3/5)/M**(1/5)
+
+        step_size = 1e-4
+
+        derivs2 = np.zeros((2, self._wg.no_detectors, len(self._wg.projection_strains[0])),
+                                        dtype=np.complex64)
+
+        chirp_low = chirp_mass - step_size
+        chirp_high = chirp_mass + step_size
+
+        mu_low2 = mu - 2*step_size
+        mu_low = mu - step_size
+        mu_high = mu + step_size
+        mu_high2 = mu + 2*step_size
+
+        m1, m2 = self.from_mu_chirp_to_m1_m2(mu_low, chirp_mass)
+
+        hp, hc = self._wg.compute_hp_hc(-1, params=[m1, m2, distance])
+        self._wg.project_hp_hc(hp, hc, -1, params=[m1, m2, distance])
+
+        f_low = self._wg.projection_strains.copy()
+
+        m1, m2 = self.from_mu_chirp_to_m1_m2(mu_high, chirp_mass)
+
+        hp, hc = self._wg.compute_hp_hc(-1, params=[m1, m2, distance])
+        self._wg.project_hp_hc(hp, hc, -1, params=[m1, m2, distance])
+
+        f_high = self._wg.projection_strains.copy()
+
+        for j in range(0, self._wg.no_detectors):
+
+            derivs2[0, j, :] = (f_high[j]-f_low[j])/(2*step_size)*mu
+
+
+        m1, m2 = self.from_mu_chirp_to_m1_m2(mu, chirp_low)
+
+        hp, hc = self._wg.compute_hp_hc(-1, params=[m1, m2, distance])
+        self._wg.project_hp_hc(hp, hc, -1, params=[m1, m2, distance])
+
+        f_low = self._wg.projection_strains.copy()
+
+        m1, m2 = self.from_mu_chirp_to_m1_m2(mu, chirp_high)
+
+        hp, hc = self._wg.compute_hp_hc(-1, params=[m1, m2, distance])
+        self._wg.project_hp_hc(hp, hc, -1, params=[m1, m2, distance])
+
+        f_high = self._wg.projection_strains.copy()
+
+        for j in range(0, self._wg.no_detectors):
+            derivs2[1, j, :] = (f_high[j] - f_low[j]) / (2 * step_size)*chirp_mass
+
+        analy_fisher = np.zeros((2, 2))
+
+        for i in range(0, 2):
+            for j in range(0, i+1):
+
+                inner = 0.
+                for m in range(0, self._wg.no_detectors):
+
+                    inner += self._wg.inner_whitened(derivs2[i, m, :], derivs2[j, m, :])
+
+                    # inner += self._wg.inner_colored(derivs[i, m, :],
+                    #                               derivs[j, m+1//self._wg.no_detectors, :])
+
+                analy_fisher[i, j] = inner
+
+        analy_fisher = analy_fisher + analy_fisher.T - np.diag(analy_fisher.diagonal())
+
+        print('Analytical Fisher BEFORE INVERSION')
+        print(analy_fisher*1e10)
+
+        analy_cov = np.linalg.inv(analy_fisher)
+
+        print('ANALYTICAL COVARIANCE W MU AND CHIRP MASS')
+        print(analy_cov)
+
+        return analy_fisher
+
+
+    def from_mu_chirp_to_m1_m2(self,mu, chirp):
+
+        m1 = 1/2*(chirp**(5/2)*mu**(-3/2)+
+                     np.sqrt(chirp**5*mu**(-3)-
+                     4*chirp**(5/2)*mu**(-1/2)))
+
+        m2 = 1/2*(chirp**(5/2) * mu ** (-3 / 2)-
+                     np.sqrt(chirp ** 5 * mu ** (-3) -
+                     4 * chirp ** (5 / 2) * mu ** (-1 / 2)))
+
+        return (m1, m2)
 

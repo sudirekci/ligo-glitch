@@ -338,13 +338,28 @@ def test_fisher_rms():
 
         cov = f.compute_fisher_cov(index=i)
 
-        f.compute_theoretical_rms(index=i)
-        print('Theoretical RMS:', f.th_rms)
-        f.compute_calc_rms()
-        print('Calculated RMS:', f.calc_rms)
-        np.set_printoptions(suppress=True)
+        print('Covariance Matrix')
+        print(cov)
+
+        th_cov = f.compute_theoretical_cov(index=i)
+        print('Theoretical COV:', th_cov)
+
+        #print('Theoretical RMS:', f.th_rms)
+
+        #analy_fisher = f.compute_analytical_rms(index=i)
+
+        #analy_fisher_m1_m2 = f.compute_fisher_matrix(index=i)
+        #print(analy_fisher_m1_m2)
+
+        #print('RATIO of FISHERS')
+        #print(analy_fisher/th_fisher)
+
+        #f.compute_calc_rms()
+        #print('Calculated RMS:', f.calc_rms)
+        #np.set_printoptions(suppress=True)
         #np.set_printoptions(precision=3)
-        print('Percentage errors: ', (f.th_rms-f.calc_rms)/f.calc_rms*100)
+        #print('Percentage errors: ', (f.th_rms-f.calc_rms)/f.calc_rms*100)
+        #print('Ratio: ', (f.th_rms/f.calc_rms))
 
 
 
@@ -361,28 +376,25 @@ def test_fisher_rms():
 
 # test_saving_loading()
 
-dataset_len = 100
+dataset_len = 10
 path_to_glitschen = '/home/su/Documents/glitschen-main/'
 directory='/home/su/Documents/glitch_dataset/'
 
 dataset1 = waveform_dataset_3p.WaveformGenerator(dataset_len=dataset_len, path_to_glitschen=path_to_glitschen,
                                               extrinsic_at_train=False, tomte_to_blip=1, domain='FD',
                                               add_glitch=False, add_noise=True, directory=directory,
-                                              svd_no_basis_coeffs=100)
+                                              svd_no_basis_coeffs=10)
 
 dataset1.construct_signal_dataset(perform_svd=True, save=True, filename='test')
 
 dataset = waveform_dataset_3p.WaveformGenerator(directory=directory)
 dataset.load_data('test')
 
-test_fisher_step_size('distance', 2, 0)
+#test_fisher_step_size('distance', 2, 0)
 
 #print(dataset.snrs)
 
 
-#test_fisher_rms()
+test_fisher_rms()
 
-#print(dataset1.params-dataset.params)
-#print('******************************')
-#print(dataset.params)
 
