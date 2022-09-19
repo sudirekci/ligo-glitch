@@ -26,7 +26,7 @@ from scipy.stats import multivariate_normal
 """
 python gwpe.py train new nde \
     --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_3d_3p_100k/ \
-    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/3d_13/ \
+    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/3d_15/ \
     --nbins 2 \
     --num_transform_blocks 1 \
     --nflows 3 \
@@ -36,13 +36,13 @@ python gwpe.py train new nde \
     --hidden_dims 32 \
     --activation elu \
     --lr_anneal_method cosine \
-    --batch_size 50 \
+    --batch_size 25 \
 
 python gwpe.py train existing \
     --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_3d_3p_100k/ \
-    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/3d_13/ \
+    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/3d_15/ \
     --epochs 25 \
-    --batch_size 50 \
+    --batch_size 25 \
 
 
 python gwpe.py test \
