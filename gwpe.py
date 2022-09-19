@@ -25,18 +25,32 @@ from scipy.stats import multivariate_normal
 
 """
 python gwpe.py train new nde \
-    --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_3d_3p_100k/ \
-    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/3d_15/ \
+    --data_dir /home/su.direkci/glitch_project/dataset_w_glitch_3p_100/ \
+    --model_dir /home/su.direkci/glitch_project/models/3d_1/ \
     --nbins 2 \
     --num_transform_blocks 1 \
     --nflows 3 \
     --batch_norm \
     --lr 0.0002 \
-    --epochs 50 \
+    --epochs 75 \
     --hidden_dims 32 \
     --activation elu \
     --lr_anneal_method cosine \
     --batch_size 25 \
+    
+    python gwpe.py train new nde \
+    --data_dir /home/su.direkci/glitch_project/dataset_w_glitch_3p_100/ \
+    --model_dir /home/su.direkci/glitch_project/models/3d_1/ \
+    --nbins 8 \
+    --num_transform_blocks 4 \
+    --nflows 15 \
+    --batch_norm \
+    --lr 0.0002 \
+    --epochs 75 \
+    --hidden_dims 256 \
+    --activation elu \
+    --lr_anneal_method cosine \
+    --batch_size 50 \
 
 python gwpe.py train existing \
     --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_3d_3p_100k/ \
@@ -191,7 +205,7 @@ class PosteriorModel(object):
             # input_dim = self.wfd.nparams !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             # context_dim = self.wfd.context_dim !!!!!!!!!!!!!!!!!!!!!!!!!!!
             context_dim = 400
-            input_dim = 3
+            input_dim = 15
 
             self.model = model_creator(input_dim=input_dim,
                                        context_dim=context_dim,
