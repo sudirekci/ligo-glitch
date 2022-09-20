@@ -603,7 +603,7 @@ class PosteriorModel(object):
         if plot:
 
             fig1 = corner.corner(params_samples[:,slice], truths=params_true[slice],
-                          labels=parameter_labels[slice])
+                          labels=parameter_labels[slice], hist_kwargs={"density":True})
             # plt.show()
             plt.savefig(self.model_dir+str(idx))
 
