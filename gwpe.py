@@ -42,15 +42,15 @@ python gwpe.py train new nde \
     --data_dir /home/su.direkci/glitch_project/dataset_w_glitch_3p_100/ \
     --model_dir /home/su.direkci/glitch_project/models/3d_1/ \
     --nbins 8 \
-    --num_transform_blocks 4 \
+    --num_transform_blocks 1 \
     --nflows 15 \
     --batch_norm \
-    --lr 0.0002 \
+    --lr 0.00002 \
     --epochs 75 \
-    --hidden_dims 256 \
+    --hidden_dims 32 \
     --activation elu \
     --lr_anneal_method cosine \
-    --batch_size 50 \
+    --batch_size 100 \
 
 python gwpe.py train existing \
     --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_3d_3p_100k/ \
@@ -61,8 +61,9 @@ python gwpe.py train existing \
 
 python gwpe.py test \
     --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_3d_3p_100k/ \
-    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/3d_13/ \
+    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/3d_15/ \
     --fisher \
+    --epoch 75\
     --test_on_training_data \
     --epoch 350 \
 """
@@ -600,10 +601,28 @@ class PosteriorModel(object):
         range1 = np.stack((percentile_low, percentile_high), axis=1)
 
         if plot:
-            corner.corner(params_samples[:,slice], truths=params_true[slice],
+
+            fig1 = corner.corner(params_samples[:,slice], truths=params_true[slice],
                           labels=parameter_labels[slice])
             # plt.show()
             plt.savefig(self.model_dir+str(idx))
+
+            axes = fig1.get_axes()
+
+            # fisher 1d histograms
+            for k in range(0, 3):
+
+                x = np.linspace(norm.ppf(0.0001, loc=params_true[k], scale=np.sqrt(cov_matrix[k, k])),
+                                norm.ppf(0.9999, loc=params_true[k], scale=np.sqrt(cov_matrix[k, k])), 500)
+
+                axes[4 * k].plot(x, norm.pdf(x, loc=params_true[k], scale=np.sqrt(cov_matrix[k, k])), 'r-')
+
+                for l in range(k + 1, 3):
+                    plot_gauss_contours(params_true, cov_matrix, k, l, axes[3 * l + k])
+
+            # corner.corner(fisher_samples, color='red', fig=fig, bins=100, hist_kwargs={"density":True})
+
+            plt.savefig(self.model_dir + str(idx) + '_fisher2')
 
             if compute_fisher:
 
