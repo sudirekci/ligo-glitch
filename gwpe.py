@@ -581,7 +581,7 @@ class PosteriorModel(object):
 
         if compute_fisher:
 
-            _, cov_matrix = self.fisher.compute_theoretical_cov_m1_m2(index=idx)
+            cov_matrix = self.fisher.compute_theoretical_cov_m1_m2(index=idx)
             print('Covariance matrix:')
             print(cov_matrix)
 
