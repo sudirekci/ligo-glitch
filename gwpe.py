@@ -25,7 +25,7 @@ from scipy.stats import multivariate_normal
 
 """
 python gwpe.py train new nde \
-    --data_dir /home/su.direkci/glitch_project/dataset_w_glitch_3p_svd_10/ \
+    --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_3p_svd_10/ \
     --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/3d_16/ \
     --nbins 2 \
     --num_transform_blocks 1 \
@@ -36,7 +36,7 @@ python gwpe.py train new nde \
     --hidden_dims 32 \
     --activation elu \
     --lr_anneal_method cosine \
-    --batch_size 25 \
+    --batch_size 100 \
     
     python gwpe.py train new nde \
     --data_dir /home/su.direkci/glitch_project/dataset_w_glitch_3p_100/ \
@@ -60,12 +60,11 @@ python gwpe.py train existing \
 
 
 python gwpe.py test \
-    --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_3d_3p_100k/ \
-    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/3d_15/ \
+    --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_3p_svd_10/ \
+    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/3d_16/ \
     --fisher \
     --epoch 75\
     --test_on_training_data \
-    --epoch 350 \
 """
 
 #parameter_labels = np.asarray([r'$m_1$',r'$m_2$', r'$\phi_c$',r'$a_1$',r'$a_2$',r'$t_1$',r'$t_2$',
@@ -582,7 +581,7 @@ class PosteriorModel(object):
 
         if compute_fisher:
 
-            cov_matrix = self.fisher.compute_theoretical_cov(index=idx)
+            cov_matrix = self.fisher.compute_theoretical_cov_m1_m2(index=idx)
             print('Covariance matrix:')
             print(cov_matrix)
 
