@@ -279,7 +279,7 @@ class Fisher:
 
         step_size = 1e-4
 
-        derivs2 = np.zeros((3, self._wg.no_detectors, self._wg.duration * self._wg.sampling_freq/2),
+        derivs2 = np.zeros((3, self._wg.no_detectors, int(self._wg.duration * self._wg.sampling_freq/2)),
                                         dtype=np.complex64)
 
         chirp_low = chirp_mass - step_size
