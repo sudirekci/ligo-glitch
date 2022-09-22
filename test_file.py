@@ -336,31 +336,16 @@ def test_fisher_rms():
 
     for i in range(0, dataset_len):
 
-        cov = f.compute_fisher_cov(index=i)
+        _, th_cov = f.compute_theoretical_cov_mu_chirp(index=i)
 
-        print('Covariance Matrix')
-        print(cov)
+        _, analy_cov = f.compute_analytical_cov_mu_chirp(index=i)
 
-        th_cov = f.compute_theoretical_cov(index=i)
-        print('Theoretical COV:', th_cov)
-
-        #print('Theoretical RMS:', f.th_rms)
-
-        #analy_fisher = f.compute_analytical_rms(index=i)
-
-        #analy_fisher_m1_m2 = f.compute_fisher_matrix(index=i)
-        #print(analy_fisher_m1_m2)
-
-        #print('RATIO of FISHERS')
-        #print(analy_fisher/th_fisher)
-
-        #f.compute_calc_rms()
-        #print('Calculated RMS:', f.calc_rms)
-        #np.set_printoptions(suppress=True)
-        #np.set_printoptions(precision=3)
-        #print('Percentage errors: ', (f.th_rms-f.calc_rms)/f.calc_rms*100)
-        #print('Ratio: ', (f.th_rms/f.calc_rms))
-
+        print('*****************')
+        print('Theoretical Cov Matrix Mu Chirp')
+        print(th_cov)
+        print('Analytical Cov Matrix Mu Chirp')
+        print(analy_cov)
+        print('*****************')
 
 
 

@@ -136,7 +136,7 @@ class Fisher:
         return self.F
 
 
-    def compute_fisher_cov(self, index=-1):
+    def compute_analytical_cov_m1_m2(self, index=-1):
 
         if self._params is None and index == -1:
             print('Set parameters first')
@@ -152,7 +152,7 @@ class Fisher:
 
         return self.F_inv
 
-    def compute_theoretical_rms(self, index):
+    def compute_theoretical_cov_mu_chirp(self, index):
 
         self._params = np.copy(self._wg.params[index, :])
 
@@ -186,7 +186,7 @@ class Fisher:
 
         x = (np.pi*M*f)**(2/3)
 
-        derivs = np.zeros((4, self._wg.no_detectors, len(self._wg.projection_strains[0])),
+        derivs = np.zeros((3, self._wg.no_detectors, len(self._wg.projection_strains[0])),
                                                          dtype=np.complex64)
         f0 = 10
 
@@ -196,13 +196,12 @@ class Fisher:
                              ((-3715./756+55*mu/(6*M))*x+24*np.pi*np.power(x, 3./2)))
             derivs[1, i, :] = -1j*(5/4*np.power(8*np.pi*chirp_mass*f,-5./3)*h[i]*
                               (1.+55*mu/(6*M)*x+8*np.pi*np.power(x, 3./2)))
-            derivs[2, i, :] = -1j*h[i]
-            derivs[3, i, :] = 2*np.pi*1j*f/f0*h[i]
+            derivs[2, i, :] = h[i]
 
-        th_fisher = np.zeros((2, 2))
+        th_fisher = np.zeros((3, 3))
 
-        for i in range(0, 2):
-            for j in range(0, 2):
+        for i in range(0, 3):
+            for j in range(0, 3):
 
                 inner = 0.
                 for m in range(0, self._wg.no_detectors):
@@ -215,14 +214,7 @@ class Fisher:
                 th_fisher[i, j] = inner
 
 
-        print('Theoretical FISHER')
-        #th_fisher = th_fisher + th_fisher.T - np.diag(th_fisher.diagonal())
-        #print(th_fisher[0:2,0:2])
-
         th_cov = np.linalg.inv(th_fisher)
-
-        print('THEORETICAL COV. MATRIX')
-        #print(th_cov[0:2,0:2])
 
         #print('MU RMS')
         #print(np.sqrt(1./(1./rms_th[0, 0, 0]+1./rms_th[1, 0, 0])))
@@ -236,24 +228,22 @@ class Fisher:
         self.th_rms[0] = mu_rms*np.abs((M*(mu-3*m1))/(2*mu*(m1-m2)))*mu/m1
         self.th_rms[1] = mu_rms*np.abs((M*(mu-3*m2))/(2*mu*(m1-m2)))*mu/m2
 
-        return th_fisher
+        return th_fisher, th_cov
 
-    def compute_theoretical_cov(self, index):
+    def compute_theoretical_cov_m1_m2(self, index):
 
-        th_fisher = self.compute_theoretical_rms(index)
-        th_cov = np.zeros((3,3))
+        th_fisher = self.compute_theoretical_cov_mu_chirp(index)
 
         m1 = self._params[self._wg.INTRINSIC_PARAMS['mass1']]
         m2 = self._params[self._wg.INTRINSIC_PARAMS['mass2']]
         distance = self._params[self._wg.EXTRINSIC_PARAMS['distance']]
 
-        J = np.asarray([[m2/(m1**2+m1*m2), m1/(m2**2+m1*m2)],
-                        [(2*m1+3*m2)/(5*m1**2+5*m1*m2), (3*m1+2*m2)/(5*m2**2+5*m1*m2)]])
+        J = np.asarray([[m2/(m1**2+m1*m2), m1/(m2**2+m1*m2),0],
+                        [(2*m1+3*m2)/(5*m1**2+5*m1*m2), (3*m1+2*m2)/(5*m2**2+5*m1*m2),0],
+                        [(2*m1+3*m2)/(6*m1**2+6*m1*m2),(2*m2+3*m1)/(6*m2**2+6*m1*m2),-1/distance]])
 
         m1_m2_fisher = np.dot(np.dot(J.T, th_fisher), J)
-        th_cov[0:2, 0:2] = np.linalg.inv(m1_m2_fisher)
-
-        th_cov[2,2] = (self.th_rms[2]*distance)**2
+        th_cov = np.linalg.inv(m1_m2_fisher)
 
         return th_cov
 
@@ -268,7 +258,7 @@ class Fisher:
         self.calc_rms[2] = np.sqrt(self.F_inv[2, 2]) / self._params[self._wg.EXTRINSIC_PARAMS['distance']]
 
 
-    def compute_analytical_rms(self, index):
+    def compute_analytical_cov_mu_chirp(self, index):
 
         self._params = np.copy(self._wg.params[index, :])
 
@@ -287,16 +277,33 @@ class Fisher:
 
         step_size = 1e-4
 
-        derivs2 = np.zeros((2, self._wg.no_detectors, len(self._wg.projection_strains[0])),
+        derivs2 = np.zeros((3, self._wg.no_detectors, len(self._wg.projection_strains[0])),
                                         dtype=np.complex64)
 
         chirp_low = chirp_mass - step_size
         chirp_high = chirp_mass + step_size
 
         mu_low2 = mu - 2*step_size
-        mu_low = mu - step_size
-        mu_high = mu + step_size
+        mu_low = mu - 1e-4
+        mu_high = mu + 1e-4
         mu_high2 = mu + 2*step_size
+
+        dist_low = distance-step_size
+        dist_high = distance+step_size
+
+        hp, hc = self._wg.compute_hp_hc(-1, params=[m1, m2, dist_low])
+        self._wg.project_hp_hc(hp, hc, -1, params=[m1, m2, dist_low])
+
+        f_low = self._wg.projection_strains.copy()
+
+        hp, hc = self._wg.compute_hp_hc(-1, params=[m1, m2, dist_high])
+        self._wg.project_hp_hc(hp, hc, -1, params=[m1, m2, dist_high])
+
+        f_high = self._wg.projection_strains.copy()
+
+        for j in range(0, self._wg.no_detectors):
+
+            derivs2[2, j, :] = (f_high[j]-f_low[j])/(2*step_size)*distance
 
         m1, m2 = self.from_mu_chirp_to_m1_m2(mu_low, chirp_mass)
 
@@ -334,9 +341,10 @@ class Fisher:
         for j in range(0, self._wg.no_detectors):
             derivs2[1, j, :] = (f_high[j] - f_low[j]) / (2 * step_size)*chirp_mass
 
-        analy_fisher = np.zeros((2, 2))
 
-        for i in range(0, 2):
+        analy_fisher = np.zeros((3, 3))
+
+        for i in range(0, 3):
             for j in range(0, i+1):
 
                 inner = 0.
@@ -351,15 +359,9 @@ class Fisher:
 
         analy_fisher = analy_fisher + analy_fisher.T - np.diag(analy_fisher.diagonal())
 
-        print('Analytical Fisher BEFORE INVERSION')
-        print(analy_fisher*1e10)
-
         analy_cov = np.linalg.inv(analy_fisher)
 
-        print('ANALYTICAL COVARIANCE W MU AND CHIRP MASS')
-        print(analy_cov)
-
-        return analy_fisher
+        return analy_fisher,analy_cov
 
 
     def from_mu_chirp_to_m1_m2(self,mu, chirp):

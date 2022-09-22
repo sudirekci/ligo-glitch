@@ -45,7 +45,8 @@ class WaveformGenerator:
 
     slice = np.asarray([0, 1, 10])
 
-    def __init__(self, sampling_frequency=2048., duration=4., fmin=10., dataset_len=100000,
+# sampling freq 512
+    def __init__(self, sampling_frequency=512., duration=4., fmin=10., dataset_len=100000,
                  path_to_glitschen='/home/su/Documents/glitschen-main/',
                  q=5, winlen=0.5, approximant='IMRPhenomPv2', priors=None, detectors=None, tomte_to_blip=1,
                  extrinsic_at_train=False, directory='/home/su/Documents/glitch_dataset/', glitch_sigma=1, domain='FD',
@@ -73,8 +74,8 @@ class WaveformGenerator:
                              6.223352859347546, -0.5153043355101219, 2.871221497023955]
 
             self.priors = np.zeros((self.INTRINSIC_LEN + self.EXTRINSIC_LEN + 1, 2))
-            self.priors[self.INTRINSIC_PARAMS['mass1']] = [10., 80.]
-            self.priors[self.INTRINSIC_PARAMS['mass2']] = [10., 80.]
+            self.priors[self.INTRINSIC_PARAMS['mass1']] = [25., 50.]
+            self.priors[self.INTRINSIC_PARAMS['mass2']] = [25., 50.]
             self.priors[self.EXTRINSIC_PARAMS['distance']] = [100., 1000.]
             self.priors[self.GLITCH_PARAMS['time']] = [-1.5, 1.5]
 
