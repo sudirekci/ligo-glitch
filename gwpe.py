@@ -25,8 +25,8 @@ from scipy.stats import multivariate_normal
 
 """
 python gwpe.py train new nde \
-    --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_3p_svd_10/ \
-    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/3d_16/ \
+    --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_3p_svd_5/ \
+    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/3d_17/ \
     --nbins 2 \
     --num_transform_blocks 1 \
     --nflows 3 \
@@ -35,7 +35,7 @@ python gwpe.py train new nde \
     --epochs 50 \
     --hidden_dims 32 \
     --activation elu \
-    --lr_anneal_method cosine \
+    --no_lr_annealing \
     --batch_size 100 \
     
     python gwpe.py train new nde \
@@ -53,8 +53,8 @@ python gwpe.py train new nde \
     --batch_size 100 \
 
 python gwpe.py train existing \
-    --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_3p_svd_10/ \
-    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/3d_16/ \
+    --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_3p_svd_5/ \
+    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/3d_17/ \
     --epochs 25 \
     --batch_size 100 \
 
@@ -204,7 +204,7 @@ class PosteriorModel(object):
         if not existing:
             # input_dim = self.wfd.nparams !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             # context_dim = self.wfd.context_dim !!!!!!!!!!!!!!!!!!!!!!!!!!!
-            context_dim = 40
+            context_dim = 20
             input_dim = 3
 
             self.model = model_creator(input_dim=input_dim,
