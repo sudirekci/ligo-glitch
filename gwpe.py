@@ -40,7 +40,7 @@ python gwpe.py train new nde \
     
     python gwpe.py train new nde \
     --data_dir /home/su.direkci/glitch_project/dataset_w_glitch_3p_100/ \
-    --model_dir /home/su.direkci/glitch_project/models/3d_1/ \
+    --model_dir /home/su.direkci/glitch_project/models/3d_16/ \
     --nbins 8 \
     --num_transform_blocks 1 \
     --nflows 15 \
@@ -53,10 +53,10 @@ python gwpe.py train new nde \
     --batch_size 100 \
 
 python gwpe.py train existing \
-    --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_3d_3p_100k/ \
-    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/3d_15/ \
+    --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_3p_svd_10/ \
+    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/3d_16/ \
     --epochs 25 \
-    --batch_size 25 \
+    --batch_size 100 \
 
 
 python gwpe.py test \
@@ -581,7 +581,7 @@ class PosteriorModel(object):
 
         if compute_fisher:
 
-            cov_matrix = self.fisher.compute_theoretical_cov_m1_m2(index=idx)
+            cov_matrix = self.fisher.compute_analytical_cov_m1_m2_from_mu_chirp(index=idx)
             print('Covariance matrix:')
             print(cov_matrix)
 

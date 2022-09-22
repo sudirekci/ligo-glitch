@@ -345,6 +345,17 @@ def test_fisher_rms():
         print(analy_cov)
         print('*****************')
 
+        analy_cov_1 = f.compute_analytical_cov_m1_m2(index=i)
+        analy_cov_2 = f.compute_analytical_cov_m1_m2_from_mu_chirp(index=i)
+
+        print('*****************')
+        print('Analytical Cov Matrix M1 M2 1')
+        print(analy_cov_1)
+        print('Analytical Cov Matrix M1 M2 2')
+        print(analy_cov_2)
+        print('*****************')
+
+
 
 
 # dataset.initialize()
@@ -373,13 +384,13 @@ dataset1.construct_signal_dataset(perform_svd=True, save=True, filename='test')
 dataset = waveform_dataset_3p.WaveformGenerator(directory=directory)
 dataset.load_data('test')
 
-test_SVD()
+#test_SVD()
 
 #test_fisher_step_size('distance', 2, 0)
 
 #print(dataset.snrs)
 
 
-#test_fisher_rms()
+test_fisher_rms()
 
 

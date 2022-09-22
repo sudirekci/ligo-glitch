@@ -365,6 +365,24 @@ class Fisher:
 
         return analy_fisher,analy_cov
 
+    def compute_analytical_cov_m1_m2_from_mu_chirp(self, index):
+
+        analy_fisher,_ = self.compute_analytical_cov_mu_chirp(index)
+
+        m1 = self._params[self._wg.INTRINSIC_PARAMS['mass1']]
+        m2 = self._params[self._wg.INTRINSIC_PARAMS['mass2']]
+        distance = self._params[self._wg.EXTRINSIC_PARAMS['distance']]
+
+        J = np.asarray([[m2/(m1**2+m1*m2), m1/(m2**2+m1*m2),0],
+                        [(2*m1+3*m2)/(5*m1**2+5*m1*m2), (3*m1+2*m2)/(5*m2**2+5*m1*m2),0],
+                        [(2*m1+3*m2)/(6*m1**2+6*m1*m2),(2*m2+3*m1)/(6*m2**2+6*m1*m2),-1/distance]])
+
+        m1_m2_fisher = np.dot(np.dot(J.T, analy_fisher), J)
+        analy_cov = np.linalg.inv(m1_m2_fisher)
+
+        return analy_cov
+
+
 
     def from_mu_chirp_to_m1_m2(self,mu, chirp):
 
