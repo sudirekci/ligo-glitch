@@ -282,6 +282,8 @@ class Fisher:
         derivs2 = np.zeros((3, self._wg.no_detectors, len(self._wg.projection_strains[0])),
                                         dtype=np.complex64)
 
+        print(len(self._wg.projection_strains[0]))
+
         chirp_low = chirp_mass - step_size
         chirp_high = chirp_mass + step_size
 
@@ -297,6 +299,8 @@ class Fisher:
         self._wg.project_hp_hc(hp, hc, -1, params=[m1, m2, dist_low])
 
         f_low = self._wg.projection_strains.copy()
+
+        print(len(f_low))
 
         hp, hc = self._wg.compute_hp_hc(-1, params=[m1, m2, dist_high])
         self._wg.project_hp_hc(hp, hc, -1, params=[m1, m2, dist_high])
