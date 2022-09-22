@@ -234,6 +234,8 @@ class Fisher:
 
         th_fisher = self.compute_theoretical_cov_mu_chirp(index)
 
+        print(th_fisher)
+
         m1 = self._params[self._wg.INTRINSIC_PARAMS['mass1']]
         m2 = self._params[self._wg.INTRINSIC_PARAMS['mass2']]
         distance = self._params[self._wg.EXTRINSIC_PARAMS['distance']]
