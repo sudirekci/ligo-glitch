@@ -171,15 +171,13 @@ def test_signals():
 
 
 def test_SVD():
-    dataset_len = 20
-    svd_no_basis_coeffs = 5
 
-    dataset = waveform_dataset.WaveformGenerator(dataset_len=dataset_len, path_to_glitschen=path_to_glitschen,
-                                                 extrinsic_at_train=False, tomte_to_blip=1, domain='FD',
-                                                 svd_no_basis_coeffs=svd_no_basis_coeffs, add_noise=True)
-
-    dataset.construct_signal_dataset(perform_svd=True)
     Vh = dataset.svd.Vh
+
+    print(np.dot(Vh, np.transpose(Vh.conj())))
+
+    print(dataset.detector_signals)
+
 
     # for i in range(0, svd_no_basis_coeffs):
     #     plt.figure()
@@ -357,29 +355,31 @@ def test_fisher_rms():
 
 # test_waveform_dataset()
 
-# test_SVD()
-
 # test_saving_loading()
 
 dataset_len = 10
+svd_no_basis_coeffs = 5
+
 path_to_glitschen = '/home/su/Documents/glitschen-main/'
 directory='/home/su/Documents/glitch_dataset/'
 
 dataset1 = waveform_dataset_3p.WaveformGenerator(dataset_len=dataset_len, path_to_glitschen=path_to_glitschen,
                                               extrinsic_at_train=False, tomte_to_blip=1, domain='FD',
                                               add_glitch=False, add_noise=True, directory=directory,
-                                              svd_no_basis_coeffs=10)
+                                              svd_no_basis_coeffs=svd_no_basis_coeffs)
 
 dataset1.construct_signal_dataset(perform_svd=True, save=True, filename='test')
 
 dataset = waveform_dataset_3p.WaveformGenerator(directory=directory)
 dataset.load_data('test')
 
+test_SVD()
+
 #test_fisher_step_size('distance', 2, 0)
 
 #print(dataset.snrs)
 
 
-test_fisher_rms()
+#test_fisher_rms()
 
 
