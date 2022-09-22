@@ -232,7 +232,7 @@ class Fisher:
 
     def compute_theoretical_cov_m1_m2(self, index):
 
-        th_fisher = self.compute_theoretical_cov_mu_chirp(index)
+        th_fisher, _ = self.compute_theoretical_cov_mu_chirp(index)
 
         print(th_fisher)
 
