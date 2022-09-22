@@ -25,8 +25,8 @@ from scipy.stats import multivariate_normal
 
 """
 python gwpe.py train new nde \
-    --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_3p_svd_5/ \
-    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/3d_17/ \
+    --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_3p_svd_10/ \
+    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/3d_18/ \
     --nbins 2 \
     --num_transform_blocks 1 \
     --nflows 3 \
@@ -60,8 +60,8 @@ python gwpe.py train existing \
 
 
 python gwpe.py test \
-    --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_3p_svd_10/ \
-    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/3d_16/ \
+    --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_3p_svd_5/ \
+    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/3d_17/ \
     --fisher \
     --epoch 75\
     --test_on_training_data \
@@ -204,7 +204,7 @@ class PosteriorModel(object):
         if not existing:
             # input_dim = self.wfd.nparams !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             # context_dim = self.wfd.context_dim !!!!!!!!!!!!!!!!!!!!!!!!!!!
-            context_dim = 20
+            context_dim = 40
             input_dim = 3
 
             self.model = model_creator(input_dim=input_dim,

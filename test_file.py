@@ -209,6 +209,35 @@ def test_SVD():
                         np.imag(dataset.detector_signals[j, i, :]))
             plt.show()
 
+def test_SVD_reconstruction():
+
+    dataset2 = waveform_dataset_3p.WaveformGenerator(dataset_len=100, path_to_glitschen=path_to_glitschen,
+                                                  extrinsic_at_train=False, tomte_to_blip=1, domain='FD',
+                                                  add_glitch=False, svd_no_basis_coeffs=20, detectors=[0])
+
+    dataset2.construct_signal_dataset(perform_svd=False)
+
+    det_signals = dataset2.detector_signals
+
+    dataset2.perform_svd()
+
+    det_signals_svd = dataset2.detector_signals
+
+    print(det_signals.shape)
+    print(det_signals_svd.shape)
+
+
+    for j in range(0, dataset2.no_detectors):
+        for i in range(0, dataset2.dataset_len):
+
+            reconstructed_sig = dataset2.svd.fseries(det_signals_svd[j,i,:])
+
+            plt.figure()
+            plt.plot(np.abs(reconstructed_sig))
+            plt.plot(np.abs(det_signals[j,i,:]))
+            plt.show()
+            print(np.sum(np.abs(reconstructed_sig-det_signals[j,i,:])**2))
+
 
 def test_waveform_dataset():
     dataset1 = waveform_dataset.WaveformGenerator(dataset_len=100, path_to_glitschen=path_to_glitschen,
@@ -391,6 +420,8 @@ dataset.load_data('test')
 #print(dataset.snrs)
 
 
-test_fisher_rms()
+#test_fisher_rms()
+
+test_SVD_reconstruction()
 
 

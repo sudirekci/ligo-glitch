@@ -889,7 +889,11 @@ class SVD:
             self.V = self.Vh.T.conj()
 
     def generate_basis(self, data):
-        U, s, Vh = randomized_svd(data, self.no_basis_coeffs)
+        U, s, Vh = randomized_svd(data, self.no_basis_coeffs, random_state=1581)
+        print(U.shape)
+        print(s.shape)
+        print(s)
+        print(Vh.shape)
 
         self.Vh = Vh.astype(np.complex64)
         self.V = self.Vh.T.conj()
