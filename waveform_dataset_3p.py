@@ -502,6 +502,7 @@ class WaveformGenerator:
         snr_list = []
 
         for j in range(0, self.no_detectors):
+
             det = self.detectors[j]
 
             fp, fc = det.antenna_pattern(ra, dec, polarization, self.REF_TIME)
