@@ -7,9 +7,11 @@ training_wg = wd.WaveformGenerator(dataset_len=20000, add_glitch=False, add_nois
                                    directory=directory, path_to_glitschen=path_to_glitschen,
                                    svd_no_basis_coeffs=10, extrinsic_at_train=True)
 print(training_wg.priors)
-training_wg.construct_signal_dataset(perform_svd=True, save=True, filename='training_data')
+training_wg.construct_signal_dataset(perform_svd=True, save=False)
 training_wg.normalize_params()
 training_wg.normalize_dataset()
+
+training_wg.save_data('training_data')
 
 print('training data saved')
 

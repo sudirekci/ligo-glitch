@@ -852,8 +852,6 @@ class WaveformGenerator:
 
                 print('TODO')
 
-            print('hereeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee')
-
         else:
 
             idx = idx1 // self.noise_real_to_sig
