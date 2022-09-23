@@ -125,6 +125,7 @@ class PosteriorModel(object):
         # load training data
         self.training_wg = wd.WaveformGenerator(directory=self.data_dir)
         self.training_wg.load_data('training_data')
+        print(self.training_wg.params[0:100])
 
         # validation data
         self.validation_wg = wd.WaveformGenerator(directory=self.data_dir)

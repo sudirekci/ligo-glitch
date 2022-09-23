@@ -852,6 +852,8 @@ class WaveformGenerator:
 
                 print('TODO')
 
+            print('hereeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee')
+
         else:
 
             idx = idx1 // self.noise_real_to_sig
@@ -885,7 +887,6 @@ class WaveformGenerator:
                     wfs.append(wf2)
 
         wf = np.concatenate(wfs, axis=-1)
-        print(params)
 
         return wf, params
 
@@ -908,7 +909,6 @@ class WaveformGenerator:
 
         self.params = (self.params - np.expand_dims(self.params_mean, axis=0)) / \
                       np.expand_dims(self.params_std, axis=0)
-        print(self.params[0:100])
 
     def normalize_dataset(self):
 
