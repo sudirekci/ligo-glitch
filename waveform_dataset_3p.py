@@ -1,3 +1,5 @@
+import time
+
 import torch
 from torch.utils.data import Dataset
 
@@ -417,18 +419,18 @@ class WaveformGenerator:
         return snr
 
 
-    def whiten_hp_hc(self, ind, timeshift=0.):
+    def whiten_hp_hc(self, timeshift=0.):
 
 
         timeshift -= self.duration / 2
 
-        self.hp[ind] = self.hp[ind] * np.exp(-1j * 2 * np.pi *
+        self.hp = self.hp * np.expand_dims(np.exp(-1j * 2 * np.pi *
                             self.freqs[self.fft_mask] * timeshift) * \
-                            (self.psd[self.fft_mask]) ** (-0.5)
+                            (self.psd[self.fft_mask]) ** (-0.5),axis=0)
 
-        self.hc[ind] = self.hc[ind] * np.exp(-1j * 2 * np.pi *
+        self.hc = self.hc * np.expand_dims(np.exp(-1j * 2 * np.pi *
                             self.freqs[self.fft_mask] * timeshift) * \
-                            (self.psd[self.fft_mask]) ** (-0.5)
+                            (self.psd[self.fft_mask]) ** (-0.5),axis=0)
 
 
     def calculate_params_statistics(self):
@@ -706,7 +708,8 @@ class WaveformGenerator:
             for i in range(0, self.dataset_len):
 
                 self.hp[i], self.hc[i] = self.compute_hp_hc(i)
-                self.whiten_hp_hc(i)
+
+            self.whiten_hp_hc()
 
         else:
             # compute hps and hcs, sample extrinsic, project, add glitch and noise
