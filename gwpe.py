@@ -545,6 +545,10 @@ class PosteriorModel(object):
             # do the svd
             self.testing_wg.perform_svd(Vh)
 
+            if self.testing_wg.extrinsic_at_train:
+                self.testing_wg.normalize_params()
+                self.testing_wg.normalize_dataset()
+
         f.close()
 
         if compute_fisher:
