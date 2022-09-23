@@ -82,7 +82,7 @@ class WaveformGenerator:
             dmax = self.priors[self.EXTRINSIC_PARAMS['distance']][1]
             dmin = self.priors[self.EXTRINSIC_PARAMS['distance']][0]
             self.extrinsic_mean = 0.75*(dmax**4-dmin**4)/(dmax**3-dmin**3)
-            self.extrinsic_std = np.sqrt(0.6**(dmax**5-dmin**5)/(dmax**3-dmin**3)-
+            self.extrinsic_std = np.sqrt(0.6*(dmax**5-dmin**5)/(dmax**3-dmin**3)-
                                          self.extrinsic_mean**2)
 
         else:
@@ -307,7 +307,8 @@ class WaveformGenerator:
 
         for i in range(0, self.no_detectors):
 
-            self.projection_strains[i] += np.random.normal(size=self.svd_no_basis_coeffs)
+            self.projection_strains[i] += np.random.normal(size=self.svd_no_basis_coeffs) + \
+                1j*np.random.normal(size=self.svd_no_basis_coeffs)
 
 
     def add_glitch_to_projection_strains(self):
@@ -463,7 +464,6 @@ class WaveformGenerator:
                 m1 = np.split(np.mean(self.detector_signals.real, axis=1), self.no_detectors)
                 m2 = np.split(np.mean(self.detector_signals.imag, axis=1), self.no_detectors)
                 self.means = m1 + m2
-                print(self.means)
 
                 std1 = np.split(np.std(self.detector_signals.real, axis=1), self.no_detectors)
                 std2 = np.split(np.std(self.detector_signals.imag, axis=1), self.no_detectors)
@@ -541,8 +541,10 @@ class WaveformGenerator:
             distance = self.params[dataset_ind, self.EXTRINSIC_PARAMS['distance']]
 
         else:
-
-            distance = params[self.EXTRINSIC_PARAMS['distance']]
+            if self.extrinsic_at_train:
+                distance = params[0]
+            else:
+                distance = params[self.EXTRINSIC_PARAMS['distance']]
 
         ra = self.other_params[self.OTHER_PARAMS['right_ascension']]
         dec = self.other_params[self.OTHER_PARAMS['declination']]
@@ -550,8 +552,11 @@ class WaveformGenerator:
         tc = self.other_params[self.OTHER_PARAMS['tc']]
 
         # divide by the distance
-        hp /= distance
-        hc /= distance
+        hp = hp/distance
+        hc = hc/distance
+
+        #print(hp)
+        #print(hc)
 
         snr_list = []
 
@@ -576,8 +581,8 @@ class WaveformGenerator:
                                                    self.projection_strains[j]))
                     # apply timeshift
                     self.projection_strains[j] = self.svd.basis_coeffs(
-                        self.svd.fseries(self.projection_strains[j]* np.exp(-1j * 2 * np.pi *
-                        self.freqs[self.fft_mask] * (dt+tc))))
+                       self.svd.fseries(self.projection_strains[j])* np.exp(-1j * 2 * np.pi *
+                       self.freqs[self.fft_mask] * (dt+tc)))
 
                 else:
                     print('TODO')
@@ -605,23 +610,17 @@ class WaveformGenerator:
         self.params[:, self.INTRINSIC_PARAMS['mass2']] = mass2
 
 
-    def sample_extrinsic(self, sample_once=False):
+    def sample_extrinsic(self):
 
-        if sample_once:
-            extrinsic_params = np.zeros(self.EXTRINSIC_LEN)
+        if self.extrinsic_at_train:
 
+            # change if you sample things other than the distance
             distance_ind = self.EXTRINSIC_PARAMS['distance']
-            extrinsic_params[distance_ind] = power_law_rvs(length=1,
-                                                         dmin=self.priors[distance_ind, 0],
-                                                         dmax=self.priors[distance_ind, 1])
 
-            # sample the rest uniformly
-            for key, value in self.EXTRINSIC_PARAMS.items():
-                if key != 'distance':
-                    extrinsic_params[value] = np.random.uniform(self.priors[value, 0],
-                                                              self.priors[value, 1])
+            extrinsic_param = power_law_rvs(length=1, dmin=self.priors[distance_ind, 0],
+                                                dmax=self.priors[distance_ind, 1])
 
-            return extrinsic_params
+            return extrinsic_param[0]
 
         # sample distance with power law
         distance_ind = self.EXTRINSIC_PARAMS['distance']
@@ -650,8 +649,6 @@ class WaveformGenerator:
 
             data1 = np.zeros((self.dataset_len, self.svd_no_basis_coeffs), dtype=np.complex_)
             data2 = np.zeros((self.dataset_len, self.svd_no_basis_coeffs), dtype=np.complex_)
-
-            print(self.svd.Vh.shape)
 
             for i in range(0, self.dataset_len):
                 data1[i] = self.svd.basis_coeffs(self.hp[i,:])
@@ -831,25 +828,25 @@ class WaveformGenerator:
 
             idx = idx1//100
 
-            extrinsic_params = self.sample_extrinsic(sample_once=True)
+            extrinsic_params = self.sample_extrinsic()
 
-            snrs = self.project_hp_hc(self.hp[idx], self.hc[idx], -1,
+            snrs = self.project_hp_hc(np.copy(self.hp[idx]), np.copy(self.hc[idx]), -1,
                                       params=extrinsic_params, whiten=False)
 
             self.add_noise_to_projection_strains_after_SVD()
 
-            params = np.concatenate((self.params[idx], (extrinsic_params-self.extrinsic_mean)/self.extrinsic_std))
+            params = np.append(self.params[idx], (extrinsic_params[0]-self.extrinsic_mean)/self.extrinsic_std)
 
+            wfs = []
             for i in range(0, self.no_detectors):
-                self.projection_strains[i] *= self.extrinsic_mean/np.sqrt(self.fps[i]**2+self.fcs[i]**2)
+
+                #self.projection_strains[i] /= np.sqrt(self.fps[i]**2+self.fcs[i]**2)
+                wfs.append(self.projection_strains[i].real)
+                wfs.append(self.projection_strains[i].imag)
 
             if self.add_glitch:
 
                 print('TODO')
-
-            wf = np.concatenate(self.projection_strains, axis=-1)
-            print(wf)
-            print(params)
 
         else:
 
@@ -883,7 +880,7 @@ class WaveformGenerator:
                     wf2 = (wf.imag - np.squeeze(self.means[index + 1])) / np.squeeze(self.stds[index + 1])
                     wfs.append(wf2)
 
-            wf = np.concatenate(wfs, axis=-1)
+        wf = np.concatenate(wfs, axis=-1)
 
         return wf, params
 

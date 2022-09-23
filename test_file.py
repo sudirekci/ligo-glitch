@@ -462,7 +462,32 @@ def test_extrinsic_at_train():
     #dataset1.initialize_svd()
     dataset1.perform_svd()
     dataset1.calculate_dataset_statistics()
-    print(dataset1.hp.shape)
+
+    dataset1.normalize_params()
+    dataset1.normalize_dataset()
+
+    print('*********************')
+    print(np.mean(dataset1.hc, axis=0))
+    print(np.mean(dataset1.hp, axis=0))
+    print(np.std(dataset1.hc, axis=0))
+    print(np.std(dataset1.hp, axis=0))
+    print('*********************')
+
+    params_all = np.zeros(dataset_len*10)
+    wfs_all = np.zeros((dataset_len*10, 40))
+
+    for i in range(0, dataset_len*10):
+        wf, params = dataset1.provide_sample(i)
+        #print(wf)
+        params_all[i] = params[2]
+        wfs_all[i] = wf
+
+    print(params_all)
+    print(np.mean(params_all))
+    print(np.std(params_all))
+    print(np.mean(wfs_all,axis=0))
+    print(np.std(wfs_all, axis=0))
+    print(dataset1.extrinsic_mean)
 
 
 
