@@ -211,21 +211,34 @@ def test_SVD():
 
 def test_SVD_reconstruction():
 
-    dataset2 = waveform_dataset_3p.WaveformGenerator(dataset_len=100, path_to_glitschen=path_to_glitschen,
+    svd_no_basis_coeffs = 10
+
+    dataset2 = waveform_dataset_3p.WaveformGenerator(dataset_len=10000, path_to_glitschen=path_to_glitschen,
                                                   extrinsic_at_train=False, tomte_to_blip=1, domain='FD',
-                                                  add_glitch=False, svd_no_basis_coeffs=20, detectors=[0])
+                                                  add_glitch=False, svd_no_basis_coeffs=svd_no_basis_coeffs,
+                                                     detectors=[0,1],sampling_frequency=512.,add_noise=False)
 
     dataset2.construct_signal_dataset(perform_svd=False)
 
     det_signals = dataset2.detector_signals
 
     dataset2.perform_svd()
+    #dataset2.add_noise_to_detector_signals_after_SVD()
 
     det_signals_svd = dataset2.detector_signals
 
     print(det_signals.shape)
     print(det_signals_svd.shape)
+    print(dataset2.svd.Vh.shape)
 
+    plt.figure()
+    for i in range(0, svd_no_basis_coeffs):
+        plt.plot(np.abs(dataset2.svd.Vh[i]),alpha=0.4)
+
+    #det_signals += np.fft.rfft(np.random.normal(0, scale=1.0,
+    #                size=(dataset2.no_detectors,dataset2.dataset_len,dataset2.length)))[
+    #                            :,:,dataset2.fft_mask] * dataset2.dt * \
+    #                        np.sqrt(dataset2.bandwidth)
 
     for j in range(0, dataset2.no_detectors):
         for i in range(0, dataset2.dataset_len):
@@ -233,9 +246,23 @@ def test_SVD_reconstruction():
             reconstructed_sig = dataset2.svd.fseries(det_signals_svd[j,i,:])
 
             plt.figure()
-            plt.plot(np.abs(reconstructed_sig))
-            plt.plot(np.abs(det_signals[j,i,:]))
+            plt.plot(dataset2.freqs[dataset2.fft_mask],np.abs(reconstructed_sig),'b-')
+            plt.plot(dataset2.freqs[dataset2.fft_mask],np.abs(det_signals[j,i,:]),'r-')
+            plt.xlabel('Frequency (Hz)')
+            p = dataset2.params[i]
+            print(p)
+            plt.title('Parameters: m1=%.1f, m2=%.2f, d=%.1f' % (p[0],p[1],p[2]))
             plt.show()
+
+
+            #reconstructed_sig = np.fft.irfft(np.pad(reconstructed_sig, (1, 0), 'constant')) * \
+            #                    dataset2.df * dataset2.length / np.sqrt(dataset2.bandwidth)
+
+            #plt.figure()
+            #plt.plot(reconstructed_sig, 'b-',alpha=0.4)
+            #plt.plot(np.fft.irfft(np.pad(det_signals[j,i,:], (1, 0), 'constant')) * \
+            #                   dataset2.df * dataset2.length / np.sqrt(dataset2.bandwidth),'r-',alpha=0.4)
+            #plt.show()
             print(np.sum(np.abs(reconstructed_sig-det_signals[j,i,:])**2))
 
 
@@ -347,6 +374,13 @@ def test_fisher_step_size(el, ind1, ind2):
 
 def test_fisher_cov():
 
+    dataset = waveform_dataset_3p.WaveformGenerator(dataset_len=dataset_len, path_to_glitschen=path_to_glitschen,
+                                                    extrinsic_at_train=False, tomte_to_blip=1, domain='FD',
+                                                    add_glitch=False, add_noise=True, directory=directory,
+                                                    svd_no_basis_coeffs=svd_no_basis_coeffs)
+
+    dataset.construct_signal_dataset(perform_svd=True, save=True, filename='test')
+
     f = Fisher(waveform_generator=dataset)
 
     for i in range(0, dataset_len):
@@ -358,6 +392,13 @@ def test_fisher_cov():
 
 
 def test_fisher_rms():
+
+    dataset = waveform_dataset_3p.WaveformGenerator(dataset_len=dataset_len, path_to_glitschen=path_to_glitschen,
+                                                    extrinsic_at_train=False, tomte_to_blip=1, domain='FD',
+                                                    add_glitch=False, add_noise=True, directory=directory,
+                                                    svd_no_basis_coeffs=svd_no_basis_coeffs)
+
+    dataset.construct_signal_dataset(perform_svd=True, save=True, filename='test')
 
     f = Fisher(waveform_generator=dataset)
 
@@ -385,6 +426,45 @@ def test_fisher_rms():
         print('*****************')
 
 
+def test_extrinsic_at_train():
+
+    dataset = waveform_dataset_3p.WaveformGenerator(dataset_len=dataset_len, path_to_glitschen=path_to_glitschen,
+                                                    extrinsic_at_train=True, tomte_to_blip=1, domain='FD',
+                                                    add_glitch=False, add_noise=False, directory=directory,
+                                                    svd_no_basis_coeffs=svd_no_basis_coeffs)
+
+    dataset.construct_signal_dataset(perform_svd=False, save=True, filename='test')
+
+    print(dataset.hp.shape)
+    #print(dataset.hp)
+    print(dataset.hc.shape)
+    #print(dataset.hc)
+    print(dataset.means[0].shape)
+    #print(dataset.stds[0].shape)
+
+    #bb = ((dataset.hc-np.expand_dims(dataset.means[2], axis=0))/np.expand_dims(dataset.stds[2], axis=0))
+
+    #print(np.mean(bb.real, axis=0))
+    #print(np.std(bb.real, axis=0))
+
+    dataset1 = waveform_dataset_3p.WaveformGenerator()
+    dataset1.load_data(filename='test')
+
+    print(dataset1.performed_svd)
+
+    print(dataset1.hp.shape)
+    #print(dataset.hp)
+    print(dataset1.hc.shape)
+    #print(dataset.hc)
+    print(dataset1.means[0].shape)
+    #print(dataset.stds[0].shape)
+
+    #dataset1.initialize_svd()
+    dataset1.perform_svd()
+    dataset1.calculate_dataset_statistics()
+    print(dataset1.hp.shape)
+
+
 
 
 # dataset.initialize()
@@ -397,21 +477,11 @@ def test_fisher_rms():
 
 # test_saving_loading()
 
-dataset_len = 10
-svd_no_basis_coeffs = 5
+dataset_len = 100
+svd_no_basis_coeffs = 10
 
 path_to_glitschen = '/home/su/Documents/glitschen-main/'
 directory='/home/su/Documents/glitch_dataset/'
-
-dataset1 = waveform_dataset_3p.WaveformGenerator(dataset_len=dataset_len, path_to_glitschen=path_to_glitschen,
-                                              extrinsic_at_train=False, tomte_to_blip=1, domain='FD',
-                                              add_glitch=False, add_noise=True, directory=directory,
-                                              svd_no_basis_coeffs=svd_no_basis_coeffs)
-
-dataset1.construct_signal_dataset(perform_svd=True, save=True, filename='test')
-
-dataset = waveform_dataset_3p.WaveformGenerator(directory=directory)
-dataset.load_data('test')
 
 #test_SVD()
 
@@ -422,6 +492,8 @@ dataset.load_data('test')
 
 #test_fisher_rms()
 
-test_SVD_reconstruction()
+#test_SVD_reconstruction()
+
+test_extrinsic_at_train()
 
 
