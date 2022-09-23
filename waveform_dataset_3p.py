@@ -1001,8 +1001,8 @@ class WaveformDatasetTorch(Dataset):
     def __len__(self):
 
         if self.wfg.extrinsic_at_train:
-            return self.wfg.dataset_len * self.wfg.noise_real_to_sig
-        return self.wfg.dataset_len*100
+            return self.wfg.dataset_len * 100
+        return self.wfg.dataset_len * self.wfg.noise_real_to_sig
 
     def __getitem__(self, idx):
         if torch.is_tensor(idx):
