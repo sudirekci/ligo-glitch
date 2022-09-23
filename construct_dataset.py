@@ -5,7 +5,7 @@ path_to_glitschen = '/home/su.direkci/programs/glitschen'
 
 training_wg = wd.WaveformGenerator(dataset_len=500000, add_glitch=False, add_noise=False,
                                    directory=directory, path_to_glitschen=path_to_glitschen,
-                                   svd_no_basis_coeffs=10)
+                                   svd_no_basis_coeffs=10, extrinsic_at_train=True)
 print(training_wg.priors)
 training_wg.construct_signal_dataset(perform_svd=True, save=True, filename='training_data')
 training_wg.normalize_params()
@@ -16,7 +16,7 @@ print('training data saved')
 # validation data
 validation_wg = wd.WaveformGenerator(dataset_len=50000, add_glitch=False, add_noise=False,
                                      directory=directory, path_to_glitschen=path_to_glitschen,
-                                     svd_no_basis_coeffs=10)
+                                     svd_no_basis_coeffs=10, extrinsic_at_train=True)
 validation_wg.construct_signal_dataset(perform_svd=False)
 validation_wg.perform_svd(training_wg.svd.Vh)
 validation_wg.calculate_dataset_statistics()
@@ -30,7 +30,7 @@ print('validation data saved')
 
 testing_wg = wd.WaveformGenerator(dataset_len=50000, add_glitch=False, add_noise=False,
                                   directory=directory, path_to_glitschen=path_to_glitschen,
-                                  svd_no_basis_coeffs=10)
+                                  svd_no_basis_coeffs=10, extrinsic_at_train=True)
 testing_wg.construct_signal_dataset(perform_svd=False, save=True, filename='testing_data')
 
 

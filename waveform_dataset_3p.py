@@ -552,6 +552,7 @@ class WaveformGenerator:
         tc = self.other_params[self.OTHER_PARAMS['tc']]
 
         # divide by the distance
+
         hp = hp/distance
         hc = hc/distance
 
