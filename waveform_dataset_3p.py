@@ -908,6 +908,7 @@ class WaveformGenerator:
 
         self.params = (self.params - np.expand_dims(self.params_mean, axis=0)) / \
                       np.expand_dims(self.params_std, axis=0)
+        print(self.params[0:100])
 
     def normalize_dataset(self):
 
