@@ -885,6 +885,7 @@ class WaveformGenerator:
                     wfs.append(wf2)
 
         wf = np.concatenate(wfs, axis=-1)
+        print(params)
 
         return wf, params
 

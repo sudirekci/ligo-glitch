@@ -25,8 +25,8 @@ from scipy.stats import multivariate_normal
 
 """
 python gwpe.py train new nde \
-    --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_3p_svd_10/ \
-    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/3d_20/ \
+    --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_3p_svd_10_extrinsic/ \
+    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/3d_21/ \
     --nbins 2 \
     --num_transform_blocks 4 \
     --nflows 3 \
@@ -74,6 +74,8 @@ python gwpe.py test \
 #                    r'$c_{21}$',r'$c_{22}$',r'$c_{23}$',r'$c_{24}$',r'$c_{25}$'])
 
 parameter_labels = np.asarray([r'$m_1$',r'$m_2$', r'$d_L$'])
+
+extrinsic_factor = 100
 
 
 class PosteriorModel(object):
