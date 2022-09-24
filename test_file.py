@@ -474,21 +474,22 @@ def test_extrinsic_at_train():
     print('*********************')
 
     params_all = np.zeros(dataset_len*10)
-    wfs_all = np.zeros((dataset_len*10, 40))
+    wfs_all = np.zeros((dataset_len*10, 4*svd_no_basis_coeffs))
 
     for i in range(0, dataset_len*10):
         wf, params = dataset1.provide_sample(i)
         #print(wf)
         params_all[i] = params[2]
         wfs_all[i] = wf
+        print(wf)
+        print(params)
+        plt.figure()
+        plt.plot(np.abs(dataset1.svd.fseries(wf[0:svd_no_basis_coeffs]+
+                                             1j*wf[svd_no_basis_coeffs:2*svd_no_basis_coeffs])))
 
-    print(params_all)
-    print(np.mean(params_all))
-    print(np.std(params_all))
-    print(np.mean(wfs_all,axis=0))
-    print(np.std(wfs_all, axis=0))
-    print(dataset1.extrinsic_mean)
-
+        plt.plot(np.abs(dataset1.svd.fseries(wf[2*svd_no_basis_coeffs:3*svd_no_basis_coeffs] +
+                                             1j * wf[3*svd_no_basis_coeffs:4* svd_no_basis_coeffs])))
+        plt.show()
 
 
 
@@ -502,8 +503,8 @@ def test_extrinsic_at_train():
 
 # test_saving_loading()
 
-dataset_len = 100
-svd_no_basis_coeffs = 10
+dataset_len = 1000
+svd_no_basis_coeffs = 4
 
 path_to_glitschen = '/home/su/Documents/glitschen-main/'
 directory='/home/su/Documents/glitch_dataset/'
