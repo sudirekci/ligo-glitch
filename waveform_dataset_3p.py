@@ -309,14 +309,10 @@ class WaveformGenerator:
 
         # only for extrinsic case
 
-        print(self.projection_strains)
-
         for i in range(0, self.no_detectors):
 
             self.projection_strains[i] += np.random.normal(size=self.svd_no_basis_coeffs) + \
                 1j*np.random.normal(size=self.svd_no_basis_coeffs)
-
-        print(self.projection_strains)
 
 
     def add_glitch_to_projection_strains(self):
