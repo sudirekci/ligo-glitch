@@ -31,7 +31,7 @@ python gwpe.py train new nde \
     --num_transform_blocks 4 \
     --nflows 3 \
     --batch_norm \
-    --lr 0.0002 \
+    --lr 0.001 \
     --epochs 25 \
     --hidden_dims 128 \
     --activation elu \
