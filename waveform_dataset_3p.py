@@ -842,7 +842,7 @@ class WaveformGenerator:
             snrs = self.project_hp_hc(np.copy(self.hp[idx]), np.copy(self.hc[idx]), -1,
                                       params=extrinsic_params, whiten=False)
 
-            self.add_noise_to_projection_strains_after_SVD()
+            #self.add_noise_to_projection_strains_after_SVD()
 
             if self.add_glitch:
 
