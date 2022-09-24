@@ -40,6 +40,7 @@ class WaveformGenerator:
                             theta_JN=7, tc=8, right_ascension=9, declination=10, pol_angle=11)
     OTHER_PARAMS_LEN = len(OTHER_PARAMS)
     GLITCH_PARAMS = dict(time=3, z1=10, z2=11, z3=12, z4=13, z5=14)
+    GLITCH_LEN = len(GLITCH_PARAMS)
     DETECTORS = dict(H1=0, L1=1)
 
     REF_TIME = 1e5
@@ -54,6 +55,7 @@ class WaveformGenerator:
                  extrinsic_at_train=False, directory='/home/su/Documents/glitch_dataset/', glitch_sigma=1, domain='FD',
                  svd_no_basis_coeffs=100, add_glitch=False, add_noise=False, noise_real_to_sig=1):
 
+        self.extrinsic_factor=1
         # ratio of noise realizations to signals
         self.noise_real_to_sig = int(noise_real_to_sig)
 
@@ -343,7 +345,10 @@ class WaveformGenerator:
 
             glitch = np.fft.rfft(np.pad(glitch, (beginning, self.length - end), 'constant'))[self.fft_mask] * self.dt * \
                      np.sqrt(self.bandwidth)
-            self.projection_strains[det] += glitch
+            if self.performed_svd:
+                self.projection_strains[det] += self.svd.basis_coeffs(glitch)
+            else:
+                self.projection_strains[det] += glitch
 
         params = np.concatenate(([time], z))
 
@@ -830,7 +835,7 @@ class WaveformGenerator:
 
         if self.extrinsic_at_train:
 
-            idx = idx1//100
+            idx = idx1//self.extrinsic_factor
 
             extrinsic_params = self.sample_extrinsic()
 
@@ -839,7 +844,20 @@ class WaveformGenerator:
 
             self.add_noise_to_projection_strains_after_SVD()
 
-            params = np.append(self.params[idx], (extrinsic_params[0]-self.extrinsic_mean)/self.extrinsic_std)
+            if self.add_glitch:
+
+                glitch_params = np.zeros(self.no_detectors*self.GLITCH_LEN)
+
+                det, params = self.add_glitch_to_projection_strains()
+                glitch_params[det * len(self.GLITCH_PARAMS):
+                                      (det + 1) * len(self.GLITCH_PARAMS)] = params
+
+                params = np.concatenate((np.append(self.params[idx],
+                                (extrinsic_params[0] - self.extrinsic_mean) /
+                                                   self.extrinsic_std),glitch_params))
+
+            else:
+                params = np.append(self.params[idx], (extrinsic_params[0]-self.extrinsic_mean)/self.extrinsic_std)
 
             wfs = []
             for i in range(0, self.no_detectors):
@@ -848,9 +866,6 @@ class WaveformGenerator:
                 wfs.append(self.projection_strains[i].real)
                 wfs.append(self.projection_strains[i].imag)
 
-            if self.add_glitch:
-
-                print('TODO')
 
         else:
 
@@ -1001,7 +1016,7 @@ class WaveformDatasetTorch(Dataset):
     def __len__(self):
 
         if self.wfg.extrinsic_at_train:
-            return self.wfg.dataset_len * 100
+            return self.wfg.dataset_len * self.wfg.extrinsic_factor
         return self.wfg.dataset_len * self.wfg.noise_real_to_sig
 
     def __getitem__(self, idx):
