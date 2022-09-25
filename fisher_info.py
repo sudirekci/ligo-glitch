@@ -271,8 +271,8 @@ class Fisher:
 
         m1 = self._params[self._wg.INTRINSIC_PARAMS['mass1']]
         m2 = self._params[self._wg.INTRINSIC_PARAMS['mass2']]
-        distance = self._params[self._wg.EXTRINSIC_PARAMS['distance']-
-                                self._wg.extrinsic_at_train*self._wg.INTRINSIC_LEN]
+        distance = self._params[self._wg.EXTRINSIC_PARAMS['distance']]
+                                #self._wg.extrinsic_at_train*self._wg.INTRINSIC_LEN]
 
         M = (m1+m2)
         mu = m1*m2/M

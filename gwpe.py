@@ -569,12 +569,13 @@ class PosteriorModel(object):
 
         idx = idx // self.testing_wg.noise_real_to_sig
 
-        if self.testing_wg.add_glitch:
-            params_true = np.concatenate((self.testing_wg.params[idx],self.testing_wg.glitch_params[idx]))
-        else:
-            params_true = self.testing_wg.params[idx]
 
-        y, _ = self.testing_wg.provide_sample(idx)
+        # if self.testing_wg.add_glitch:
+        #     params_true = np.concatenate((self.testing_wg.params[idx],self.testing_wg.glitch_params[idx]))
+        # else:
+        #     params_true = self.testing_wg.params[idx]
+
+        y, params_true = self.testing_wg.provide_sample(idx)
 
 
         if self.model_type == 'nde':
@@ -585,6 +586,7 @@ class PosteriorModel(object):
         x_samples = x_samples.to(self.device)
 
         params_samples = self.testing_wg.post_process_parameters(x_samples.cpu().numpy())
+        params_true = self.testing_wg.post_process_parameters(params_true)
 
         if compute_fisher:
 
