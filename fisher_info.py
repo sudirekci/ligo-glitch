@@ -260,9 +260,8 @@ class Fisher:
         self.calc_rms[2] = np.sqrt(self.F_inv[2, 2]) / self._params[self._wg.EXTRINSIC_PARAMS['distance']]
 
 
-    def compute_analytical_cov_mu_chirp(self, index):
+    def compute_analytical_cov_mu_chirp(self):
 
-        self._params = np.copy(self._wg.params[index, :])
 
         # th[0] = ΔM1/M1, th[1] = ΔM2/M2, th[2] = ΔD/D
         #self.analy_rms = np.zeros(3)
@@ -366,9 +365,14 @@ class Fisher:
 
         return analy_fisher,analy_cov
 
-    def compute_analytical_cov_m1_m2_from_mu_chirp(self, index):
+    def compute_analytical_cov_m1_m2_from_mu_chirp(self, index=-1, params=None):
 
-        analy_fisher,_ = self.compute_analytical_cov_mu_chirp(index)
+        if index == -1:
+            self._params = np.copy(params)
+        else:
+            self._params = np.copy(self._wg.params[index, :])
+
+        analy_fisher,_ = self.compute_analytical_cov_mu_chirp()
 
         m1 = self._params[self._wg.INTRINSIC_PARAMS['mass1']]
         m2 = self._params[self._wg.INTRINSIC_PARAMS['mass2']]

@@ -32,7 +32,7 @@ python gwpe.py train new nde \
     --nflows 3 \
     --batch_norm \
     --lr 0.0002 \
-    --epochs 25 \
+    --epochs 3 \
     --hidden_dims 32 \
     --activation elu \
     --no_lr_annealing \
@@ -591,7 +591,7 @@ class PosteriorModel(object):
 
         if compute_fisher:
 
-            cov_matrix = self.fisher.compute_analytical_cov_m1_m2_from_mu_chirp(index=idx)
+            cov_matrix = self.fisher.compute_analytical_cov_m1_m2_from_mu_chirp(params=params_true)
             print('Covariance matrix:')
             print(cov_matrix)
 

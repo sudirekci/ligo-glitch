@@ -430,7 +430,6 @@ class WaveformGenerator:
 
     def whiten_hp_hc(self, timeshift=0.):
 
-
         timeshift -= self.duration / 2
 
         self.hp = self.hp * np.expand_dims(np.exp(-1j * 2 * np.pi *

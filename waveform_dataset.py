@@ -405,6 +405,18 @@ class WaveformGenerator:
 
         return snr
 
+    def whiten_hp_hc(self, timeshift=0.):
+
+        timeshift -= self.duration / 2
+
+        self.hp = self.hp * np.expand_dims(np.exp(-1j * 2 * np.pi *
+                            self.freqs[self.fft_mask] * timeshift) * \
+                            (self.psd[self.fft_mask]) ** (-0.5),axis=0)
+
+        self.hc = self.hc * np.expand_dims(np.exp(-1j * 2 * np.pi *
+                            self.freqs[self.fft_mask] * timeshift) * \
+                            (self.psd[self.fft_mask]) ** (-0.5),axis=0)
+
     def calculate_params_statistics(self):
 
         if self.params is not None:
@@ -427,7 +439,18 @@ class WaveformGenerator:
     def calculate_dataset_statistics(self):
 
         if self.extrinsic_at_train:
-            print('TODO')
+            if self.hp is not None:
+                m1 = np.mean(self.hp.real, axis=0)
+                m2 = np.mean(self.hp.imag, axis=0)
+                m3 = np.mean(self.hc.real, axis=0)
+                m4 = np.mean(self.hc.imag, axis=0)
+                self.means = [m1, m2, m3, m4]
+
+                std1 = np.std(self.hp.real, axis=0)
+                std2 = np.std(self.hp.imag, axis=0)
+                std3 = np.std(self.hc.real, axis=0)
+                std4 = np.std(self.hc.imag, axis=0)
+                self.stds = [std1, std2, std3, std4]
         else:
             if self.detector_signals is not None:
                 m1 = np.split(np.mean(self.detector_signals.real, axis=1), self.no_detectors)
@@ -634,14 +657,17 @@ class WaveformGenerator:
 
             # compute hps and hcs, save them. Don't compute glitches or noise
 
-            self.params = np.zeros((self.dataset_len, WaveformGenerator.INTRINSIC_LEN))
+            self.params = np.zeros((self.dataset_len, self.INTRINSIC_LEN))
             self.sample_intrinsic()
 
             self.hp = np.zeros((self.dataset_len, length), dtype=dtype)
             self.hc = np.zeros((self.dataset_len, length), dtype=dtype)
 
             for i in range(0, self.dataset_len):
+
                 self.hp[i], self.hc[i] = self.compute_hp_hc(i)
+
+            self.whiten_hp_hc()
 
         else:
             # compute hps and hcs, sample extrinsic, project, add glitch and noise
@@ -721,10 +747,10 @@ class WaveformGenerator:
                 f1.create_dataset("hp", self.hp.shape, dtype='f', data=self.hp)
                 f1.create_dataset("hc", self.hc.shape, dtype='f', data=self.hc)
             elif self.domain == 'FD':
-                f1.create_dataset("hp_real", self.hp.shape, dtype='f', data=self.hp.real)
-                f1.create_dataset("hp_imag", self.hp.shape, dtype='f', data=self.hp.imag)
-                f1.create_dataset("hc_real", self.hc.shape, dtype='f', data=self.hc.real)
-                f1.create_dataset("hc_imag", self.hc.shape, dtype='f', data=self.hc.imag)
+                f1.create_dataset("hp_real", self.hp.shape, dtype='float64', data=self.hp.real)
+                f1.create_dataset("hp_imag", self.hp.shape, dtype='float64', data=self.hp.imag)
+                f1.create_dataset("hc_real", self.hc.shape, dtype='float64', data=self.hc.real)
+                f1.create_dataset("hc_imag", self.hc.shape, dtype='float64', data=self.hc.imag)
 
             f1.create_dataset("intrinsic_params", self.params.shape,
                               dtype='f', data=self.params)
@@ -756,11 +782,40 @@ class WaveformGenerator:
 
         if self.extrinsic_at_train:
 
-            x = 0
-            print('TODO')
-            return -1
-            wf = None
-            params = None
+            if self.extrinsic_at_train:
+
+                idx = idx1 // self.extrinsic_factor
+
+                extrinsic_params = self.sample_extrinsic()
+
+                snrs = self.project_hp_hc(np.copy(self.hp[idx]), np.copy(self.hc[idx]), -1,
+                                          params=extrinsic_params, whiten=False)
+
+                # self.normalize_projection_strains()
+
+                self.add_noise_to_projection_strains_after_SVD()
+
+                if self.add_glitch:
+
+                    glitch_params = np.zeros(self.no_detectors * self.GLITCH_LEN)
+
+                    det, params = self.add_glitch_to_projection_strains()
+                    glitch_params[det * len(self.GLITCH_PARAMS):
+                                  (det + 1) * len(self.GLITCH_PARAMS)] = params
+
+                    params = np.concatenate((np.append(self.params[idx],
+                                                       (extrinsic_params[0] - self.extrinsic_mean) /
+                                                       self.extrinsic_std), glitch_params))
+
+                else:
+                    params = np.append(self.params[idx],
+                                       (extrinsic_params[0] - self.extrinsic_mean) / self.extrinsic_std)
+
+                wfs = []
+                for i in range(0, self.no_detectors):
+                    # self.projection_strains[i] /= np.sqrt(self.fps[i]**2+self.fcs[i]**2)
+                    wfs.append(self.projection_strains[i].real)
+                    wfs.append(self.projection_strains[i].imag)
 
         else:
 
