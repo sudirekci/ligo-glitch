@@ -520,6 +520,16 @@ directory='/home/su/Documents/glitch_dataset/'
 
 #test_SVD_reconstruction()
 
-test_extrinsic_at_train()
+#test_extrinsic_at_train()
 
+
+dataset = waveform_dataset_3p.WaveformGenerator(dataset_len=dataset_len, path_to_glitschen=path_to_glitschen,
+                                                    extrinsic_at_train=True, tomte_to_blip=1, domain='FD',
+                                                    add_glitch=False, add_noise=False, directory=directory,
+                                                    svd_no_basis_coeffs=svd_no_basis_coeffs)
+
+dataset.initialize()
+print(len(dataset.freqs))
+print(dataset.bandwidth)
+print(dataset.dt)
 
