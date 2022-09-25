@@ -552,7 +552,6 @@ class WaveformGenerator:
 
         else:
             if extrinsic:
-                print('bura?')
                 distance = params[0]
             else:
                 distance = params[self.EXTRINSIC_PARAMS['distance']]
