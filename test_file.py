@@ -557,14 +557,33 @@ dataset = waveform_dataset_3p.WaveformGenerator(dataset_len=dataset_len, path_to
 #print(dataset.fcs)
 #print(dataset.fps)
 
-dataset.construct_signal_dataset(perform_svd=True,save='test')
+dataset.construct_signal_dataset(perform_svd=True, save=True, filename='test')
 #dataset.normalize_params()
+print(dataset.performed_svd)
 
 dataset1 = waveform_dataset_3p.WaveformGenerator()
 dataset1.load_data(filename='test')
+dataset1.normalize_params()
+
+print(dataset1.extrinsic_at_train)
+print(dataset1.performed_svd)
 
 print(dataset1.params_mean)
 print(dataset1.params_std)
+
+f = Fisher(waveform_generator=dataset1)
+
+for i in range(0, dataset_len):
+
+    wf, params = dataset1.provide_sample(i)
+    print(params)
+
+    params = dataset1.post_process_parameters(params)
+
+    cov = f.compute_analytical_cov_m1_m2_from_mu_chirp(params=params)
+
+    print(cov)
+    print('Positive def: ' , is_pos_def(cov))
 
 # for i in range(0, dataset.no_detectors):
 #

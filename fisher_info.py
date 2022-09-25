@@ -272,8 +272,6 @@ class Fisher:
         m2 = self._params[self._wg.INTRINSIC_PARAMS['mass2']]
         distance = self._params[self._wg.EXTRINSIC_PARAMS['distance']]
                                 #self._wg.extrinsic_at_train*self._wg.INTRINSIC_LEN]
-        print('bıdı bıdı')
-        print(m1, m2, distance)
 
         M = (m1+m2)
         mu = m1*m2/M
@@ -295,13 +293,16 @@ class Fisher:
         dist_low = distance-step_size
         dist_high = distance+step_size
 
+        #print(dist_low)
+        #print(dist_high)
+
         hp, hc = self._wg.compute_hp_hc(-1, params=[m1, m2, dist_low])
-        self._wg.project_hp_hc(hp, hc, -1, params=[m1, m2, dist_low])
+        self._wg.project_hp_hc(hp, hc, -1, params=[m1, m2, dist_low], whiten=True)
 
         f_low = self._wg.projection_strains.copy()
 
         hp, hc = self._wg.compute_hp_hc(-1, params=[m1, m2, dist_high])
-        self._wg.project_hp_hc(hp, hc, -1, params=[m1, m2, dist_high])
+        self._wg.project_hp_hc(hp, hc, -1, params=[m1, m2, dist_high], whiten=True)
 
         f_high = self._wg.projection_strains.copy()
 
@@ -312,14 +313,14 @@ class Fisher:
         m1, m2 = self.from_mu_chirp_to_m1_m2(mu_low, chirp_mass)
 
         hp, hc = self._wg.compute_hp_hc(-1, params=[m1, m2, distance])
-        self._wg.project_hp_hc(hp, hc, -1, params=[m1, m2, distance])
+        self._wg.project_hp_hc(hp, hc, -1, params=[m1, m2, distance], whiten=True)
 
         f_low = self._wg.projection_strains.copy()
 
         m1, m2 = self.from_mu_chirp_to_m1_m2(mu_high, chirp_mass)
 
         hp, hc = self._wg.compute_hp_hc(-1, params=[m1, m2, distance])
-        self._wg.project_hp_hc(hp, hc, -1, params=[m1, m2, distance])
+        self._wg.project_hp_hc(hp, hc, -1, params=[m1, m2, distance], whiten=True)
 
         f_high = self._wg.projection_strains.copy()
 
@@ -331,14 +332,14 @@ class Fisher:
         m1, m2 = self.from_mu_chirp_to_m1_m2(mu, chirp_low)
 
         hp, hc = self._wg.compute_hp_hc(-1, params=[m1, m2, distance])
-        self._wg.project_hp_hc(hp, hc, -1, params=[m1, m2, distance])
+        self._wg.project_hp_hc(hp, hc, -1, params=[m1, m2, distance], whiten=True)
 
         f_low = self._wg.projection_strains.copy()
 
         m1, m2 = self.from_mu_chirp_to_m1_m2(mu, chirp_high)
 
         hp, hc = self._wg.compute_hp_hc(-1, params=[m1, m2, distance])
-        self._wg.project_hp_hc(hp, hc, -1, params=[m1, m2, distance])
+        self._wg.project_hp_hc(hp, hc, -1, params=[m1, m2, distance], whiten=True)
 
         f_high = self._wg.projection_strains.copy()
 
@@ -365,7 +366,7 @@ class Fisher:
 
         analy_cov = np.linalg.inv(analy_fisher)
 
-        return analy_fisher,analy_cov
+        return analy_fisher, analy_cov
 
     def compute_analytical_cov_m1_m2_from_mu_chirp(self, index=-1, params=None):
 
@@ -374,7 +375,12 @@ class Fisher:
         else:
             self._params = np.copy(self._wg.params[index, :])
 
-        analy_fisher,_ = self.compute_analytical_cov_mu_chirp()
+        #before = self._wg.extrinsic_at_train
+        #self._wg.extrinsic_at_train = True
+
+        analy_fisher, _ = self.compute_analytical_cov_mu_chirp()
+
+        #self._wg.extrinsic_at_train = before
 
         m1 = self._params[self._wg.INTRINSIC_PARAMS['mass1']]
         m2 = self._params[self._wg.INTRINSIC_PARAMS['mass2']]

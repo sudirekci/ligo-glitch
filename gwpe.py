@@ -32,11 +32,11 @@ python gwpe.py train new nde \
     --nflows 3 \
     --batch_norm \
     --lr 0.0002 \
-    --epochs 1 \
+    --epochs 5 \
     --hidden_dims 32 \
     --activation elu \
     --no_lr_annealing \
-    --batch_size 2000 \
+    --batch_size 200 \
     
     python gwpe.py train new nde \
     --data_dir /home/su.direkci/glitch_project/dataset_w_glitch_3p_100/ \

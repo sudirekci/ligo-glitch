@@ -544,14 +544,15 @@ class WaveformGenerator:
         return hp, hc
 
 
-    def project_hp_hc(self, hp, hc, dataset_ind, params=None, whiten=True):
+    def project_hp_hc(self, hp, hc, dataset_ind, params=None, whiten=True, extrinsic=False):
 
         if params is None:
 
             distance = self.params[dataset_ind, self.EXTRINSIC_PARAMS['distance']]
 
         else:
-            if self.extrinsic_at_train:
+            if extrinsic:
+                print('bura?')
                 distance = params[0]
             else:
                 distance = params[self.EXTRINSIC_PARAMS['distance']]
@@ -847,7 +848,7 @@ class WaveformGenerator:
             extrinsic_params = self.sample_extrinsic()
 
             snrs = self.project_hp_hc(np.copy(self.hp[idx]), np.copy(self.hc[idx]), -1,
-                                      params=extrinsic_params, whiten=False)
+                                      params=extrinsic_params, whiten=False, extrinsic=True)
 
             #self.normalize_projection_strains()
 
