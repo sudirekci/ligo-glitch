@@ -272,6 +272,8 @@ class Fisher:
         m2 = self._params[self._wg.INTRINSIC_PARAMS['mass2']]
         distance = self._params[self._wg.EXTRINSIC_PARAMS['distance']]
                                 #self._wg.extrinsic_at_train*self._wg.INTRINSIC_LEN]
+        print('bıdı bıdı')
+        print(m1, m2, distance)
 
         M = (m1+m2)
         mu = m1*m2/M
@@ -378,7 +380,7 @@ class Fisher:
         m2 = self._params[self._wg.INTRINSIC_PARAMS['mass2']]
         distance = self._params[self._wg.EXTRINSIC_PARAMS['distance']]
 
-        print(m1, m2, distance)
+        # print(m1, m2, distance)
 
         J = np.asarray([[m2/(m1**2+m1*m2), m1/(m2**2+m1*m2),0],
                         [(2*m1+3*m2)/(5*m1**2+5*m1*m2), (3*m1+2*m2)/(5*m2**2+5*m1*m2),0],
