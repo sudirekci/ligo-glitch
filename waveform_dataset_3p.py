@@ -593,9 +593,9 @@ class WaveformGenerator:
                     snr_list.append(self.inner_whitened(self.projection_strains[j],
                                                    self.projection_strains[j]))
                     # apply timeshift
-                    #self.projection_strains[j] = self.svd.basis_coeffs(
-                    #   self.svd.fseries(self.projection_strains[j])* np.exp(-1j * 2 * np.pi *
-                    #   self.freqs[self.fft_mask] * (dt+tc)))
+                    self.projection_strains[j] = self.svd.basis_coeffs(
+                       self.svd.fseries(self.projection_strains[j])* np.exp(-1j * 2 * np.pi *
+                       self.freqs[self.fft_mask] * (dt+tc)))
 
                 else:
                     print('TODO')
@@ -847,7 +847,7 @@ class WaveformGenerator:
             snrs = self.project_hp_hc(np.copy(self.hp[idx]), np.copy(self.hc[idx]), -1,
                                       params=extrinsic_params, whiten=False)
 
-            self.normalize_projection_strains()
+            #self.normalize_projection_strains()
 
             self.add_noise_to_projection_strains_after_SVD()
 

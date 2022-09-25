@@ -28,12 +28,12 @@ python gwpe.py train new nde \
     --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_3p_svd_10_extrinsic/ \
     --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/3d_21/ \
     --nbins 2 \
-    --num_transform_blocks 4 \
+    --num_transform_blocks 1 \
     --nflows 3 \
     --batch_norm \
     --lr 0.0002 \
     --epochs 25 \
-    --hidden_dims 128 \
+    --hidden_dims 32 \
     --activation elu \
     --no_lr_annealing \
     --batch_size 200 \
