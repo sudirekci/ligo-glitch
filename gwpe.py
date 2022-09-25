@@ -548,6 +548,8 @@ class PosteriorModel(object):
             # do the svd
             self.testing_wg.perform_svd(Vh)
 
+            print(self.testing_wg.params_mean)
+            print(self.testing_wg.params_std)
 
             if self.testing_wg.extrinsic_at_train:
                 self.testing_wg.normalize_params()
