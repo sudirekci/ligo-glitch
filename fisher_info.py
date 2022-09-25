@@ -265,9 +265,9 @@ class Fisher:
         self._params = np.copy(self._wg.params[index, :])
 
         # th[0] = ΔM1/M1, th[1] = ΔM2/M2, th[2] = ΔD/D
-        self.analy_rms = np.zeros(3)
+        #self.analy_rms = np.zeros(3)
 
-        self.analy_rms[2] = 1./np.sqrt(self._wg.snrs[0, index]**2+self._wg.snrs[1, index]**2)
+        #self.analy_rms[2] = 1./np.sqrt(self._wg.snrs[0, index]**2+self._wg.snrs[1, index]**2)
 
         m1 = self._params[self._wg.INTRINSIC_PARAMS['mass1']]
         m2 = self._params[self._wg.INTRINSIC_PARAMS['mass2']]
