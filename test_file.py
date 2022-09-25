@@ -526,10 +526,27 @@ directory='/home/su/Documents/glitch_dataset/'
 dataset = waveform_dataset_3p.WaveformGenerator(dataset_len=dataset_len, path_to_glitschen=path_to_glitschen,
                                                     extrinsic_at_train=True, tomte_to_blip=1, domain='FD',
                                                     add_glitch=False, add_noise=False, directory=directory,
-                                                    svd_no_basis_coeffs=svd_no_basis_coeffs)
+                                                    svd_no_basis_coeffs=svd_no_basis_coeffs, duration=4.)
 
 dataset.initialize()
 print(len(dataset.freqs))
 print(dataset.bandwidth)
 print(dataset.dt)
+print(dataset.dt**2*dataset.bandwidth*dataset.length)
+
+noises = np.zeros((1000, 1), dtype=complex)
+
+vec_real = np.random.random(size=int(dataset.bandwidth*dataset.duration))
+vec_imag = np.random.random(size=int(dataset.bandwidth*dataset.duration))
+
+vec = (vec_real+vec_imag*1j)/np.sqrt(np.sum(vec_real**2)+np.sum(vec_imag**2))
+
+for j in range(0, 1000):
+    noise = np.fft.rfft(np.random.normal(0, scale=1.0, size=int(dataset.length)))[
+                                dataset.fft_mask] * dataset.dt * \
+                            np.sqrt(dataset.bandwidth)
+    noises[j] = np.sum(vec*noise)
+
+print(np.mean(noises))
+print(np.std(noises))
 
