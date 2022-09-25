@@ -913,6 +913,9 @@ class WaveformGenerator:
 
         if self.extrinsic_at_train:
 
+            print(self.params_std)
+            print(self.params_mean)
+
             if not self.add_glitch:
                 return x * np.append(self.params_std, self.extrinsic_std)\
                        + np.append(self.params_mean, self.extrinsic_mean)

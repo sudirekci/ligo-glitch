@@ -558,22 +558,24 @@ print(dataset.fcs)
 print(dataset.fps)
 
 dataset.construct_signal_dataset(perform_svd=True)
-#dataset.normalize_dataset_extrinsic()
+dataset.normalize_params()
 
-for i in range(0, dataset.no_detectors):
+print(dataset.params_std)
 
-    print((dataset.fcs[i]*(dataset.means[2]+1j*dataset.means[3]) +
-          dataset.fps[i]*(dataset.means[0]+1j*dataset.means[1]))
-          /dataset.extrinsic_mean)
-
-wfs = np.zeros((dataset_len*100, 4*svd_no_basis_coeffs))
-
-for i in range(0, dataset_len*100):
-
-    wf, params = dataset.provide_sample(i)
-    wfs[i] = wf
-    #print(wf)
-
-print(np.mean(wfs, axis=0))
-print(np.std(wfs, axis=0))
+# for i in range(0, dataset.no_detectors):
+#
+#     print((dataset.fcs[i]*(dataset.means[2]+1j*dataset.means[3]) +
+#           dataset.fps[i]*(dataset.means[0]+1j*dataset.means[1]))
+#           /dataset.extrinsic_mean)
+#
+# wfs = np.zeros((dataset_len*100, 4*svd_no_basis_coeffs))
+#
+# for i in range(0, dataset_len*100):
+#
+#     wf, params = dataset.provide_sample(i)
+#     wfs[i] = wf
+#     #print(wf)
+#
+# print(np.mean(wfs, axis=0))
+# print(np.std(wfs, axis=0))
 

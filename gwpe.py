@@ -588,7 +588,7 @@ class PosteriorModel(object):
         params_samples = self.testing_wg.post_process_parameters(x_samples.cpu().numpy())
         params_true = self.testing_wg.post_process_parameters(params_true)
         print(params_true)
-        print(params_samples)
+        #print(params_samples)
 
         if compute_fisher:
 
