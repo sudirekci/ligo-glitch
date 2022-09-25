@@ -551,16 +551,20 @@ dataset = waveform_dataset_3p.WaveformGenerator(dataset_len=dataset_len, path_to
                                                     add_glitch=False, add_noise=False, directory=directory,
                                                     svd_no_basis_coeffs=svd_no_basis_coeffs, duration=4.)
 
-dataset.initialize()
+#dataset.initialize()
 
-print(dataset.extrinsic_mean)
-print(dataset.fcs)
-print(dataset.fps)
+#print(dataset.extrinsic_mean)
+#print(dataset.fcs)
+#print(dataset.fps)
 
-dataset.construct_signal_dataset(perform_svd=True)
-dataset.normalize_params()
+dataset.construct_signal_dataset(perform_svd=True,save='test')
+#dataset.normalize_params()
 
-print(dataset.params_std)
+dataset1 = waveform_dataset_3p.WaveformGenerator()
+dataset1.load_data(filename='test')
+
+print(dataset1.params_mean)
+print(dataset1.params_std)
 
 # for i in range(0, dataset.no_detectors):
 #

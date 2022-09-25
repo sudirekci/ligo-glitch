@@ -32,11 +32,11 @@ python gwpe.py train new nde \
     --nflows 3 \
     --batch_norm \
     --lr 0.0002 \
-    --epochs 3 \
+    --epochs 1 \
     --hidden_dims 32 \
     --activation elu \
     --no_lr_annealing \
-    --batch_size 200 \
+    --batch_size 2000 \
     
     python gwpe.py train new nde \
     --data_dir /home/su.direkci/glitch_project/dataset_w_glitch_3p_100/ \
@@ -316,6 +316,11 @@ class PosteriorModel(object):
         if not os.path.exists(p/aux_filename):
 
             f = h5py.File(p / aux_filename, 'w')
+
+            print('Params mean')
+            print(self.training_wg.params_mean)
+            print('Params std')
+            print(self.training_wg.params_std)
 
             f.create_dataset('parameters_mean', data=self.training_wg.params_mean)
             f.create_dataset('parameters_std', data=self.training_wg.params_std)
