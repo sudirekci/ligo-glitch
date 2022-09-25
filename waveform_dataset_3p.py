@@ -809,6 +809,9 @@ class WaveformGenerator:
             f1.create_dataset("other_params", self.other_params.shape,
                               dtype='f', data=self.other_params)
 
+            #f1.create_dataset("params_mean", self.params_mean.shape, dtype='f', data=self.params_mean)
+            #f1.create_dataset("params_std", self.params_std.shape, dtype='f', data=self.params_std)
+
         else:
             # save signals
             # save intrinsic & extrinsic params, glitch params

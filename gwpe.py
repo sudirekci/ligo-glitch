@@ -131,6 +131,11 @@ class PosteriorModel(object):
         self.validation_wg = wd.WaveformGenerator(directory=self.data_dir)
         self.validation_wg.load_data('validation_data')
 
+        if self.training_wg.extrinsic_at_train:
+            # normalize the datasets in advance
+            self.training_wg.normalize_params()
+            self.validation_wg.normalize_params()
+
         wfd_train = wd.WaveformDatasetTorch(self.training_wg)
         wfd_test = wd.WaveformDatasetTorch(self.validation_wg)
 
