@@ -615,24 +615,25 @@ class PosteriorModel(object):
             # plt.show()
             plt.savefig(self.model_dir+str(idx))
 
-            axes = fig1.get_axes()
-
-            # fisher 1d histograms
-            for k in range(0, 3):
-
-                x = np.linspace(norm.ppf(0.0001, loc=params_true[k], scale=np.sqrt(cov_matrix[k, k])),
-                                norm.ppf(0.9999, loc=params_true[k], scale=np.sqrt(cov_matrix[k, k])), 500)
-
-                axes[4 * k].plot(x, norm.pdf(x, loc=params_true[k], scale=np.sqrt(cov_matrix[k, k])), 'r-')
-
-                for l in range(k + 1, 3):
-                    plot_gauss_contours(params_true, cov_matrix, k, l, axes[3 * l + k])
-
-            # corner.corner(fisher_samples, color='red', fig=fig, bins=100, hist_kwargs={"density":True})
-
-            plt.savefig(self.model_dir + str(idx) + '_fisher2')
-
             if compute_fisher:
+
+                axes = fig1.get_axes()
+
+                # fisher 1d histograms
+                for k in range(0, 3):
+
+                    x = np.linspace(norm.ppf(0.0001, loc=params_true[k], scale=np.sqrt(cov_matrix[k, k])),
+                                    norm.ppf(0.9999, loc=params_true[k], scale=np.sqrt(cov_matrix[k, k])), 500)
+
+                    axes[4 * k].plot(x, norm.pdf(x, loc=params_true[k], scale=np.sqrt(cov_matrix[k, k])), 'r-')
+
+                    for l in range(k + 1, 3):
+                        plot_gauss_contours(params_true, cov_matrix, k, l, axes[3 * l + k])
+
+                # corner.corner(fisher_samples, color='red', fig=fig, bins=100, hist_kwargs={"density":True})
+
+                plt.savefig(self.model_dir + str(idx) + '_fisher2')
+
 
                 # fisher_samples = np.random.multivariate_normal(params_true[slice], cov_matrix, size=nsamples)
 
@@ -665,12 +666,12 @@ class PosteriorModel(object):
 
                 plt.savefig(self.model_dir + str(idx) + '_fisher')
 
-            else:
-
-                fig1 = corner.corner(params_samples[:, slice], truths=params_true[slice],
-                                     labels=parameter_labels[slice], range=range1)
-
-                plt.savefig(self.model_dir + str(idx) + '_zoomed')
+            # else:
+            #
+            #     fig1 = corner.corner(params_samples[:, slice], truths=params_true[slice],
+            #                          labels=parameter_labels[slice], range=range1)
+            #
+            #     plt.savefig(self.model_dir + str(idx) + '_zoomed')
 
             # plt.show()
 
