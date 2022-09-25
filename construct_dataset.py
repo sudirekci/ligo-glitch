@@ -35,5 +35,4 @@ testing_wg = wd.WaveformGenerator(dataset_len=2000, add_glitch=False, add_noise=
                                   svd_no_basis_coeffs=10, extrinsic_at_train=True)
 testing_wg.construct_signal_dataset(perform_svd=False, save=True, filename='testing_data')
 
-
 print('testing data saved')
