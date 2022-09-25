@@ -912,15 +912,23 @@ class WaveformGenerator:
 
     def post_process_parameters(self, x):
 
-        if not self.add_glitch:
-            return x * self.params_std + self.params_mean
+        if self.extrinsic_at_train:
 
-        # intrinsic & extrinsic params
-        x1 = x[:, 0:(self.INTRINSIC_LEN + self.EXTRINSIC_LEN)]
-        x1 = x1 * self.params_std + self.params_mean
+            if not self.add_glitch:
+                return x * np.append(self.params_std, self.extrinsic_std)\
+                       + np.append(self.params_mean, self.extrinsic_mean)
 
-        x = x[:, (self.INTRINSIC_LEN + self.EXTRINSIC_LEN):]
-        x = x * self.glitch_params_std + self.glitch_params_mean
+        else:
+
+            if not self.add_glitch:
+                return x * self.params_std + self.params_mean
+
+            # intrinsic & extrinsic params
+            x1 = x[:, 0:(self.INTRINSIC_LEN + self.EXTRINSIC_LEN)]
+            x1 = x1 * self.params_std + self.params_mean
+
+            x = x[:, (self.INTRINSIC_LEN + self.EXTRINSIC_LEN):]
+            x = x * self.glitch_params_std + self.glitch_params_mean
 
         return np.concatenate((x1, x), axis=-1)
 

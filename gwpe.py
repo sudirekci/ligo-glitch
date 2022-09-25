@@ -32,7 +32,7 @@ python gwpe.py train new nde \
     --nflows 3 \
     --batch_norm \
     --lr 0.0002 \
-    --epochs 5 \
+    --epochs 25 \
     --hidden_dims 128 \
     --activation elu \
     --no_lr_annealing \
@@ -60,8 +60,8 @@ python gwpe.py train existing \
 
 
 python gwpe.py test \
-    --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_3p_svd_10/ \
-    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/3d_20/ \
+    --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_3p_svd_10_extrinsic/ \
+    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/3d_21/ \
     --fisher \
     --epoch 75\
     --test_on_training_data \
