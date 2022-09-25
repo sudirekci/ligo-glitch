@@ -75,7 +75,7 @@ class WaveformGenerator:
 
             random_params = [1.9385764842785942, 1.7498819076505903, 1.9471468704940496,
                              2.779184216112431, 4.781609102594541, 2.1581020633082915,
-                             6.223352859347546, -0.5153043355101219, 2.871221497023955]
+                             1.0781266874951325, 0.9691707576482571, 2.871221497023955]
 
             self.priors = np.zeros((self.INTRINSIC_LEN + self.EXTRINSIC_LEN + 1, 2))
             self.priors[self.INTRINSIC_PARAMS['mass1']] = [25., 50.]
@@ -187,6 +187,7 @@ class WaveformGenerator:
         self.detectors = []
         self.fcs = []
         self.fps = []
+        self.dt_arrs = []
 
         key_list = list(self.DETECTORS.keys())
         val_list = list(self.DETECTORS.values())
@@ -202,9 +203,11 @@ class WaveformGenerator:
             det_name = key_list[position]
             self.detectors.append(Detector(det_name))
             fp, fc = self.detectors[i].antenna_pattern(ra, dec, polarization, self.REF_TIME)
+            dt = self.detectors[i].time_delay_from_earth_center(ra, dec, self.REF_TIME)
             self.fps.append(fp)
             self.fcs.append(fc)
             self.projection_strains.append(np.zeros(self.length))
+            self.dt_arrs.append(np.exp(-1j * 2 * np.pi *self.freqs[self.fft_mask] * dt))
             print(det_name)
 
     def calculate_psd(self):
@@ -311,8 +314,9 @@ class WaveformGenerator:
 
         for i in range(0, self.no_detectors):
 
-            self.projection_strains[i] += (np.random.normal(size=self.svd_no_basis_coeffs) + \
-                1j*np.random.normal(size=self.svd_no_basis_coeffs))/2.
+            self.projection_strains[i] += (np.random.normal(size=self.svd_no_basis_coeffs) +
+                                           1j*np.random.normal(size=self.svd_no_basis_coeffs))\
+                                          *np.sqrt(self.duration)/2.
 
 
     def add_glitch_to_projection_strains(self):
@@ -575,6 +579,7 @@ class WaveformGenerator:
             # fp, fc = det.antenna_pattern(ra, dec, polarization, self.REF_TIME)
 
             dt = det.time_delay_from_earth_center(ra, dec, self.REF_TIME)
+            #print(dt)
             self.projection_strains[j] = self.fps[j] * hp + self.fcs[j] * hc
 
             # time shift and whiten
@@ -588,9 +593,9 @@ class WaveformGenerator:
                     snr_list.append(self.inner_whitened(self.projection_strains[j],
                                                    self.projection_strains[j]))
                     # apply timeshift
-                    self.projection_strains[j] = self.svd.basis_coeffs(
-                       self.svd.fseries(self.projection_strains[j])* np.exp(-1j * 2 * np.pi *
-                       self.freqs[self.fft_mask] * (dt+tc)))
+                    #self.projection_strains[j] = self.svd.basis_coeffs(
+                    #   self.svd.fseries(self.projection_strains[j])* np.exp(-1j * 2 * np.pi *
+                    #   self.freqs[self.fft_mask] * (dt+tc)))
 
                 else:
                     print('TODO')
@@ -842,6 +847,8 @@ class WaveformGenerator:
             snrs = self.project_hp_hc(np.copy(self.hp[idx]), np.copy(self.hc[idx]), -1,
                                       params=extrinsic_params, whiten=False)
 
+            self.normalize_projection_strains()
+
             #self.add_noise_to_projection_strains_after_SVD()
 
             if self.add_glitch:
@@ -872,7 +879,6 @@ class WaveformGenerator:
             idx = idx1 // self.noise_real_to_sig
 
             params = np.nan_to_num((self.params[idx] - self.params_mean) / self.params_std)
-
 
             if self.add_glitch:
                 glitch_params = np.nan_to_num((self.glitch_params[idx] - self.glitch_params_mean) /
@@ -924,7 +930,7 @@ class WaveformGenerator:
         self.params = (self.params - np.expand_dims(self.params_mean, axis=0)) / \
                       np.expand_dims(self.params_std, axis=0)
 
-    def normalize_dataset(self):
+    def normalize_dataset_extrinsic(self):
 
         if self.extrinsic_at_train:
 
@@ -1006,6 +1012,16 @@ class WaveformGenerator:
         self.initialize()
 
         f2.close()
+
+    def normalize_projection_strains(self):
+
+        for i in range(0, self.no_detectors):
+
+            self.projection_strains[i] -= (self.fcs[i]*(self.means[2]+1j*self.means[3]) + \
+                                         self.fps[i]*(self.means[0]+1j*self.means[1]))/self.extrinsic_mean
+
+            self.projection_strains[i] /= np.sqrt((self.fcs[i]**2*(self.stds[2]**2+self.stds[3]**2) + \
+                                         self.fps[i]**2*(self.stds[0]**2+1j*self.stds[1]**2)))/self.extrinsic_mean
 
 
 class WaveformDatasetTorch(Dataset):

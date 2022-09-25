@@ -31,8 +31,8 @@ python gwpe.py train new nde \
     --num_transform_blocks 4 \
     --nflows 3 \
     --batch_norm \
-    --lr 0.001 \
-    --epochs 25 \
+    --lr 0.0002 \
+    --epochs 5 \
     --hidden_dims 128 \
     --activation elu \
     --no_lr_annealing \
@@ -550,7 +550,7 @@ class PosteriorModel(object):
 
             if self.testing_wg.extrinsic_at_train:
                 self.testing_wg.normalize_params()
-                self.testing_wg.normalize_dataset()
+                #self.testing_wg.normalize_dataset()
 
         f.close()
 

@@ -9,7 +9,7 @@ training_wg = wd.WaveformGenerator(dataset_len=20000, add_glitch=False, add_nois
 print(training_wg.priors)
 training_wg.construct_signal_dataset(perform_svd=True, save=False)
 training_wg.normalize_params()
-training_wg.normalize_dataset()
+#training_wg.normalize_dataset()
 
 training_wg.save_data('training_data')
 
@@ -24,7 +24,7 @@ validation_wg.perform_svd(training_wg.svd.Vh)
 validation_wg.calculate_dataset_statistics()
 
 validation_wg.normalize_params()
-validation_wg.normalize_dataset()
+#validation_wg.normalize_dataset()
 
 validation_wg.save_data('validation_data')
 

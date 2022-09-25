@@ -492,6 +492,29 @@ def test_extrinsic_at_train():
         plt.show()
 
 
+def SVD_noise_test():
+    print(len(dataset.freqs))
+    print(dataset.bandwidth)
+    print(dataset.dt)
+    print(dataset.dt ** 2 * dataset.bandwidth * dataset.length)
+
+    noises = np.zeros((1000, 1), dtype=complex)
+
+    vec_real = np.random.random(size=int(dataset.bandwidth * dataset.duration))
+    vec_imag = np.random.random(size=int(dataset.bandwidth * dataset.duration))
+
+    vec = (vec_real + vec_imag * 1j) / np.sqrt(np.sum(vec_real ** 2) + np.sum(vec_imag ** 2))
+
+    for j in range(0, 1000):
+        noise = np.fft.rfft(np.random.normal(0, scale=1.0, size=int(dataset.length)))[
+                    dataset.fft_mask] * dataset.dt * \
+                np.sqrt(dataset.bandwidth)
+        noises[j] = np.sum(vec * noise)
+
+    print(np.mean(noises))
+    print(np.std(noises))
+
+
 
 # dataset.initialize()
 
@@ -529,24 +552,28 @@ dataset = waveform_dataset_3p.WaveformGenerator(dataset_len=dataset_len, path_to
                                                     svd_no_basis_coeffs=svd_no_basis_coeffs, duration=4.)
 
 dataset.initialize()
-print(len(dataset.freqs))
-print(dataset.bandwidth)
-print(dataset.dt)
-print(dataset.dt**2*dataset.bandwidth*dataset.length)
 
-noises = np.zeros((1000, 1), dtype=complex)
+print(dataset.extrinsic_mean)
+print(dataset.fcs)
+print(dataset.fps)
 
-vec_real = np.random.random(size=int(dataset.bandwidth*dataset.duration))
-vec_imag = np.random.random(size=int(dataset.bandwidth*dataset.duration))
+dataset.construct_signal_dataset(perform_svd=True)
+#dataset.normalize_dataset_extrinsic()
 
-vec = (vec_real+vec_imag*1j)/np.sqrt(np.sum(vec_real**2)+np.sum(vec_imag**2))
+for i in range(0, dataset.no_detectors):
 
-for j in range(0, 1000):
-    noise = np.fft.rfft(np.random.normal(0, scale=1.0, size=int(dataset.length)))[
-                                dataset.fft_mask] * dataset.dt * \
-                            np.sqrt(dataset.bandwidth)
-    noises[j] = np.sum(vec*noise)
+    print((dataset.fcs[i]*(dataset.means[2]+1j*dataset.means[3]) +
+          dataset.fps[i]*(dataset.means[0]+1j*dataset.means[1]))
+          /dataset.extrinsic_mean)
 
-print(np.mean(noises))
-print(np.std(noises))
+wfs = np.zeros((dataset_len*100, 4*svd_no_basis_coeffs))
+
+for i in range(0, dataset_len*100):
+
+    wf, params = dataset.provide_sample(i)
+    wfs[i] = wf
+    #print(wf)
+
+print(np.mean(wfs, axis=0))
+print(np.std(wfs, axis=0))
 
