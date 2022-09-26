@@ -55,7 +55,7 @@ class WaveformGenerator:
                  extrinsic_at_train=False, directory='/home/su/Documents/glitch_dataset/', glitch_sigma=1, domain='FD',
                  svd_no_basis_coeffs=100, add_glitch=False, add_noise=False, noise_real_to_sig=1):
 
-        self.extrinsic_factor= 200
+        self.extrinsic_factor= 100
         # ratio of noise realizations to signals
         self.noise_real_to_sig = int(noise_real_to_sig)
 
