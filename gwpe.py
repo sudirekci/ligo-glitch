@@ -25,14 +25,14 @@ from scipy.stats import multivariate_normal
 
 """
 python gwpe.py train new nde \
-    --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_3p_svd_4_extrinsic/ \
-    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/3d_23/ \
+    --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_3p_svd_20_extrinsic/ \
+    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/3d_24/ \
     --nbins 2 \
     --num_transform_blocks 1 \
     --nflows 3 \
     --batch_norm \
     --lr 0.0008 \
-    --epochs 3 \
+    --epochs 5 \
     --hidden_dims 32 \
     --activation elu \
     --no_lr_annealing \
@@ -212,7 +212,7 @@ class PosteriorModel(object):
         if not existing:
             # input_dim = self.wfd.nparams !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             # context_dim = self.wfd.context_dim !!!!!!!!!!!!!!!!!!!!!!!!!!!
-            context_dim = 16
+            context_dim = 80
             input_dim = 3
 
             self.model = model_creator(input_dim=input_dim,
