@@ -1,11 +1,11 @@
 import waveform_dataset_3p as wd
 
-directory = '/home/su.direkci/glitch_project/dataset_no_glitch_3p_svd_10_extrinsic/'
+directory = '/home/su.direkci/glitch_project/dataset_no_glitch_3p_svd_4_extrinsic/'
 path_to_glitschen = '/home/su.direkci/programs/glitschen'
 
 training_wg = wd.WaveformGenerator(dataset_len=20000, add_glitch=False, add_noise=False,
                                    directory=directory, path_to_glitschen=path_to_glitschen,
-                                   svd_no_basis_coeffs=10, extrinsic_at_train=True)
+                                   svd_no_basis_coeffs=4, extrinsic_at_train=True)
 print(training_wg.priors)
 training_wg.construct_signal_dataset(perform_svd=True, save=False)
 #training_wg.normalize_params()
@@ -18,7 +18,7 @@ print('training data saved')
 # validation data
 validation_wg = wd.WaveformGenerator(dataset_len=2000, add_glitch=False, add_noise=False,
                                      directory=directory, path_to_glitschen=path_to_glitschen,
-                                     svd_no_basis_coeffs=10, extrinsic_at_train=True)
+                                     svd_no_basis_coeffs=4, extrinsic_at_train=True)
 validation_wg.construct_signal_dataset(perform_svd=False)
 validation_wg.perform_svd(training_wg.svd.Vh)
 validation_wg.calculate_dataset_statistics()
@@ -32,7 +32,7 @@ print('validation data saved')
 
 testing_wg = wd.WaveformGenerator(dataset_len=2000, add_glitch=False, add_noise=False,
                                   directory=directory, path_to_glitschen=path_to_glitschen,
-                                  svd_no_basis_coeffs=10, extrinsic_at_train=True)
+                                  svd_no_basis_coeffs=4, extrinsic_at_train=True)
 testing_wg.construct_signal_dataset(perform_svd=False, save=True, filename='testing_data')
 
 print('testing data saved')

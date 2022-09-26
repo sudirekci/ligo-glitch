@@ -61,7 +61,7 @@ python gwpe.py train existing \
 
 python gwpe.py test \
     --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_3p_svd_10_extrinsic/ \
-    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/3d_21/ \
+    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/3d_22/ \
     --fisher \
     --epoch 75\
     --test_on_training_data \
