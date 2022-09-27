@@ -136,11 +136,16 @@ class Fisher:
         return self.F
 
 
-    def compute_analytical_cov_m1_m2(self, index=-1):
+    def compute_analytical_cov_m1_m2(self, index=-1, params=None):
 
         if self._params is None and index == -1:
             print('Set parameters first')
             return -1
+
+        if index == -1:
+            self._params = np.copy(params)
+        else:
+            self._params = np.copy(self._wg.params[index, :])
 
         self.compute_fisher_matrix(index=index)
 

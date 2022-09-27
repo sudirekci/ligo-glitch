@@ -493,27 +493,72 @@ def test_extrinsic_at_train():
 
 
 def SVD_noise_test():
+
+    dataset = waveform_dataset_3p.WaveformGenerator(dataset_len=dataset_len, path_to_glitschen=path_to_glitschen,
+                                                    extrinsic_at_train=True, tomte_to_blip=1, domain='FD',
+                                                    add_glitch=False, add_noise=False, directory=directory,
+                                                    svd_no_basis_coeffs=svd_no_basis_coeffs, duration=8.,
+                                                    sampling_frequency=2048.)
+
+    dataset.construct_signal_dataset(perform_svd=True, save=True, filename='test')
+
     print(len(dataset.freqs))
     print(dataset.bandwidth)
     print(dataset.dt)
     print(dataset.dt ** 2 * dataset.bandwidth * dataset.length)
 
-    noises = np.zeros((1000, 1), dtype=complex)
-
-    vec_real = np.random.random(size=int(dataset.bandwidth * dataset.duration))
-    vec_imag = np.random.random(size=int(dataset.bandwidth * dataset.duration))
-
-    vec = (vec_real + vec_imag * 1j) / np.sqrt(np.sum(vec_real ** 2) + np.sum(vec_imag ** 2))
+    noises = np.zeros((1000, svd_no_basis_coeffs), dtype=complex)
 
     for j in range(0, 1000):
         noise = np.fft.rfft(np.random.normal(0, scale=1.0, size=int(dataset.length)))[
                     dataset.fft_mask] * dataset.dt * \
                 np.sqrt(dataset.bandwidth)
-        noises[j] = np.sum(vec * noise)
+        noises[j, :] = dataset.svd.basis_coeffs(noise)
 
-    print(np.mean(noises))
-    print(np.std(noises))
+    print(np.mean(noises, axis=0))
+    print(np.std(noises, axis=0))
 
+
+def test_compression():
+
+    dataset_len = 10000
+
+    basis_coeff_arr = [10, 20, 40, 60, 80, 100, 120, 160, 200, 240]
+    differences = np.zeros(len(basis_coeff_arr))
+
+    dataset_len2 = 100
+
+    for i, svd_no_basis_coeffs in enumerate(basis_coeff_arr):
+
+        dataset = waveform_dataset_3p.WaveformGenerator(dataset_len=dataset_len, path_to_glitschen=path_to_glitschen,
+                                                    extrinsic_at_train=True, tomte_to_blip=1, domain='FD',
+                                                    add_glitch=False, add_noise=False, directory=directory,
+                                                    svd_no_basis_coeffs=svd_no_basis_coeffs)
+
+        dataset.construct_signal_dataset(perform_svd=True, save=True, filename='test')
+
+        dataset1 = waveform_dataset_3p.WaveformGenerator(dataset_len=dataset_len2, path_to_glitschen=path_to_glitschen,
+                                                    extrinsic_at_train=True, tomte_to_blip=1, domain='FD',
+                                                    add_glitch=False, add_noise=False, directory=directory,
+                                                    svd_no_basis_coeffs=svd_no_basis_coeffs)
+
+        dataset1.construct_signal_dataset(save='False', perform_svd=False)
+
+        original_hp = dataset1.hp
+        original_hc = dataset1.hc
+
+        reconstructed_hp = dataset.svd.fseries(dataset.svd.basis_coeffs(original_hp))
+        reconstructed_hc = dataset.svd.fseries(dataset.svd.basis_coeffs(original_hc))
+
+        differences[i] = np.sqrt(np.sum(np.abs(reconstructed_hp-original_hp)**2) +
+                          np.sum(np.abs(reconstructed_hc-original_hc)**2))/dataset_len2
+
+    plt.figure()
+    plt.plot(basis_coeff_arr, differences)
+    plt.yscale('log')
+    plt.xlabel('SVD # of Basis Coefficients')
+    plt.ylabel('Average Error')
+    plt.show()
 
 
 # dataset.initialize()
@@ -526,11 +571,13 @@ def SVD_noise_test():
 
 # test_saving_loading()
 
-dataset_len = 1000
-svd_no_basis_coeffs = 4
+dataset_len = 10000
+svd_no_basis_coeffs = 10
 
 path_to_glitschen = '/home/su/Documents/glitschen-main/'
 directory='/home/su/Documents/glitch_dataset/'
+
+test_compression()
 
 #test_SVD()
 
@@ -546,59 +593,32 @@ directory='/home/su/Documents/glitch_dataset/'
 #test_extrinsic_at_train()
 
 
-dataset = waveform_dataset_3p.WaveformGenerator(dataset_len=dataset_len, path_to_glitschen=path_to_glitschen,
-                                                    extrinsic_at_train=True, tomte_to_blip=1, domain='FD',
-                                                    add_glitch=False, add_noise=False, directory=directory,
-                                                    svd_no_basis_coeffs=svd_no_basis_coeffs, duration=4.)
-
-#dataset.initialize()
-
-#print(dataset.extrinsic_mean)
-#print(dataset.fcs)
-#print(dataset.fps)
-
-dataset.construct_signal_dataset(perform_svd=True, save=True, filename='test')
 #dataset.normalize_params()
-print(dataset.performed_svd)
+#print(dataset.performed_svd)
 
-dataset1 = waveform_dataset_3p.WaveformGenerator()
-dataset1.load_data(filename='test')
-dataset1.normalize_params()
-
-print(dataset1.extrinsic_at_train)
-print(dataset1.performed_svd)
-
-print(dataset1.params_mean)
-print(dataset1.params_std)
-
-f = Fisher(waveform_generator=dataset1)
-
-for i in range(0, dataset_len):
-
-    wf, params = dataset1.provide_sample(i)
-    print(params)
-
-    params = dataset1.post_process_parameters(params)
-
-    cov = f.compute_analytical_cov_m1_m2_from_mu_chirp(params=params)
-
-    print(cov)
-    print('Positive def: ' , is_pos_def(cov))
-
-# for i in range(0, dataset.no_detectors):
+# dataset1 = waveform_dataset_3p.WaveformGenerator()
+# dataset1.load_data(filename='test')
+# dataset1.normalize_params()
 #
-#     print((dataset.fcs[i]*(dataset.means[2]+1j*dataset.means[3]) +
-#           dataset.fps[i]*(dataset.means[0]+1j*dataset.means[1]))
-#           /dataset.extrinsic_mean)
+# print(dataset1.extrinsic_at_train)
+# print(dataset1.performed_svd)
 #
-# wfs = np.zeros((dataset_len*100, 4*svd_no_basis_coeffs))
+# print(dataset1.params_mean)
+# print(dataset1.params_std)
 #
-# for i in range(0, dataset_len*100):
+# f = Fisher(waveform_generator=dataset1)
 #
-#     wf, params = dataset.provide_sample(i)
-#     wfs[i] = wf
-#     #print(wf)
+# for i in range(0, dataset_len):
 #
-# print(np.mean(wfs, axis=0))
-# print(np.std(wfs, axis=0))
+#     wf, params = dataset1.provide_sample(i)
+#     print(params)
+#
+#     params = dataset1.post_process_parameters(params)
+#
+#     cov = f.compute_analytical_cov_m1_m2_from_mu_chirp(params=params)
+#
+#     print(cov)
+#     print('Positive def: ' , is_pos_def(cov))
+
+
 
