@@ -26,12 +26,12 @@ from scipy.stats import multivariate_normal
 """
 python gwpe.py train new nde \
     --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_3p_svd_10_extrinsic/ \
-    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/3d_24/ \
+    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/3d_26/ \
     --nbins 2 \
-    --num_transform_blocks 1 \
+    --num_transform_blocks 2 \
     --nflows 3 \
     --batch_norm \
-    --lr 0.0008 \
+    --lr 0.0002 \
     --epochs 5 \
     --hidden_dims 16 \
     --activation elu \
@@ -53,17 +53,17 @@ python gwpe.py train new nde \
     --batch_size 100 \
 
 python gwpe.py train existing \
-    --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_3p_svd_4_extrinsic/ \
-    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/3d_23/ \
-    --epochs 7 \
+    --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_3p_svd_10_extrinsic/ \
+    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/3d_25/ \
+    --epochs 10 \
     --batch_size 100 \
 
 
 python gwpe.py test \
-    --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_3p_svd_4_extrinsic/ \
-    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/3d_23/ \
+    --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_3p_svd_10_extrinsic/ \
+    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/3d_24/ \
     --fisher \
-    --epoch 75\
+    --epoch 8\
     --test_on_training_data \
 """
 

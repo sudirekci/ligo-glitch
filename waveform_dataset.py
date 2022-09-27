@@ -104,6 +104,35 @@ class WaveformGenerator:
         else:
             self.priors = priors
 
+        self.extrinsic_mean = np.zeros(self.EXTRINSIC_LEN)
+        self.extrinsic_std = np.zeros(self.EXTRINSIC_LEN)
+
+        dmax = self.priors[self.EXTRINSIC_PARAMS['distance']][1]
+        dmin = self.priors[self.EXTRINSIC_PARAMS['distance']][0]
+        self.extrinsic_mean[self.EXTRINSIC_PARAMS['distance'] -
+                            self.INTRINSIC_LEN] = 0.75 * (dmax ** 4 - dmin ** 4) / (dmax ** 3 - dmin ** 3)
+        self.extrinsic_std[self.EXTRINSIC_PARAMS['distance'] -
+                           self.INTRINSIC_LEN] = np.sqrt(0.6 * (dmax ** 5 - dmin ** 5) / (dmax ** 3 - dmin ** 3) -
+                                                         self.extrinsic_mean ** 2)
+
+        self.extrinsic_mean[self.EXTRINSIC_PARAMS['right_ascension'] -
+                            self.INTRINSIC_LEN] = np.pi
+        self.extrinsic_mean[self.EXTRINSIC_PARAMS['pol_angle'] -
+                            self.INTRINSIC_LEN] = np.pi / 2
+
+        self.extrinsic_std[self.EXTRINSIC_PARAMS['right_ascension'] -
+                           self.INTRINSIC_LEN] = np.pi ** 2 / 3
+        self.extrinsic_std[self.EXTRINSIC_PARAMS['declination'] -
+                           self.INTRINSIC_LEN] = np.pi ** 2 / 12
+        self.extrinsic_std[self.EXTRINSIC_PARAMS['pol_angle'] -
+                           self.INTRINSIC_LEN] = np.pi ** 2 / 12
+
+        tc_max = self.priors[self.EXTRINSIC_PARAMS['tc']][1]
+        tc_min = self.priors[self.EXTRINSIC_PARAMS['tc']][0]
+
+        self.extrinsic_std[self.EXTRINSIC_PARAMS['tc'] -
+                           self.INTRINSIC_LEN] = (tc_max - tc_min) ** 2 / 12.
+
         self.sampling_freq = sampling_frequency
         self.duration = duration
 
@@ -246,7 +275,7 @@ class WaveformGenerator:
 
     def inner_colored(self, freqseries1, freqseries2):
 
-        inner = np.sum(freqseries1/self.psd[self.fft_mask] * np.conjugate(freqseries2))
+        inner = np.sum(freqseries1 / self.psd[self.fft_mask] * np.conjugate(freqseries2))
 
         return np.real(inner) * 4. * self.df
 
@@ -293,6 +322,15 @@ class WaveformGenerator:
 
                 self.detector_signals[j, l, :] += noise
 
+    def add_noise_to_projection_strains_after_SVD(self):
+
+        # only for extrinsic case
+
+        for i in range(0, self.no_detectors):
+            self.projection_strains[i] += (np.random.normal(size=self.svd_no_basis_coeffs) +
+                                           1j * np.random.normal(size=self.svd_no_basis_coeffs)) \
+                                          * np.sqrt(self.duration) / 2.
+
     def add_glitch_to_projection_strains(self):
 
         # sample glitch type
@@ -324,6 +362,11 @@ class WaveformGenerator:
             glitch = np.fft.rfft(np.pad(glitch, (beginning, self.length - end), 'constant'))[self.fft_mask] * self.dt * \
                      np.sqrt(self.bandwidth)
             self.projection_strains[det] += glitch
+
+            if self.performed_svd:
+                self.projection_strains[det] += self.svd.basis_coeffs(glitch)
+            else:
+                self.projection_strains[det] += glitch
 
         params = np.concatenate(([time], z))
 
@@ -386,9 +429,10 @@ class WaveformGenerator:
             snr = self.SNR_colored(signal_fft * self.dt)
 
             self.projection_strains[ind] = np.fft.irfft(np.pad(signal_fft *
-                                                np.exp(-1j * 2 * np.pi * self.freqs[self.fft_mask]
-                                                * timeshift) *(self.psd[self.fft_mask] *
-                                                factor) ** (-0.5),(1, 0), 'constant'))
+                                                               np.exp(-1j * 2 * np.pi * self.freqs[self.fft_mask]
+                                                                      * timeshift) * (self.psd[self.fft_mask] *
+                                                                                      factor) ** (-0.5), (1, 0),
+                                                               'constant'))
 
         elif self.domain == 'FD':
 
@@ -410,12 +454,12 @@ class WaveformGenerator:
         timeshift -= self.duration / 2
 
         self.hp = self.hp * np.expand_dims(np.exp(-1j * 2 * np.pi *
-                            self.freqs[self.fft_mask] * timeshift) * \
-                            (self.psd[self.fft_mask]) ** (-0.5),axis=0)
+                                                  self.freqs[self.fft_mask] * timeshift) * \
+                                           (self.psd[self.fft_mask]) ** (-0.5), axis=0)
 
         self.hc = self.hc * np.expand_dims(np.exp(-1j * 2 * np.pi *
-                            self.freqs[self.fft_mask] * timeshift) * \
-                            (self.psd[self.fft_mask]) ** (-0.5),axis=0)
+                                                  self.freqs[self.fft_mask] * timeshift) * \
+                                           (self.psd[self.fft_mask]) ** (-0.5), axis=0)
 
     def calculate_params_statistics(self):
 
@@ -423,18 +467,9 @@ class WaveformGenerator:
             self.params_mean = np.mean(self.params, axis=0)
             self.params_std = np.std(self.params, axis=0)
 
-            # REMOVE THIS WHEN TRAINING WITH 15 PARAMS
-            self.params_std[self.params_std < 1e-2] = np.inf
-
-            print('****************************')
-            print(self.params_mean)
-            print(self.params_std)
-            print('****************************')
-
         if self.add_glitch and self.glitch_params is not None:
             self.glitch_params_mean = np.mean(self.glitch_params, axis=0)
             self.glitch_params_std = np.std(self.glitch_params, axis=0)
-
 
     def calculate_dataset_statistics(self):
 
@@ -525,7 +560,7 @@ class WaveformGenerator:
 
         return hp, hc
 
-    def project_hp_hc(self, hp, hc, dataset_ind, params=None, whiten=True):
+    def project_hp_hc(self, hp, hc, dataset_ind, params=None, whiten=True, extrinsic=False):
 
         if params is None:
 
@@ -537,11 +572,16 @@ class WaveformGenerator:
 
         else:
 
-            distance = params[self.EXTRINSIC_PARAMS['distance']]
-            ra = params[self.EXTRINSIC_PARAMS['right_ascension']]
-            dec = params[self.EXTRINSIC_PARAMS['declination']]
-            polarization = params[self.EXTRINSIC_PARAMS['pol_angle']]
-            tc = params[self.EXTRINSIC_PARAMS['tc']]
+            if extrinsic:
+                ex = self.INTRINSIC_LEN
+            else:
+                ex = 0
+
+            distance = params[self.EXTRINSIC_PARAMS['distance'] - ex]
+            ra = params[self.EXTRINSIC_PARAMS['right_ascension'] - ex]
+            dec = params[self.EXTRINSIC_PARAMS['declination'] - ex]
+            polarization = params[self.EXTRINSIC_PARAMS['pol_angle'] - ex]
+            tc = params[self.EXTRINSIC_PARAMS['tc'] - ex]
 
         # divide by the distance
         hp /= distance
@@ -561,6 +601,19 @@ class WaveformGenerator:
             if whiten:
                 snr = self.whiten_strain(j, timeshift=(dt + tc))
                 snr_list.append(snr)
+
+            else:
+
+                if self.performed_svd:
+                    snr_list.append(self.inner_whitened(self.projection_strains[j],
+                                                        self.projection_strains[j]))
+                    # apply timeshift
+                    self.projection_strains[j] = self.svd.basis_coeffs(
+                        self.svd.fseries(self.projection_strains[j]) * np.exp(-1j * 2 * np.pi *
+                                                                              self.freqs[self.fft_mask] * (dt + tc)))
+
+                else:
+                    print('TODO')
 
         # return snrs
         return snr_list
@@ -585,13 +638,28 @@ class WaveformGenerator:
 
     def sample_extrinsic(self):
 
-        # sample distance with power law
+        if self.extrinsic_at_train:
+
+            extrinsic_params = np.zeros(self.EXTRINSIC_LEN)
+
+            # sample distance with power law
+            distance_ind = self.EXTRINSIC_PARAMS['distance']
+
+            extrinsic_params[0] = power_law_rvs(length=1, dmin=self.priors[distance_ind, 0],
+                                                dmax=self.priors[distance_ind, 1])[0]
+
+            for key, value in self.EXTRINSIC_PARAMS.items():
+                if key != 'distance':
+                    extrinsic_params[value - self.INTRINSIC_LEN] = np.random.uniform(self.priors[value, 0],
+                                                                                     self.priors[value, 1])
+
+            return extrinsic_params
+
         distance_ind = self.EXTRINSIC_PARAMS['distance']
         self.params[:, distance_ind] = power_law_rvs(length=self.dataset_len,
                                                      dmin=self.priors[distance_ind, 0],
                                                      dmax=self.priors[distance_ind, 1])
 
-        # sample the rest uniformly
         for key, value in self.EXTRINSIC_PARAMS.items():
             if key != 'distance':
                 self.params[:, value] = np.random.uniform(self.priors[value, 0],
@@ -602,6 +670,8 @@ class WaveformGenerator:
 
         if Vh is not None:
             self.svd = SVD(self.svd_no_basis_coeffs, Vh)
+        else:
+            self.svd = SVD(self.svd_no_basis_coeffs)
 
         if self.extrinsic_at_train:
 
@@ -664,7 +734,6 @@ class WaveformGenerator:
             self.hc = np.zeros((self.dataset_len, length), dtype=dtype)
 
             for i in range(0, self.dataset_len):
-
                 self.hp[i], self.hc[i] = self.compute_hp_hc(i)
 
             self.whiten_hp_hc()
@@ -789,7 +858,7 @@ class WaveformGenerator:
                 extrinsic_params = self.sample_extrinsic()
 
                 snrs = self.project_hp_hc(np.copy(self.hp[idx]), np.copy(self.hc[idx]), -1,
-                                          params=extrinsic_params, whiten=False)
+                                          params=extrinsic_params, whiten=False, extrinsic=True)
 
                 # self.normalize_projection_strains()
 
@@ -804,12 +873,12 @@ class WaveformGenerator:
                                   (det + 1) * len(self.GLITCH_PARAMS)] = params
 
                     params = np.concatenate((np.append(self.params[idx],
-                                                       (extrinsic_params[0] - self.extrinsic_mean) /
+                                                       (extrinsic_params - self.extrinsic_mean) /
                                                        self.extrinsic_std), glitch_params))
 
                 else:
                     params = np.append(self.params[idx],
-                                       (extrinsic_params[0] - self.extrinsic_mean) / self.extrinsic_std)
+                                       (extrinsic_params - self.extrinsic_mean) / self.extrinsic_std)
 
                 wfs = []
                 for i in range(0, self.no_detectors):
@@ -823,7 +892,7 @@ class WaveformGenerator:
 
             params = np.nan_to_num((self.params[idx] - self.params_mean) / self.params_std)
 
-            #if idx//10000 == 0:
+            # if idx//10000 == 0:
             #    print(params)
 
             if self.add_glitch:
@@ -851,23 +920,37 @@ class WaveformGenerator:
                     wf2 = (wf.imag - np.squeeze(self.means[index + 1])) / np.squeeze(self.stds[index + 1])
                     wfs.append(wf2)
 
-            wf = np.concatenate(wfs, axis=-1)
+        wf = np.concatenate(wfs, axis=-1)
 
         return wf, params
 
     def post_process_parameters(self, x):
 
-        if not self.add_glitch:
-            return x * self.params_std + self.params_mean
+        if self.extrinsic_at_train:
 
-        # intrinsic & extrinsic params
-        x1 = x[:, 0:(self.INTRINSIC_LEN + self.EXTRINSIC_LEN)]
-        x1 = x1 * self.params_std + self.params_mean
+            if not self.add_glitch:
+                return x * np.append(self.params_std, self.extrinsic_std)\
+                       + np.append(self.params_mean, self.extrinsic_mean)
 
-        x = x[:, (self.INTRINSIC_LEN + self.EXTRINSIC_LEN):]
-        x = x * self.glitch_params_std + self.glitch_params_mean
+        else:
 
-        return np.concatenate((x1, x), axis=-1)
+            if not self.add_glitch:
+                return x * self.params_std + self.params_mean
+
+            # intrinsic & extrinsic params
+            x1 = x[:, 0:(self.INTRINSIC_LEN + self.EXTRINSIC_LEN)]
+            x1 = x1 * self.params_std + self.params_mean
+
+            x = x[:, (self.INTRINSIC_LEN + self.EXTRINSIC_LEN):]
+            x = x * self.glitch_params_std + self.glitch_params_mean
+
+            return np.concatenate((x1, x), axis=-1)
+
+    def normalize_params(self):
+
+        self.params = (self.params - np.expand_dims(self.params_mean, axis=0)) / \
+                      np.expand_dims(self.params_std, axis=0)
+
 
     def load_data(self, filename):
 
@@ -941,6 +1024,9 @@ class WaveformDatasetTorch(Dataset):
         self.wfg = waveform_generator
 
     def __len__(self):
+        if self.wfg.extrinsic_at_train:
+            return self.wfg.dataset_len * self.wfg.extrinsic_factor
+
         return self.wfg.dataset_len * self.wfg.noise_real_to_sig
 
     def __getitem__(self, idx):

@@ -349,6 +349,7 @@ class WaveformGenerator:
 
             glitch = np.fft.rfft(np.pad(glitch, (beginning, self.length - end), 'constant'))[self.fft_mask] * self.dt * \
                      np.sqrt(self.bandwidth)
+
             if self.performed_svd:
                 self.projection_strains[det] += self.svd.basis_coeffs(glitch)
             else:
@@ -863,7 +864,7 @@ class WaveformGenerator:
 
                 params = np.concatenate((np.append(self.params[idx],
                                 (extrinsic_params[0] - self.extrinsic_mean) /
-                                                   self.extrinsic_std),glitch_params))
+                                                   self.extrinsic_std), glitch_params))
 
             else:
                 params = np.append(self.params[idx], (extrinsic_params[0]-self.extrinsic_mean)/self.extrinsic_std)
@@ -1047,6 +1048,7 @@ class WaveformDatasetTorch(Dataset):
 
         if self.wfg.extrinsic_at_train:
             return self.wfg.dataset_len * self.wfg.extrinsic_factor
+
         return self.wfg.dataset_len * self.wfg.noise_real_to_sig
 
     def __getitem__(self, idx):
