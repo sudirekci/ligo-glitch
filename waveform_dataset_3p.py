@@ -839,7 +839,9 @@ class WaveformGenerator:
 
         f1.close()
 
-    def provide_sample(self, idx1):
+    def provide_sample(self, idx1, return_det=False):
+
+        det = -1
 
         if self.extrinsic_at_train:
 
@@ -911,7 +913,10 @@ class WaveformGenerator:
         wf = np.concatenate(wfs, axis=-1)
         #print(params)
 
-        return wf, params
+        if not return_det:
+            return wf, params
+        else:
+            return wf, params, det
 
     def post_process_parameters(self, x):
 

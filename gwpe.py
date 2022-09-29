@@ -54,14 +54,14 @@ python gwpe.py train new nde \
 
 python gwpe.py train existing \
     --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_3p_svd_100_extrinsic/ \
-    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/3d_27/ \
-    --epochs 5 \
-    --batch_size 2000 \
+    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/3d_28/ \
+    --epochs 10 \
+    --batch_size 4000 \
 
 
 python gwpe.py test \
     --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_3p_svd_100_extrinsic/ \
-    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/3d_27/ \
+    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/3d_28/ \
     --fisher \
     --epoch 8\
     --test_on_training_data \
@@ -581,14 +581,17 @@ class PosteriorModel(object):
         """
 
         idx = idx // self.testing_wg.noise_real_to_sig
-
+        det = -100
 
         # if self.testing_wg.add_glitch:
         #     params_true = np.concatenate((self.testing_wg.params[idx],self.testing_wg.glitch_params[idx]))
         # else:
         #     params_true = self.testing_wg.params[idx]
 
-        y, params_true = self.testing_wg.provide_sample(idx)
+        if self.testing_wg.add_glitch:
+            y, params_true, det = self.testing_wg.provide_sample(idx, return_det=True)
+        else:
+            y, params_true = self.testing_wg.provide_sample(idx, return_det=False)
 
 
         if self.model_type == 'nde':
@@ -610,10 +613,11 @@ class PosteriorModel(object):
             print(cov_matrix)
 
         if self.testing_wg.add_glitch:
-            det = int(self.testing_wg.glitch_detector[idx])
+            if not self.testing_wg.extrinsic_at_train:
+                det = int(self.testing_wg.glitch_detector[idx])
 
             #slice = [0,1,10] + [i for i in range(15,27)]
-            slice = [0, 1, 10] + [i for i in range(15+6*det, 21+6*det)]
+            slice = [0, 1, 2] + [i for i in range(3+6*det, 9+6*det)]
         else:
 
             # no glitch is added
