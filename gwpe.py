@@ -212,8 +212,8 @@ class PosteriorModel(object):
         if not existing:
             # input_dim = self.wfd.nparams !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             # context_dim = self.wfd.context_dim !!!!!!!!!!!!!!!!!!!!!!!!!!!
-            context_dim = 400
-            input_dim = 15
+            context_dim = self.training_wg.svd_no_basis_coeffs*self.training_wg.no_detectors*2
+            input_dim = self.training_wg.input_dim
 
             self.model = model_creator(input_dim=input_dim,
                                        context_dim=context_dim,

@@ -179,6 +179,11 @@ class WaveformGenerator:
         self.svd = SVD(no_basis_coeffs=self.svd_no_basis_coeffs)
         self.performed_svd = False
 
+        if self.add_glitch:
+            self.input_dim = 27
+        else:
+            self.input_dim = 15
+
     def initialize(self):
 
         self.initialize_freq_vars()
