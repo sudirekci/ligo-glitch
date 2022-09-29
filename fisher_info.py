@@ -138,7 +138,7 @@ class Fisher:
 
     def compute_analytical_cov_m1_m2(self, index=-1, params=None):
 
-        if self._params is None and index == -1:
+        if params is None and index == -1:
             print('Set parameters first')
             return -1
 
