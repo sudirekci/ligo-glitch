@@ -919,7 +919,7 @@ class WaveformGenerator:
         #print(params)
 
         if not return_det:
-            print(params)
+            #print(params)
             return wf, params
         else:
             return wf, params, det
