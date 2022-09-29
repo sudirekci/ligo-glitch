@@ -213,7 +213,7 @@ class PosteriorModel(object):
             # input_dim = self.wfd.nparams !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             # context_dim = self.wfd.context_dim !!!!!!!!!!!!!!!!!!!!!!!!!!!
             context_dim = 400
-            input_dim = 3
+            input_dim = 15
 
             self.model = model_creator(input_dim=input_dim,
                                        context_dim=context_dim,
