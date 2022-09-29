@@ -39,18 +39,18 @@ python gwpe.py train new nde \
     --batch_size 4000 \
     
     python gwpe.py train new nde \
-    --data_dir /home/su.direkci/glitch_project/dataset_w_glitch_3p_100/ \
-    --model_dir /home/su.direkci/glitch_project/models/3d_16/ \
+    --data_dir /home/su.direkci/glitch_project/dataset_w_glitch_3p_svd_100_extrinsic/ \
+    --model_dir /home/su.direkci/glitch_project/models/3d_1/ \
     --nbins 8 \
     --num_transform_blocks 1 \
     --nflows 15 \
     --batch_norm \
-    --lr 0.00002 \
-    --epochs 75 \
+    --lr 0.0002 \
+    --epochs 10 \
     --hidden_dims 32 \
     --activation elu \
     --lr_anneal_method cosine \
-    --batch_size 100 \
+    --batch_size 2000 \
 
 python gwpe.py train existing \
     --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_3p_svd_100_extrinsic/ \
@@ -265,7 +265,7 @@ class PosteriorModel(object):
             elif anneal_method == 'cosine':
                 self.scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
                     self.optimizer,
-                    T_max=100,
+                    T_max=500,
                 )
             elif anneal_method == 'cosineWR':
                 self.scheduler = (
