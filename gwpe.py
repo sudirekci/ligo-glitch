@@ -73,7 +73,10 @@ python gwpe.py test \
 #                    r'$c_{12}$',r'$c_{13}$',r'$c_{14}$',r'$c_{15}$',r'$t_{g2}$',
 #                    r'$c_{21}$',r'$c_{22}$',r'$c_{23}$',r'$c_{24}$',r'$c_{25}$'])
 
-parameter_labels = np.asarray([r'$m_1$',r'$m_2$', r'$d_L$'])
+parameter_labels = np.asarray([r'$m_1$',r'$m_2$', r'$d_L$',r'$t_{c1}$',r'$c_{11}$',
+                               r'$c_{12}$',r'$c_{13}$',r'$c_{14}$',r'$c_{15}$',
+                               r'$t_{c2}$', r'$c_{21}$',r'$c_{22}$', r'$c_{23}$',
+                               r'$c_{24}$', r'$c_{25}$'])
 
 extrinsic_factor = 100
 
