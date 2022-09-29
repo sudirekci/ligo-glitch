@@ -26,17 +26,17 @@ from scipy.stats import multivariate_normal
 """
 python gwpe.py train new nde \
     --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_3p_svd_100_extrinsic/ \
-    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/3d_26/ \
+    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/3d_28/ \
     --nbins 2 \
     --num_transform_blocks 1 \
     --nflows 3 \
     --batch_norm \
     --lr 0.0002 \
-    --epochs 5 \
+    --epochs 20 \
     --hidden_dims 32 \
     --activation elu \
     --no_lr_annealing \
-    --batch_size 1000 \
+    --batch_size 4000 \
     
     python gwpe.py train new nde \
     --data_dir /home/su.direkci/glitch_project/dataset_w_glitch_3p_100/ \
@@ -53,15 +53,15 @@ python gwpe.py train new nde \
     --batch_size 100 \
 
 python gwpe.py train existing \
-    --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_3p_svd_10_extrinsic/ \
-    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/3d_25/ \
-    --epochs 10 \
-    --batch_size 100 \
+    --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_3p_svd_100_extrinsic/ \
+    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/3d_27/ \
+    --epochs 5 \
+    --batch_size 2000 \
 
 
 python gwpe.py test \
-    --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_3p_svd_10_extrinsic/ \
-    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/3d_26/ \
+    --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_3p_svd_100_extrinsic/ \
+    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/3d_27/ \
     --fisher \
     --epoch 8\
     --test_on_training_data \
@@ -605,7 +605,7 @@ class PosteriorModel(object):
 
         if compute_fisher:
 
-            cov_matrix = self.fisher.compute_analytical_cov_m1_m2_from_mu_chirp(params=params_true)
+            cov_matrix = self.fisher.compute_analytical_cov_m1_m2(params=params_true)
             print('Covariance matrix:')
             print(cov_matrix)
 
