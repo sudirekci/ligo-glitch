@@ -107,6 +107,11 @@ class WaveformGenerator:
         self.other_params[self.OTHER_PARAMS['declination']] = random_params[7]
         self.other_params[self.OTHER_PARAMS['pol_angle']] = random_params[8]
 
+        self.glitch_mean = np.zeros(self.GLITCH_LEN)
+        self.glitch_std = np.ones(self.GLITCH_LEN)
+        tmax = self.priors[self.GLITCH_PARAMS['time']][1]
+        self.glitch_std[0] = 1./3*tmax**2
+
         self.sampling_freq = sampling_frequency
         self.duration = duration
 
@@ -862,7 +867,7 @@ class WaveformGenerator:
 
                 det, params = self.add_glitch_to_projection_strains()
                 glitch_params[det * len(self.GLITCH_PARAMS):
-                                      (det + 1) * len(self.GLITCH_PARAMS)] = params
+                                      (det + 1) * len(self.GLITCH_PARAMS)] = (params-self.glitch_mean)/self.glitch_std
 
                 params = np.concatenate((np.append(self.params[idx],
                                 (extrinsic_params[0] - self.extrinsic_mean) /
@@ -914,6 +919,7 @@ class WaveformGenerator:
         #print(params)
 
         if not return_det:
+            print(params)
             return wf, params
         else:
             return wf, params, det
