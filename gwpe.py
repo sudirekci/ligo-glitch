@@ -65,6 +65,13 @@ python gwpe.py test \
     --fisher \
     --epoch 8\
     --test_on_training_data \
+    
+python gwpe.py test \
+    --data_dir /home/su.direkci/glitch_project/dataset_w_glitch_3p_svd_100_extrinsic/ \
+    --model_dir /home/su.direkci/glitch_project/models/3d_1/ \
+    --fisher \
+    --epoch 8\
+    --test_on_training_data \
 """
 
 #parameter_labels = np.asarray([r'$m_1$',r'$m_2$', r'$\phi_c$',r'$a_1$',r'$a_2$',r'$t_1$',r'$t_2$',
@@ -552,9 +559,11 @@ class PosteriorModel(object):
 
         self.testing_wg.params_mean = f['parameters_mean'][:]
         self.testing_wg.params_std = f['parameters_std'][:]
-        if self.testing_wg.add_glitch:
+
+        if self.testing_wg.add_glitch and not self.testing_wg.extrinsic_at_train:
             self.testing_wg.glitch_params_mean = f['glitch_parameters_mean'][:]
             self.testing_wg.glitch_params_std = f['glitch_parameters_std'][:]
+
         self.testing_wg.means = f['waveforms_mean'][:]
         self.testing_wg.stds = f['waveforms_std'][:]
         Vh = f['Vh_real'][:] + 1j*f['Vh_imag'][:]
