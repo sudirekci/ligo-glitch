@@ -55,7 +55,7 @@ class WaveformGenerator:
                  extrinsic_at_train=False, directory='/home/su/Documents/glitch_dataset/', glitch_sigma=1, domain='FD',
                  svd_no_basis_coeffs=100, add_glitch=False, add_noise=False, noise_real_to_sig=1):
 
-        self.extrinsic_factor= 100
+        self.extrinsic_factor= 150
         # ratio of noise realizations to signals
         self.noise_real_to_sig = int(noise_real_to_sig)
 
@@ -172,6 +172,11 @@ class WaveformGenerator:
             self.initialize_glitch_matrices()
         self.calculate_params_statistics()
         self.calculate_dataset_statistics()
+
+        if self.add_glitch:
+            self.input_dim = 15
+        else:
+            self.input_dim = 3
         # self.initialize_svd()
 
     def initialize_svd(self):

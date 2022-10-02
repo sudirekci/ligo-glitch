@@ -46,7 +46,7 @@ python gwpe.py train new nde \
     --nflows 15 \
     --batch_norm \
     --lr 0.0002 \
-    --epochs 10 \
+    --epochs 1 \
     --hidden_dims 32 \
     --activation elu \
     --lr_anneal_method cosine \
@@ -78,7 +78,7 @@ parameter_labels = np.asarray([r'$m_1$',r'$m_2$', r'$d_L$',r'$t_{c1}$',r'$c_{11}
                                r'$t_{c2}$', r'$c_{21}$',r'$c_{22}$', r'$c_{23}$',
                                r'$c_{24}$', r'$c_{25}$'])
 
-extrinsic_factor = 100
+#extrinsic_factor = 100
 
 
 class PosteriorModel(object):
