@@ -46,7 +46,7 @@ python gwpe.py train new nde \
     --nflows 15 \
     --batch_norm \
     --lr 0.0002 \
-    --epochs 1 \
+    --epochs 10 \
     --hidden_dims 32 \
     --activation elu \
     --lr_anneal_method cosine \
@@ -54,9 +54,9 @@ python gwpe.py train new nde \
 
 python gwpe.py train existing \
     --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_3p_svd_100_extrinsic/ \
-    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/3d_28/ \
+    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/3d_27/ \
     --epochs 10 \
-    --batch_size 4000 \
+    --batch_size 2000 \
 
 
 python gwpe.py test \
@@ -628,16 +628,7 @@ class PosteriorModel(object):
             print('Covariance matrix:')
             print(cov_matrix)
 
-        if self.testing_wg.add_glitch:
-            if not self.testing_wg.extrinsic_at_train:
-                det = int(self.testing_wg.glitch_detector[idx])
-
-            #slice = [0,1,10] + [i for i in range(15,27)]
-            slice = [0, 1, 2] + [i for i in range(3+6*det, 9+6*det)]
-        else:
-
-            # no glitch is added
-            slice = [0, 1, 2]
+        slice = [0, 1, 2]
 
         percentile_low = np.percentile(params_samples[:,slice], 16, axis=0)
         percentile_high = np.percentile(params_samples[:, slice], 84, axis=0)
@@ -645,7 +636,7 @@ class PosteriorModel(object):
 
         if plot:
 
-            fig1 = corner.corner(params_samples[:,slice], truths=params_true[slice],
+            fig1 = corner.corner(params_samples[:, slice], truths=params_true[slice],
                           labels=parameter_labels[slice], hist_kwargs={"density":True})
             # plt.show()
             plt.savefig(self.model_dir+str(idx))
@@ -670,15 +661,6 @@ class PosteriorModel(object):
                 plt.savefig(self.model_dir + str(idx) + '_fisher2')
 
 
-                # fisher_samples = np.random.multivariate_normal(params_true[slice], cov_matrix, size=nsamples)
-
-                # fig1 = corner.corner(fisher_samples, color='red', range=range, bins=100)
-
-                # corner.corner(params_samples[:, slice], truths=params_true[slice],
-                #              labels=parameter_labels[slice], range=range, fig=fig1)
-
-                # plt.savefig(self.model_dir + str(idx) + '_zoomed')
-
                 fig = corner.corner(params_samples[:, slice], truths=params_true[slice],
                                     labels=parameter_labels[slice], range=range1, density=True,
                                     hist_kwargs={"density":True})
@@ -700,6 +682,16 @@ class PosteriorModel(object):
                 # corner.corner(fisher_samples, color='red', fig=fig, bins=100, hist_kwargs={"density":True})
 
                 plt.savefig(self.model_dir + str(idx) + '_fisher')
+
+            if self.testing_wg.add_glitch:
+
+                slice = np.arange(3, 15)
+
+                corner.corner(params_samples[:, slice], truths=params_true[slice],
+                                         labels=parameter_labels[slice], hist_kwargs={"density": True})
+                    # plt.show()
+                plt.savefig(self.model_dir + str(idx) + 'glitch')
+
 
             # else:
             #
