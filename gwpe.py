@@ -564,8 +564,10 @@ class PosteriorModel(object):
             self.testing_wg.glitch_params_mean = f['glitch_parameters_mean'][:]
             self.testing_wg.glitch_params_std = f['glitch_parameters_std'][:]
 
-        self.testing_wg.means = f['waveforms_mean'][:]
-        self.testing_wg.stds = f['waveforms_std'][:]
+        if not self.testing_wg.extrinsic_at_train:
+            self.testing_wg.means = f['waveforms_mean'][:]
+            self.testing_wg.stds = f['waveforms_std'][:]
+
         Vh = f['Vh_real'][:] + 1j*f['Vh_imag'][:]
 
         if not self.test_on_training_data:
