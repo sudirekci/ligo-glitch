@@ -519,6 +519,56 @@ def SVD_noise_test():
     print(np.std(noises, axis=0))
 
 
+def SVD_noise_test2():
+
+    dataset = waveform_dataset_3p.WaveformGenerator(dataset_len=dataset_len, path_to_glitschen=path_to_glitschen,
+                                                    extrinsic_at_train=True, tomte_to_blip=1, domain='FD',
+                                                    add_glitch=False, add_noise=False, directory=directory,
+                                                    svd_no_basis_coeffs=svd_no_basis_coeffs, duration=4.,
+                                                    sampling_frequency=2048.)
+
+    dataset.construct_signal_dataset(perform_svd=False)
+    index1 = np.random.randint(low=0, high=dataset_len)
+    index2 = np.random.randint(low=0, high=dataset_len)
+
+    hp_hc_1 = np.random.randint(0, 2)
+    hp_hc_2 = np.random.randint(0, 2)
+
+    if hp_hc_1 == 0:
+        h1 = dataset.hp[index1]
+    else:
+        h1 = dataset.hc[index1]
+
+    if hp_hc_2 == 0:
+        h2 = dataset.hp[index2]
+    else:
+        h2 = dataset.hc[index2]
+
+    print('<h1|h2> before SVD:')
+    print(dataset.inner_whitened(h1, h2))
+
+    dataset.perform_svd()
+
+    print(dataset.svd.Vh.shape)
+
+    print('Vh dagger Vh')
+    for i in range(0,svd_no_basis_coeffs):
+        print(dataset.inner_whitened(dataset.svd.Vh[i], dataset.svd.Vh[i]))
+
+    if hp_hc_1 == 0:
+        h1_svd = dataset.hp[index1]
+    else:
+        h1_svd = dataset.hc[index1]
+
+    if hp_hc_2 == 0:
+        h2_svd = dataset.hp[index2]
+    else:
+        h2_svd = dataset.hc[index2]
+
+    print('<h1|h2> after SVD:')
+    print(np.real(np.sum(np.conjugate(h1_svd)*h2_svd))*4*dataset.df)
+
+
 def test_compression():
 
     dataset_len = 10000
@@ -577,7 +627,9 @@ svd_no_basis_coeffs = 10
 path_to_glitschen = '/home/su/Documents/glitschen-main/'
 directory='/home/su/Documents/glitch_dataset/'
 
-test_compression()
+SVD_noise_test2()
+
+#test_compression()
 
 #test_SVD()
 

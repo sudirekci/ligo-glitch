@@ -327,9 +327,11 @@ class PosteriorModel(object):
 
             f.create_dataset('parameters_mean', data=self.training_wg.params_mean)
             f.create_dataset('parameters_std', data=self.training_wg.params_std)
-            if self.training_wg.add_glitch:
+
+            if self.training_wg.add_glitch and not self.training_wg.extrinsic_at_train:
                 f.create_dataset('glitch_parameters_mean', data=self.training_wg.glitch_params_mean)
                 f.create_dataset('glitch_parameters_std', data=self.training_wg.glitch_params_std)
+
             f.create_dataset('waveforms_mean', data=self.training_wg.means)
             f.create_dataset('waveforms_std', data=self.training_wg.stds)
             f.create_dataset('Vh_real', data=self.training_wg.svd.Vh.real)
