@@ -521,52 +521,107 @@ def SVD_noise_test():
 
 def SVD_noise_test2():
 
+    dataset_len = 10000
+    dataset_len2 = 10
+    svd_no_basis_coeffs = 10
+
     dataset = waveform_dataset_3p.WaveformGenerator(dataset_len=dataset_len, path_to_glitschen=path_to_glitschen,
                                                     extrinsic_at_train=True, tomte_to_blip=1, domain='FD',
                                                     add_glitch=False, add_noise=False, directory=directory,
-                                                    svd_no_basis_coeffs=svd_no_basis_coeffs, duration=4.,
+                                                    svd_no_basis_coeffs=svd_no_basis_coeffs, duration=8.,
                                                     sampling_frequency=2048.)
 
-    dataset.construct_signal_dataset(perform_svd=False)
-    index1 = np.random.randint(low=0, high=dataset_len)
-    index2 = np.random.randint(low=0, high=dataset_len)
+    dataset.construct_signal_dataset(perform_svd=True)
+
+    print('Vh dagger Vh')
+    for i in range(0,svd_no_basis_coeffs):
+        print(np.sum(np.conjugate(dataset.svd.Vh[i])*dataset.svd.Vh[i]))
+
+    dataset1 =  waveform_dataset_3p.WaveformGenerator(dataset_len=dataset_len2, path_to_glitschen=path_to_glitschen,
+                                                    extrinsic_at_train=True, tomte_to_blip=1, domain='FD',
+                                                    add_glitch=False, add_noise=False, directory=directory,
+                                                    svd_no_basis_coeffs=svd_no_basis_coeffs, duration=8.,
+                                                    sampling_frequency=2048.)
+
+    dataset1.construct_signal_dataset(perform_svd=False)
+
+    index1 = np.random.randint(low=0, high=dataset_len2)
+    index2 = np.random.randint(low=0, high=dataset_len2)
 
     hp_hc_1 = np.random.randint(0, 2)
     hp_hc_2 = np.random.randint(0, 2)
 
     if hp_hc_1 == 0:
-        h1 = dataset.hp[index1]
+        h1 = dataset1.hp[index1]
     else:
-        h1 = dataset.hc[index1]
+        h1 = dataset1.hc[index1]
 
     if hp_hc_2 == 0:
-        h2 = dataset.hp[index2]
+        h2 = dataset1.hp[index2]
     else:
-        h2 = dataset.hc[index2]
+        h2 = dataset1.hc[index2]
+
+    print('Normalize h1, h2 to have unit-SNR')
+
+    h1 /= np.sqrt(dataset1.inner_whitened(h1, h1))
+    h2 /= np.sqrt(dataset1.inner_whitened(h2, h2))
 
     print('<h1|h2> before SVD:')
-    print(dataset.inner_whitened(h1, h2))
+    print(dataset1.inner_whitened(h1, h2))
 
-    dataset.perform_svd()
-
-    print(dataset.svd.Vh.shape)
-
-    print('Vh dagger Vh')
-    for i in range(0,svd_no_basis_coeffs):
-        print(dataset.inner_whitened(dataset.svd.Vh[i], dataset.svd.Vh[i]))
+    dataset1.perform_svd(Vh=dataset.svd.Vh)
 
     if hp_hc_1 == 0:
-        h1_svd = dataset.hp[index1]
+        h1_svd = dataset1.hp[index1]
     else:
-        h1_svd = dataset.hc[index1]
+        h1_svd = dataset1.hc[index1]
 
     if hp_hc_2 == 0:
-        h2_svd = dataset.hp[index2]
+        h2_svd = dataset1.hp[index2]
     else:
-        h2_svd = dataset.hc[index2]
+        h2_svd = dataset1.hc[index2]
 
     print('<h1|h2> after SVD:')
     print(np.real(np.sum(np.conjugate(h1_svd)*h2_svd))*4*dataset.df)
+
+    noise_len = 1000
+
+    n1h1 = np.zeros(noise_len)
+    n1h1_svd = np.zeros(noise_len)
+    n2h2 = np.zeros(noise_len)
+    n2h2_svd = np.zeros(noise_len)
+
+    for i in range(0, 1000):
+
+        noise = np.fft.rfft(np.random.normal(0, scale=1.0, size=int(dataset1.length)))[
+                                dataset1.fft_mask] * dataset1.dt * \
+                            np.sqrt(dataset1.bandwidth)
+
+        n1h1[i] = dataset1.inner_whitened(noise, h1)
+
+        n1h1_svd[i] = dataset1.inner_whitened(dataset.svd.basis_coeffs(noise), h1_svd)
+
+        n2h2[i] = dataset1.inner_whitened(noise, h2)
+
+        n2h2_svd[i] = dataset1.inner_whitened(dataset.svd.basis_coeffs(noise), h2_svd)
+
+    print('Mean and std of <n|h1>:')
+    print(np.mean(n1h1), np.std(n1h1))
+
+    print('Mean and std of <n|h2>:')
+    print(np.mean(n2h2), np.std(n2h2))
+
+    print('Mean and std of nu.alpha1:')
+    print(np.mean(n1h1_svd), np.std(n1h1_svd))
+
+    print('Mean and std of nu.alpha2:')
+    print(np.mean(n2h2_svd), np.std(n2h2_svd))
+
+    print('Covariance of <n|h1> and <n|h2>:')
+    print(np.mean((n1h1-np.mean(n1h1))*(n2h2-np.mean(n2h2))))
+
+    print('<h1|h2> after SVD:')
+    print(np.real(np.sum(np.conjugate(h1_svd) * h2_svd)) * 4 * dataset.df)
 
 
 def test_compression():
