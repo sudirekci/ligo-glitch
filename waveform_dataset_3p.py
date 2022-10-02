@@ -945,6 +945,9 @@ class WaveformGenerator:
                 return x * np.append(self.params_std, self.extrinsic_std)\
                        + np.append(self.params_mean, self.extrinsic_mean)
             else:
+                print(self.params_std.shape)
+                print(self.extrinsic_std.shape)
+                print(self.glitch_std.shape)
                 return x * np.concatenate((np.append(self.params_std, self.extrinsic_std), self.glitch_std))\
                        + np.concatenate((np.append(self.params_mean, self.extrinsic_mean), self.glitch_mean))
 
