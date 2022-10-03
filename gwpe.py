@@ -26,17 +26,17 @@ from scipy.stats import multivariate_normal
 """
 python gwpe.py train new nde \
     --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_3p_svd_100_extrinsic/ \
-    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/3d_28/ \
+    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/3d_29/ \
     --nbins 2 \
     --num_transform_blocks 1 \
     --nflows 3 \
     --batch_norm \
     --lr 0.0002 \
-    --epochs 20 \
+    --epochs 40 \
     --hidden_dims 32 \
     --activation elu \
     --no_lr_annealing \
-    --batch_size 4000 \
+    --batch_size 8000 \
     
     python gwpe.py train new nde \
     --data_dir /home/su.direkci/glitch_project/dataset_w_glitch_3p_svd_100_extrinsic/ \
@@ -61,7 +61,7 @@ python gwpe.py train existing \
 
 python gwpe.py test \
     --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_3p_svd_100_extrinsic/ \
-    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/3d_28/ \
+    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/3d_27/ \
     --fisher \
     --epoch 8\
     --test_on_training_data \
@@ -630,8 +630,8 @@ class PosteriorModel(object):
 
         slice = [0, 1, 2]
 
-        percentile_low = np.percentile(params_samples[:,slice], 16, axis=0)
-        percentile_high = np.percentile(params_samples[:, slice], 84, axis=0)
+        percentile_low = np.percentile(params_samples[:,slice], 5, axis=0)
+        percentile_high = np.percentile(params_samples[:, slice], 95, axis=0)
         range1 = np.stack((percentile_low, percentile_high), axis=1)
 
         if plot:
