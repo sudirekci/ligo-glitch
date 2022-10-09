@@ -624,9 +624,17 @@ class PosteriorModel(object):
         x_samples = x_samples.to(self.device)
 
         params_samples = self.testing_wg.post_process_parameters(x_samples.cpu().numpy())
-        params_samples_mean = np.mean(params_samples, axis=0)
+
+        # find maximum likelihood point
+        params_samples_ml = np.zeros((params_samples.shape)[1])
+        for i in range(0, (params_samples.shape)[1]):
+
+            bins, edges = np.histogram(params_samples[:,i], bins=25)
+            params_samples_ml[i] = (edges[np.argmax(bins)]+edges[np.argmax(bins)+1])/2.
+
         params_true = self.testing_wg.post_process_parameters(params_true)
-        print(params_true)
+        print('True parameters: ', params_true)
+        print('ML estimations: ', params_samples_ml)
 
         if compute_fisher:
 
@@ -661,7 +669,7 @@ class PosteriorModel(object):
                     axes[4 * k].plot(x, norm.pdf(x, loc=params_true[k], scale=np.sqrt(cov_matrix[k, k])), 'r-')
 
                     for l in range(k + 1, 3):
-                        plot_gauss_contours(params_samples_mean, cov_matrix, k, l, axes[3 * l + k])
+                        plot_gauss_contours(params_samples_ml, cov_matrix, k, l, axes[3 * l + k])
 
                 # corner.corner(fisher_samples, color='red', fig=fig, bins=100, hist_kwargs={"density":True})
 
@@ -686,7 +694,7 @@ class PosteriorModel(object):
 
                     for l in range(k+1, 3):
 
-                        plot_gauss_contours(params_samples_mean, cov_matrix, k, l, axes[3*l+k])
+                        plot_gauss_contours(params_samples_ml, cov_matrix, k, l, axes[3*l+k])
 
                 # corner.corner(fisher_samples, color='red', fig=fig, bins=100, hist_kwargs={"density":True})
 
