@@ -54,14 +54,20 @@ python gwpe.py train new nde \
 
 python gwpe.py train existing \
     --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_3p_svd_100_extrinsic/ \
-    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/3d_27/ \
+    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/3d_29/ \
+    --epochs 10 \
+    --batch_size 8000 \
+    
+python gwpe.py train existing \
+    --data_dir /home/su.direkci/glitch_project/dataset_w_glitch_3p_svd_100_extrinsic/ \
+    --model_dir /home/su.direkci/glitch_project/models/3d_1/ \
     --epochs 10 \
     --batch_size 2000 \
 
 
 python gwpe.py test \
     --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_3p_svd_100_extrinsic/ \
-    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/3d_27/ \
+    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/3d_29/ \
     --fisher \
     --epoch 8\
     --test_on_training_data \
@@ -734,31 +740,43 @@ def print_gpu_info(num_gpus):
 
 def plot_gauss_contours(params_true, cov_matrix, ind1, ind2, ax):
 
-    random_seed = 1000
-
     # Initializing the covariance matrix
     cov = np.asarray([[cov_matrix[ind1, ind1], cov_matrix[ind1, ind2]],
                       [cov_matrix[ind1, ind2], cov_matrix[ind2, ind2]]])
 
-    # Generating a Gaussian bivariate distribution
-    # with given mean and covariance matrix
-    distr = multivariate_normal(mean=[0., 0.], cov=cov, seed=random_seed)
+    means = np.asarray([[params_true[ind1]], [params_true[ind2]]])
 
-    # Generating a meshgrid complacent with
-    # the 3-sigma boundary
-    mean_1, mean_2 = params_true[ind1], params_true[ind2]
-    sigma_1, sigma_2 = np.sqrt(cov[0, 0]), np.sqrt(cov[1, 1])
+    w, v = np.linalg.eig(cov)
+    t = np.linspace(0, 2*np.pi, num=100)
+    xs = np.zeros((2,100))
 
-    x = np.linspace(-5 * sigma_1, 5 * sigma_1, num=100)
-    y = np.linspace(-5 * sigma_2, 5 * sigma_2, num=100)
-    X, Y = np.meshgrid(x, y)
+    # draw 1 sigma - 4 sigma
+    for r in range(1, 5):
 
-    pdf = np.zeros(X.shape)
-    for i in range(X.shape[0]):
-        for j in range(X.shape[1]):
-            pdf[i, j] = distr.pdf([X[i, j], Y[i, j]])
+        xs[0] = r*w[0]*np.cos(t)
+        xs[1] = r*w[1]*np.sin(t)
 
-    ax.contour(X+mean_1, Y+mean_2, pdf, colors='red')
+        xs_transformed = np.dot(v.T, xs) + means
+
+        ax.plot(xs_transformed[0], xs_transformed[1], 'r')
+
+
+    # # Generating a Gaussian bivariate distribution
+    # # with given mean and covariance matrix
+    # distr = multivariate_normal(mean=[0., 0.], cov=cov, seed=random_seed)
+    #
+    # sigma_1, sigma_2 = np.sqrt(cov[0, 0]), np.sqrt(cov[1, 1])
+    #
+    # x = np.linspace(-5 * sigma_1, 5 * sigma_1, num=100)
+    # y = np.linspace(-5 * sigma_2, 5 * sigma_2, num=100)
+    # X, Y = np.meshgrid(x, y)
+    #
+    # pdf = np.zeros(X.shape)
+    # for i in range(X.shape[0]):
+    #     for j in range(X.shape[1]):
+    #         pdf[i, j] = distr.pdf([X[i, j], Y[i, j]])
+    #
+    # ax.contour(X+mean_1, Y+mean_2, pdf, colors='red')
 
 
 class Nestedspace(argparse.Namespace):

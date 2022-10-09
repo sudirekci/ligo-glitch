@@ -1,3 +1,5 @@
+import sys
+
 import torch
 
 import waveform_dataset as waveform_dataset
@@ -10,6 +12,7 @@ from pycbc.fft import backend_support
 from fisher_info import Fisher
 
 backend_support.set_backend(['mkl'])
+np.set_printoptions(threshold=sys.maxsize)
 
 def is_pos_def(x):
     return np.all(np.linalg.eigvals(x) >= 0)
@@ -629,7 +632,9 @@ def test_compression():
     dataset_len = 10000
 
     basis_coeff_arr = [10, 20, 40, 60, 80, 100, 120, 160, 200, 240]
+    #basis_coeff_arr = [10]
     differences = np.zeros(len(basis_coeff_arr))
+    match = np.zeros(len(basis_coeff_arr))
 
     dataset_len2 = 100
 
@@ -640,7 +645,7 @@ def test_compression():
                                                     add_glitch=False, add_noise=False, directory=directory,
                                                     svd_no_basis_coeffs=svd_no_basis_coeffs)
 
-        dataset.construct_signal_dataset(perform_svd=True, save=True, filename='test')
+        dataset.construct_signal_dataset(perform_svd=True)
 
         dataset1 = waveform_dataset_3p.WaveformGenerator(dataset_len=dataset_len2, path_to_glitschen=path_to_glitschen,
                                                     extrinsic_at_train=True, tomte_to_blip=1, domain='FD',
@@ -649,21 +654,136 @@ def test_compression():
 
         dataset1.construct_signal_dataset(save='False', perform_svd=False)
 
-        original_hp = dataset1.hp
-        original_hc = dataset1.hc
+        original_hp = dataset1.hp/np.sqrt(dataset1.inner_whitened(dataset1.hp, dataset1.hp))
+        original_hc = dataset1.hc/np.sqrt(dataset1.inner_whitened(dataset1.hc, dataset1.hc))
 
         reconstructed_hp = dataset.svd.fseries(dataset.svd.basis_coeffs(original_hp))
         reconstructed_hc = dataset.svd.fseries(dataset.svd.basis_coeffs(original_hc))
 
-        differences[i] = np.sqrt(np.sum(np.abs(reconstructed_hp-original_hp)**2) +
-                          np.sum(np.abs(reconstructed_hc-original_hc)**2))/dataset_len2
+        # differences[i] = np.sqrt(np.sum(np.abs(np.nan_to_num((reconstructed_hp-original_hp)/
+        #                                        original_hp))**2) +
+        #                   np.sum(np.abs(np.nan_to_num((reconstructed_hc-original_hc)/
+        #                                 original_hc))**2))/dataset_len2
+
+        match[i] = np.abs(np.sum((np.conjugate(reconstructed_hc)*original_hc+np.conjugate(reconstructed_hp)*original_hp)))/2.
+
+    print(match)
 
     plt.figure()
-    plt.plot(basis_coeff_arr, differences)
+    plt.plot(basis_coeff_arr, 1-match)
     plt.yscale('log')
     plt.xlabel('SVD # of Basis Coefficients')
-    plt.ylabel('Average Error')
+    plt.ylabel('1-match')
     plt.show()
+
+def plot_signal_noise_glitch():
+
+    dataset_len = 10
+
+    dataset = waveform_dataset_3p.WaveformGenerator(dataset_len=dataset_len, path_to_glitschen=path_to_glitschen,
+                                                    extrinsic_at_train=False, tomte_to_blip=1, domain='FD',
+                                                    add_glitch=False, add_noise=False, directory=directory,
+                                                    svd_no_basis_coeffs=svd_no_basis_coeffs)
+
+    dataset.construct_signal_dataset(perform_svd=False)
+
+    dataset.initialize_glitch_matrices()
+
+    td_axis = np.linspace(-dataset.duration / 2., dataset.duration / 2.,
+                          num=int(dataset.sampling_freq * dataset.duration))
+
+    #noises = np.zeros((dataset_len, dataset.no_detectors, int(dataset.length/2)),dtype=complex)
+    #glitches = np.zeros((dataset_len, dataset.no_detectors, int(dataset.length/2)),dtype=complex)
+
+    for i in range(0, dataset_len):
+
+        m1 = dataset.params[i, dataset.INTRINSIC_PARAMS['mass1']]
+        m2 = dataset.params[i, dataset.INTRINSIC_PARAMS['mass2']]
+        distance = dataset.params[i, dataset.EXTRINSIC_PARAMS['distance']]
+
+        dataset.projection_strains = []
+
+        for j in range(0, dataset.no_detectors):
+            dataset.projection_strains.append(np.zeros(int(dataset.length/2), dtype=complex))
+
+        det, _ = dataset.add_glitch_to_projection_strains()
+
+        glitch = np.copy(dataset.projection_strains[det])
+        noise = np.fft.rfft(np.random.normal(0, scale=1.0, size=int(dataset.length)))[
+                        dataset.fft_mask] * dataset.dt * \
+                    np.sqrt(dataset.bandwidth)
+
+        fig, ax = plt.subplots()
+        line1, = ax.plot(dataset.freqs[dataset.fft_mask], np.abs(dataset.detector_signals[det, i, :]),
+                         'b', alpha=0.5, label='signal')
+        line2, = ax.plot(dataset.freqs[dataset.fft_mask], np.abs(glitch), 'r', alpha=0.5, label='glitch')
+        line3, = ax.plot(dataset.freqs[dataset.fft_mask], np.abs(noise), 'g', alpha=0.5, label='noise')
+        ax.legend(handles=[line1,line2,line3])
+        plt.yscale('log')
+        plt.xlabel('Frequency (Hz)')
+        plt.ylabel('Fourier Amplitude')
+        plt.title('Parameters: m1=%.1f, m2=%.2f, d=%.1f' % (m1,m2,distance))
+        plt.savefig('/home/su/Desktop/caltech/glitch_project/example_figs/' + str(i) + '_fourier')
+
+        fig, ax = plt.subplots()
+        line1, = ax.plot(td_axis, np.fft.irfft(np.pad(dataset.detector_signals[det, i, :], (1, 0),
+                                              'constant')) * dataset.df * dataset.length /
+                 np.sqrt(dataset.bandwidth), 'b', alpha=0.5, label='signal')
+        line2, = ax.plot(td_axis, np.fft.irfft(np.pad(glitch, (1, 0),
+                                              'constant')) * dataset.df * dataset.length /
+                 np.sqrt(dataset.bandwidth), 'r', alpha=0.5, label='glitch')
+        line3, = ax.plot(td_axis, np.fft.irfft(np.pad(noise, (1, 0),
+                                              'constant')) * dataset.df * dataset.length /
+                 np.sqrt(dataset.bandwidth), 'g', alpha=0.5, label='noise')
+        ax.legend(handles=[line1, line2, line3])
+        plt.xlabel('Time (s)')
+        plt.ylabel('Whitened Waveforms')
+        plt.title('Parameters: m1=%.1f, m2=%.2f, d=%.1f' % (m1, m2, distance))
+        plt.savefig('/home/su/Desktop/caltech/glitch_project/example_figs/' + str(i))
+
+def test_glitch_SVD_projection():
+
+    dataset_len = 10000
+    svd_no_basis_coeffs = 100
+
+    dataset = waveform_dataset_3p.WaveformGenerator(dataset_len=dataset_len, path_to_glitschen=path_to_glitschen,
+                                                    extrinsic_at_train=True, tomte_to_blip=1, domain='FD',
+                                                    add_glitch=False, add_noise=False, directory=directory,
+                                                    svd_no_basis_coeffs=svd_no_basis_coeffs, duration=8.,
+                                                    sampling_frequency=512.)
+
+    dataset.construct_signal_dataset(perform_svd=True)
+
+    average_pow = np.sum(np.sqrt(np.sum(np.abs(dataset.hp)**2, axis=1)) +
+                          np.sqrt(np.sum(np.abs(dataset.hc)**2, axis=1)))/(2*dataset_len)
+    print(average_pow)
+
+    dataset.performed_svd = False
+    dataset.initialize_glitch_matrices()
+
+    glitch_len = 10000
+    glitch_pow = np.zeros(glitch_len)
+
+    for i in range(0, glitch_len):
+
+        dataset.projection_strains = []
+
+        for j in range(0, dataset.no_detectors):
+            dataset.projection_strains.append(np.zeros(int(dataset.length / 2), dtype=complex))
+
+        det, _ = dataset.add_glitch_to_projection_strains()
+
+        glitch = np.copy(dataset.projection_strains[det])
+
+        glitch_pow[i] = np.sqrt(np.sum(np.abs(dataset.svd.basis_coeffs(glitch))**2))/average_pow
+        print(glitch_pow[i])
+
+    plt.figure()
+    plt.hist(glitch_pow, density=True, bins=100)
+    plt.xlabel('Relative amplitude after projection')
+    plt.ylabel('Density')
+    plt.show()
+
 
 
 # dataset.initialize()
@@ -682,7 +802,9 @@ svd_no_basis_coeffs = 10
 path_to_glitschen = '/home/su/Documents/glitschen-main/'
 directory='/home/su/Documents/glitch_dataset/'
 
-SVD_noise_test2()
+test_glitch_SVD_projection()
+
+#SVD_noise_test2()
 
 #test_compression()
 
@@ -698,6 +820,8 @@ SVD_noise_test2()
 #test_SVD_reconstruction()
 
 #test_extrinsic_at_train()
+
+plot_signal_noise_glitch()
 
 
 #dataset.normalize_params()

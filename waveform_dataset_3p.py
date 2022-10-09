@@ -78,8 +78,8 @@ class WaveformGenerator:
                              1.0781266874951325, 0.9691707576482571, 2.871221497023955]
 
             self.priors = np.zeros((self.INTRINSIC_LEN + self.EXTRINSIC_LEN + 1, 2))
-            self.priors[self.INTRINSIC_PARAMS['mass1']] = [25., 50.]
-            self.priors[self.INTRINSIC_PARAMS['mass2']] = [25., 50.]
+            self.priors[self.INTRINSIC_PARAMS['mass1']] = [50., 80.]
+            self.priors[self.INTRINSIC_PARAMS['mass2']] = [50., 80.]
             self.priors[self.EXTRINSIC_PARAMS['distance']] = [100., 1000.]
             self.priors[self.GLITCH_PARAMS['time']] = [-1.5, 1.5]
 
