@@ -666,7 +666,6 @@ class PosteriorModel(object):
 
                 plt.savefig(self.model_dir + str(idx) + '_fisher2')
 
-
                 fig = corner.corner(params_samples[:, slice], truths=params_true[slice],
                                     labels=parameter_labels[slice], range=range1, density=True,
                                     hist_kwargs={"density":True})
@@ -754,10 +753,10 @@ def plot_gauss_contours(params_true, cov_matrix, ind1, ind2, ax):
     # draw 1 sigma - 4 sigma
     for r in range(1, 5):
 
-        xs[0,:] = r*np.sqrt(w[1])*np.cos(t)
-        xs[1,:] = r*np.sqrt(w[0])*np.sin(t)
+        xs[0,:] = r*np.sqrt(w[0])*np.cos(t)
+        xs[1,:] = r*np.sqrt(w[1])*np.sin(t)
 
-        xs_transformed = np.dot(v.T, xs) + means
+        xs_transformed = np.dot(v, xs) + means
 
         ax.plot(xs_transformed[0], xs_transformed[1], 'r')
 
