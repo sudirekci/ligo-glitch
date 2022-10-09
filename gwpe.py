@@ -628,7 +628,7 @@ class PosteriorModel(object):
         params_samples_ml = np.zeros((params_samples.shape)[1])
         for i in range(0, (params_samples.shape)[1]):
 
-            bins, edges = np.histogram(params_samples[:,i], bins=100)
+            bins, edges = np.histogram(params_samples[:,i], bins=20)
             params_samples_ml[i] = (edges[np.argmax(bins)]+edges[np.argmax(bins)+1])/2.
 
         params_true = self.testing_wg.post_process_parameters(params_true)
@@ -677,7 +677,7 @@ class PosteriorModel(object):
                 fig = corner.corner(params_samples[:, slice], truths=params_true[slice],
                                     labels=parameter_labels[slice], range=range1, density=True,
                                     hist_kwargs={"density":True}, bins=20,
-                                   hist2d_kwargs={"levels":[0.5], "plot_contours":False})
+                                    hist2d_kwargs={"levels":[0.01], "plot_contours":False})
 
                 #"levels":[68.2, 95.4, 99.7]
 
@@ -768,7 +768,7 @@ def plot_gauss_contours(params_true, cov_matrix, ind1, ind2, ax):
         xs[0,:] = r*np.sqrt(w[0])*np.cos(t)
         xs[1,:] = r*np.sqrt(w[1])*np.sin(t)
 
-        xs_transformed = np.dot(v.T, xs)
+        xs_transformed = np.dot(v, xs)
 
         ax.plot(xs_transformed[0]+means[0], xs_transformed[1]+means[1], 'r')
 
