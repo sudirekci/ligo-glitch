@@ -643,7 +643,8 @@ class PosteriorModel(object):
         if plot:
 
             fig1 = corner.corner(params_samples[:, slice], truths=params_true[slice],
-                          labels=parameter_labels[slice], hist_kwargs={"density":True})
+                          labels=parameter_labels[slice], hist_kwargs={"density":True}, bins=20,
+                                 hist2d_kwargs={"plot_contours":True})
             # plt.show()
             plt.savefig(self.model_dir+str(idx))
 
@@ -668,7 +669,7 @@ class PosteriorModel(object):
 
                 fig = corner.corner(params_samples[:, slice], truths=params_true[slice],
                                     labels=parameter_labels[slice], range=range1, density=True,
-                                    hist_kwargs={"density":True})
+                                    hist_kwargs={"density":True}, bins=20)
 
                 axes = fig.get_axes()
 
@@ -693,7 +694,8 @@ class PosteriorModel(object):
                 slice = np.arange(3, 15)
 
                 corner.corner(params_samples[:, slice], truths=params_true[slice],
-                                         labels=parameter_labels[slice], hist_kwargs={"density": True})
+                              labels=parameter_labels[slice], hist_kwargs={"density": True},
+                              bins=20)
                     # plt.show()
                 plt.savefig(self.model_dir + str(idx) + 'glitch')
 
