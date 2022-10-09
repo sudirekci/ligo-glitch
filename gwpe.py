@@ -754,8 +754,8 @@ def plot_gauss_contours(params_true, cov_matrix, ind1, ind2, ax):
     # draw 1 sigma - 4 sigma
     for r in range(1, 5):
 
-        xs[0,:] = r*np.sqrt(w[0])*np.cos(t)
-        xs[1,:] = r*np.sqrt(w[1])*np.sin(t)
+        xs[0,:] = r*np.sqrt(w[1])*np.cos(t)
+        xs[1,:] = r*np.sqrt(w[0])*np.sin(t)
 
         xs_transformed = np.dot(v.T, xs) + means
 
