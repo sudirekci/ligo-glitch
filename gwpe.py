@@ -669,7 +669,7 @@ class PosteriorModel(object):
 
                 fig = corner.corner(params_samples[:, slice], truths=params_true[slice],
                                     labels=parameter_labels[slice], range=range1, density=True,
-                                    hist_kwargs={"density":True}, bins=100, plot_contours=True,
+                                    hist_kwargs={"density":True}, bins=25,
                                     hist2d_kwargs={"plot_contours":True})
 
                 axes = fig.get_axes()
