@@ -624,9 +624,9 @@ class PosteriorModel(object):
         x_samples = x_samples.to(self.device)
 
         params_samples = self.testing_wg.post_process_parameters(x_samples.cpu().numpy())
+        params_samples_mean = np.mean(params_samples, axis=0)
         params_true = self.testing_wg.post_process_parameters(params_true)
         print(params_true)
-        print(params_samples.shape)
 
         if compute_fisher:
 
@@ -636,8 +636,8 @@ class PosteriorModel(object):
 
         slice = [0, 1, 2]
 
-        percentile_low = np.percentile(params_samples[:,slice], 5, axis=0)
-        percentile_high = np.percentile(params_samples[:, slice], 95, axis=0)
+        percentile_low = np.percentile(params_samples[:,slice], 2.5, axis=0)
+        percentile_high = np.percentile(params_samples[:, slice], 97.5, axis=0)
         range1 = np.stack((percentile_low, percentile_high), axis=1)
 
         if plot:
@@ -660,7 +660,7 @@ class PosteriorModel(object):
                     axes[4 * k].plot(x, norm.pdf(x, loc=params_true[k], scale=np.sqrt(cov_matrix[k, k])), 'r-')
 
                     for l in range(k + 1, 3):
-                        plot_gauss_contours(params_true, cov_matrix, k, l, axes[3 * l + k])
+                        plot_gauss_contours(params_samples_mean, cov_matrix, k, l, axes[3 * l + k])
 
                 # corner.corner(fisher_samples, color='red', fig=fig, bins=100, hist_kwargs={"density":True})
 
@@ -746,7 +746,7 @@ def plot_gauss_contours(params_true, cov_matrix, ind1, ind2, ax):
     means = np.asarray([[params_true[ind1]], [params_true[ind2]]])
 
     w, v = np.linalg.eig(cov)
-    print(w)
+
     t = np.linspace(0, 2*np.pi, num=100)
     xs = np.zeros((2,100))
 
@@ -759,24 +759,6 @@ def plot_gauss_contours(params_true, cov_matrix, ind1, ind2, ax):
         xs_transformed = np.dot(v, xs) + means
 
         ax.plot(xs_transformed[0], xs_transformed[1], 'r')
-
-
-    # # Generating a Gaussian bivariate distribution
-    # # with given mean and covariance matrix
-    # distr = multivariate_normal(mean=[0., 0.], cov=cov, seed=random_seed)
-    #
-    # sigma_1, sigma_2 = np.sqrt(cov[0, 0]), np.sqrt(cov[1, 1])
-    #
-    # x = np.linspace(-5 * sigma_1, 5 * sigma_1, num=100)
-    # y = np.linspace(-5 * sigma_2, 5 * sigma_2, num=100)
-    # X, Y = np.meshgrid(x, y)
-    #
-    # pdf = np.zeros(X.shape)
-    # for i in range(X.shape[0]):
-    #     for j in range(X.shape[1]):
-    #         pdf[i, j] = distr.pdf([X[i, j], Y[i, j]])
-    #
-    # ax.contour(X+mean_1, Y+mean_2, pdf, colors='red')
 
 
 class Nestedspace(argparse.Namespace):
