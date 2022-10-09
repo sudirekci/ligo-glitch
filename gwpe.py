@@ -665,7 +665,7 @@ class PosteriorModel(object):
                     x = np.linspace(norm.ppf(0.0001, loc=params_true[k], scale=np.sqrt(cov_matrix[k, k])),
                                     norm.ppf(0.9999, loc=params_true[k], scale=np.sqrt(cov_matrix[k, k])), 500)
 
-                    axes[4 * k].plot(x, norm.pdf(x, loc=params_true[k], scale=np.sqrt(cov_matrix[k, k])), 'r-')
+                    axes[4 * k].plot(x, norm.pdf(x, loc=params_samples_ml[k], scale=np.sqrt(cov_matrix[k, k])), 'r-')
 
                     for l in range(k + 1, 3):
                         plot_gauss_contours(params_samples_ml, cov_matrix, k, l, axes[3 * l + k])
@@ -689,7 +689,7 @@ class PosteriorModel(object):
                     x = np.linspace(norm.ppf(0.0001, loc=params_true[k], scale=np.sqrt(cov_matrix[k,k])),
                                     norm.ppf(0.9999,loc=params_true[k], scale=np.sqrt(cov_matrix[k,k])), 500)
 
-                    axes[4*k].plot(x, norm.pdf(x, loc=params_true[k], scale=np.sqrt(cov_matrix[k,k])),'r-')
+                    axes[4*k].plot(x, norm.pdf(x, loc=params_samples_ml[k], scale=np.sqrt(cov_matrix[k,k])),'r-')
 
                     for l in range(k+1, 3):
 
@@ -768,7 +768,7 @@ def plot_gauss_contours(params_true, cov_matrix, ind1, ind2, ax):
         xs[0,:] = r*np.sqrt(w[0])*np.cos(t)
         xs[1,:] = r*np.sqrt(w[1])*np.sin(t)
 
-        xs_transformed = np.dot(v, xs)
+        xs_transformed = np.dot(v.T, xs)
 
         ax.plot(xs_transformed[0]+means[0], xs_transformed[1]+means[1], 'r')
 
