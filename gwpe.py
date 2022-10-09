@@ -745,17 +745,17 @@ def plot_gauss_contours(params_true, cov_matrix, ind1, ind2, ax):
                       [cov_matrix[ind1, ind2], cov_matrix[ind2, ind2]]])
 
     means = np.asarray([[params_true[ind1]], [params_true[ind2]]])
-    print(means)
 
     w, v = np.linalg.eig(cov)
+    print(w)
     t = np.linspace(0, 2*np.pi, num=100)
     xs = np.zeros((2,100))
 
     # draw 1 sigma - 4 sigma
     for r in range(1, 5):
 
-        xs[0,:] = r*w[0]*np.sin(t)
-        xs[1,:] = r*w[1]*np.cos(t)
+        xs[0,:] = r*np.sqrt(w[0])*np.cos(t)
+        xs[1,:] = r*np.sqrt(w[1])*np.sin(t)
 
         xs_transformed = np.dot(v.T, xs) + means
 
