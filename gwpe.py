@@ -756,7 +756,7 @@ def plot_gauss_contours(params_true, cov_matrix, ind1, ind2, ax):
         xs[0,:] = r*np.sqrt(w[0])*np.cos(t)
         xs[1,:] = r*np.sqrt(w[1])*np.sin(t)
 
-        xs_transformed = np.dot(v, xs) + means
+        xs_transformed = np.dot(np.conjugate(v).T, xs) + means
 
         ax.plot(xs_transformed[0], xs_transformed[1], 'r')
 
