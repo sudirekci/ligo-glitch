@@ -160,7 +160,7 @@ np.random.seed(88170235)
 
 injection_parameters = dict(
     mass_1=36.0,
-    mass_2=35.0,
+    mass_2=29.0,
     a_1=0.0,
     a_2=0.0,
     tilt_1=0.5,
