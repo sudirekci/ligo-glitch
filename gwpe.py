@@ -615,7 +615,6 @@ class PosteriorModel(object):
         else:
             y, params_true = self.testing_wg.provide_sample(idx, return_det=False)
 
-
         if self.model_type == 'nde':
             x_samples = nde_flows.obtain_samples(
                 self.model, y, nsamples, self.device
@@ -629,7 +628,7 @@ class PosteriorModel(object):
         params_samples_ml = np.zeros((params_samples.shape)[1])
         for i in range(0, (params_samples.shape)[1]):
 
-            bins, edges = np.histogram(params_samples[:,i], bins=25)
+            bins, edges = np.histogram(params_samples[:,i], bins=100)
             params_samples_ml[i] = (edges[np.argmax(bins)]+edges[np.argmax(bins)+1])/2.
 
         params_true = self.testing_wg.post_process_parameters(params_true)
