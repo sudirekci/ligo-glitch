@@ -13,6 +13,7 @@ import h5py
 
 import nde_flows
 import waveform_dataset_3p as wd
+from bilby_posterior import Bilby_Posterior
 
 from fisher_info import Fisher
 from scipy.stats import norm
@@ -69,6 +70,7 @@ python gwpe.py test \
     --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_3p_svd_100_extrinsic/ \
     --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/3d_29/ \
     --fisher \
+    --bilby \
     --epoch 8\
     --test_on_training_data \
     
@@ -122,6 +124,7 @@ class PosteriorModel(object):
         self.batch_size = None
         self.annealing = 'None'
         self.fisher = None
+        self.bilbly_post = None
 
         if use_cuda and torch.cuda.is_available():
             self.device = torch.device('cuda')
@@ -547,7 +550,8 @@ class PosteriorModel(object):
         self.save_model()
 
 
-    def init_waveform_supp(self, aux_filename='waveforms_supplementary.hdf5', compute_fisher=False):
+    def init_waveform_supp(self, aux_filename='waveforms_supplementary.hdf5', compute_fisher=False,
+                           compute_bilby_post=False):
 
         p = Path(self.model_dir)
 
@@ -591,10 +595,11 @@ class PosteriorModel(object):
 
         if compute_fisher:
             self.fisher = Fisher(waveform_generator=self.testing_wg)
+        if compute_bilby_post:
+            self.bilbly_post = Bilby_Posterior(self.testing_wg, self.model_dir)
 
 
-
-    def evaluate(self, idx, nsamples=10000, plot=True, compute_fisher=False):
+    def evaluate(self, idx, nsamples=10000, plot=True, compute_fisher=False, compute_bilby_post=False):
         """Evaluate the model on a noisy waveform.
         Args:
             idx         index of the waveform, from a noisy waveform
@@ -640,6 +645,11 @@ class PosteriorModel(object):
             cov_matrix = self.fisher.compute_analytical_cov_m1_m2(params=params_true)
             print('Covariance matrix:')
             print(cov_matrix)
+
+        if compute_bilby_post:
+            print('Computing bilby posteriors...')
+            self.bilbly_post.find_result(idx, params_true)
+            print('Posteriors computed')
 
         slice = [0, 1, 2]
 
@@ -855,6 +865,7 @@ def parse_args():
     test_parser.add_argument('--epoch', dest='epoch_to_use', default=-1, type=int)
     test_parser.add_argument('--test_on_training_data', dest='test_on_training_data', action='store_true')
     test_parser.add_argument('--fisher', dest='compute_fisher', action='store_true')
+    test_parser.add_argument('--bilby', dest='compute_bilby_post', action='store_true')
 
     train_subparsers = train_parser.add_subparsers(dest='model_source')
     train_subparsers.required = True
@@ -1035,13 +1046,13 @@ def main():
 
         # TESTING
         print('Testing is starting...')
-        pm.init_waveform_supp(compute_fisher=args.compute_fisher)
+        pm.init_waveform_supp(compute_fisher=args.compute_fisher, compute_bilby_post=args.compute_bilby_post)
 
         for i in range(0, 10):
 
             idx = np.random.randint(0, (pm.testing_wg.dataset_len*pm.testing_wg.noise_real_to_sig))
             # print(idx)
-            pm.evaluate(idx, plot=True, compute_fisher=args.compute_fisher)
+            pm.evaluate(idx, plot=True, compute_fisher=args.compute_fisher, compute_bilby_post=args.compute_bilby_post)
 
     else:
         print('Wrong mode selected')
