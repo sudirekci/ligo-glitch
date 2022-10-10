@@ -40,39 +40,39 @@ class Bilby_Posterior:
         geocent_time = 1126259642.413
 
         if self._three_parameter:
-            mass_1 = params_true[self._wg.INTRINSIC_PARAMS['mass1']]
-            mass_2 = params_true[self._wg.INTRINSIC_PARAMS['mass2']]
-            luminosity_distance = params_true[self._wg.EXTRINSIC_PARAMS['distance']]
+            mass_1 = params_true[self._wg.INTRINSIC_PARAMS['mass1']].item()
+            mass_2 = params_true[self._wg.INTRINSIC_PARAMS['mass2']].item()
+            luminosity_distance = params_true[self._wg.EXTRINSIC_PARAMS['distance']].item()
 
-            a_1 = self._wg.other_params[[self._wg.OTHER_PARAMS['a1']]]
-            a_2 = self._wg.other_params[[self._wg.OTHER_PARAMS['a2']]]
-            tilt_1 = self._wg.other_params[[self._wg.OTHER_PARAMS['theta1']]]
-            tilt_2 = self._wg.other_params[[self._wg.OTHER_PARAMS['theta2']]]
-            phi_12 = self._wg.other_params[[self._wg.OTHER_PARAMS['phi_12']]]
-            phi_jl = self._wg.other_params[[self._wg.OTHER_PARAMS['phi_JL']]]
-            theta_jn = self._wg.other_params[[self._wg.OTHER_PARAMS['theta_JN']]]
+            a_1 = self._wg.other_params[[self._wg.OTHER_PARAMS['a1']]].item()
+            a_2 = self._wg.other_params[[self._wg.OTHER_PARAMS['a2']]].item()
+            tilt_1 = self._wg.other_params[[self._wg.OTHER_PARAMS['theta1']]].item()
+            tilt_2 = self._wg.other_params[[self._wg.OTHER_PARAMS['theta2']]].item()
+            phi_12 = self._wg.other_params[[self._wg.OTHER_PARAMS['phi_12']]].item()
+            phi_jl = self._wg.other_params[[self._wg.OTHER_PARAMS['phi_JL']]].item()
+            theta_jn = self._wg.other_params[[self._wg.OTHER_PARAMS['theta_JN']]].item()
 
-            psi = self._wg.other_params[[self._wg.OTHER_PARAMS['pol_angle']]]
-            phase = self._wg.other_params[[self._wg.OTHER_PARAMS['phase']]]
-            ra = self._wg.other_params[self._wg.OTHER_PARAMS['right_ascension']]
-            dec = self._wg.other_params[self._wg.OTHER_PARAMS['declination']]
+            psi = self._wg.other_params[[self._wg.OTHER_PARAMS['pol_angle']]].item()
+            phase = self._wg.other_params[[self._wg.OTHER_PARAMS['phase']]].item()
+            ra = self._wg.other_params[self._wg.OTHER_PARAMS['right_ascension']].item()
+            dec = self._wg.other_params[self._wg.OTHER_PARAMS['declination']].item()
         else:
-            mass_1 = params_true[self._wg.INTRINSIC_PARAMS['mass1']]
-            mass_2 = params_true[self._wg.INTRINSIC_PARAMS['mass2']]
-            luminosity_distance = params_true[self._wg.EXTRINSIC_PARAMS['distance']]
+            mass_1 = params_true[self._wg.INTRINSIC_PARAMS['mass1']].item()
+            mass_2 = params_true[self._wg.INTRINSIC_PARAMS['mass2']].item()
+            luminosity_distance = params_true[self._wg.EXTRINSIC_PARAMS['distance']].item()
 
-            a_1 = self._wg.other_params[[self._wg.INTRINSIC_PARAMS['a1']]]
-            a_2 = self._wg.other_params[[self._wg.INTRINSIC_PARAMS['a2']]]
-            tilt_1 = self._wg.other_params[[self._wg.INTRINSIC_PARAMS['theta1']]]
-            tilt_2 = self._wg.other_params[[self._wg.INTRINSIC_PARAMS['theta2']]]
-            phi_12 = self._wg.other_params[[self._wg.INTRINSIC_PARAMS['phi_12']]]
-            phi_jl = self._wg.other_params[[self._wg.INTRINSIC_PARAMS['phi_JL']]]
-            theta_jn = self._wg.other_params[[self._wg.INTRINSIC_PARAMS['theta_JN']]]
+            a_1 = self._wg.other_params[[self._wg.INTRINSIC_PARAMS['a1']]].item()
+            a_2 = self._wg.other_params[[self._wg.INTRINSIC_PARAMS['a2']]].item()
+            tilt_1 = self._wg.other_params[[self._wg.INTRINSIC_PARAMS['theta1']]].item()
+            tilt_2 = self._wg.other_params[[self._wg.INTRINSIC_PARAMS['theta2']]].item()
+            phi_12 = self._wg.other_params[[self._wg.INTRINSIC_PARAMS['phi_12']]].item()
+            phi_jl = self._wg.other_params[[self._wg.INTRINSIC_PARAMS['phi_JL']]].item()
+            theta_jn = self._wg.other_params[[self._wg.INTRINSIC_PARAMS['theta_JN']]].item()
 
-            psi = self._wg.other_params[[self._wg.EXTRINSIC_PARAMS['pol_angle']]]
-            phase = self._wg.other_params[[self._wg.EXTRINSIC_PARAMS['phase']]]
-            ra = self._wg.other_params[self._wg.EXTRINSIC_PARAMS['right_ascension']]
-            dec = self._wg.other_params[self._wg.EXTRINSIC_PARAMS['declination']]
+            psi = self._wg.other_params[[self._wg.EXTRINSIC_PARAMS['pol_angle']]].item()
+            phase = self._wg.other_params[[self._wg.EXTRINSIC_PARAMS['phase']]].item()
+            ra = self._wg.other_params[self._wg.EXTRINSIC_PARAMS['right_ascension']].item()
+            dec = self._wg.other_params[self._wg.EXTRINSIC_PARAMS['declination']].item()
 
         injection_parameters = dict(
             mass_1=mass_1,
