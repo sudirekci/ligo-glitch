@@ -27,7 +27,8 @@ class Bilby_Posterior:
     def find_result(self, idx, params_true):
         # Set the duration and sampling frequency of the data segment that we're
         # going to inject the signal into
-        duration = self._wg.duration
+        # duration = self._wg.duration
+        duration = 8.0
         sampling_frequency = self._wg.sampling_freq
         minimum_frequency = self._wg.fmin
 
