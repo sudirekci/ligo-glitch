@@ -678,7 +678,7 @@ class PosteriorModel(object):
                                     labels=parameter_labels[slice], range=range1, density=True,
                                     hist_kwargs={"density":True}, bins=20,
                                     no_fill_contours=True, plot_datapoints=False,
-                                    levels=np.asarray([68, 95, 99.7]))
+                                    levels=np.asarray([0.68, 0.95, 0.997]))
 
                 #"levels":[68.2, 95.4, 99.7]
 
