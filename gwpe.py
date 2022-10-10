@@ -628,7 +628,7 @@ class PosteriorModel(object):
         params_samples_ml = np.zeros((params_samples.shape)[1])
         for i in range(0, (params_samples.shape)[1]):
 
-            bins, edges = np.histogram(params_samples[:,i], bins=20)
+            bins, edges = np.histogram(params_samples[:,i], bins=16)
             params_samples_ml[i] = (edges[np.argmax(bins)]+edges[np.argmax(bins)+1])/2.
 
         params_true = self.testing_wg.post_process_parameters(params_true)
