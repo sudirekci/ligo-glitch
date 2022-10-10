@@ -662,8 +662,8 @@ class PosteriorModel(object):
                 # fisher 1d histograms
                 for k in range(0, 3):
 
-                    x = np.linspace(norm.ppf(0.0001, loc=params_true[k], scale=np.sqrt(cov_matrix[k, k])),
-                                    norm.ppf(0.9999, loc=params_true[k], scale=np.sqrt(cov_matrix[k, k])), 500)
+                    x = np.linspace(norm.ppf(0.0001, loc=params_samples_ml[k], scale=np.sqrt(cov_matrix[k, k])),
+                                    norm.ppf(0.9999, loc=params_samples_ml[k], scale=np.sqrt(cov_matrix[k, k])), 500)
 
                     axes[4 * k].plot(x, norm.pdf(x, loc=params_samples_ml[k], scale=np.sqrt(cov_matrix[k, k])), 'r-')
 
@@ -678,7 +678,7 @@ class PosteriorModel(object):
                                     labels=parameter_labels[slice], range=range1, density=True,
                                     hist_kwargs={"density":True}, bins=20,
                                     plot_datapoints=False,
-                                    levels=(0.466, 0.911, 0.995))
+                                    levels=(0.1))
 
                 #"levels":[68.2, 95.4, 99.7]
 
@@ -687,8 +687,8 @@ class PosteriorModel(object):
                 # fisher 1d histograms
                 for k in range(0,3):
 
-                    x = np.linspace(norm.ppf(0.0001, loc=params_true[k], scale=np.sqrt(cov_matrix[k,k])),
-                                    norm.ppf(0.9999,loc=params_true[k], scale=np.sqrt(cov_matrix[k,k])), 500)
+                    x = np.linspace(norm.ppf(0.0001, loc=params_samples_ml[k], scale=np.sqrt(cov_matrix[k,k])),
+                                    norm.ppf(0.9999,loc=params_samples_ml[k], scale=np.sqrt(cov_matrix[k,k])), 500)
 
                     axes[4*k].plot(x, norm.pdf(x, loc=params_samples_ml[k], scale=np.sqrt(cov_matrix[k,k])),'r-')
 
