@@ -677,8 +677,8 @@ class PosteriorModel(object):
                 fig = corner.corner(params_samples[:, slice], truths=params_true[slice],
                                     labels=parameter_labels[slice], range=range1, density=True,
                                     hist_kwargs={"density":True}, bins=20,
-                                    no_fill_contours=True, plot_datapoints=False,
-                                    levels=np.asarray([0.68, 0.95, 0.997]))
+                                    plot_datapoints=False,
+                                    levels=(0.68, 0.95, 0.997))
 
                 #"levels":[68.2, 95.4, 99.7]
 
