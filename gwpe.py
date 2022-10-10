@@ -628,7 +628,7 @@ class PosteriorModel(object):
         params_samples_ml = np.zeros((params_samples.shape)[1])
         for i in range(0, (params_samples.shape)[1]):
 
-            bins, edges = np.histogram(params_samples[:,i], bins=16)
+            bins, edges = np.histogram(params_samples[:,i], bins=50)
             params_samples_ml[i] = (edges[np.argmax(bins)]+edges[np.argmax(bins)+1])/2.
 
         params_true = self.testing_wg.post_process_parameters(params_true)
@@ -677,7 +677,7 @@ class PosteriorModel(object):
                 fig = corner.corner(params_samples[:, slice], truths=params_true[slice],
                                     labels=parameter_labels[slice], range=range1, density=True,
                                     hist_kwargs={"density":True}, bins=20,
-                                    hist2d_kwargs={"levels":[0.01], "plot_contours":False})
+                                    hist2d_kwargs={"levels":[68, 95, 99.7]})
 
                 #"levels":[68.2, 95.4, 99.7]
 
