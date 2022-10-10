@@ -628,7 +628,7 @@ class PosteriorModel(object):
         params_samples_ml = np.zeros((params_samples.shape)[1])
         for i in range(0, (params_samples.shape)[1]):
 
-            bins, edges = np.histogram(params_samples[:,i], bins=50)
+            bins, edges = np.histogram(params_samples[:,i], bins=25)
             params_samples_ml[i] = (edges[np.argmax(bins)]+edges[np.argmax(bins)+1])/2.
 
         params_true = self.testing_wg.post_process_parameters(params_true)
@@ -643,8 +643,8 @@ class PosteriorModel(object):
 
         slice = [0, 1, 2]
 
-        percentile_low = np.percentile(params_samples[:,slice], 2.5, axis=0)
-        percentile_high = np.percentile(params_samples[:, slice], 97.5, axis=0)
+        percentile_low = np.percentile(params_samples[:,slice], 1, axis=0)
+        percentile_high = np.percentile(params_samples[:, slice], 99, axis=0)
         range1 = np.stack((percentile_low, percentile_high), axis=1)
 
         if plot:
@@ -678,7 +678,7 @@ class PosteriorModel(object):
                                     labels=parameter_labels[slice], range=range1, density=True,
                                     hist_kwargs={"density":True}, bins=20,
                                     plot_datapoints=False,no_fill_contours=False, fill_contours=True,
-                                    levels=(0.3935,0.8647,0.9889,0.9997))
+                                    levels=(0.3935, 0.8647, 0.9889, 0.9997))
 
                 #"levels":[68.2, 95.4, 99.7]
 
