@@ -1044,17 +1044,15 @@ def main():
             else:
                 print(key, '\t', value)
 
-        args.compute_bilby_post = False
-
         # TESTING
         print('Testing is starting...')
-        pm.init_waveform_supp(compute_fisher=args.compute_fisher, compute_bilby_post=args.compute_bilby_post)
+        pm.init_waveform_supp(compute_fisher=args.compute_fisher, compute_bilby_post=False)
 
         for i in range(0, 10):
 
             idx = np.random.randint(0, (pm.testing_wg.dataset_len*pm.testing_wg.noise_real_to_sig))
             # print(idx)
-            pm.evaluate(idx, plot=True, compute_fisher=args.compute_fisher, compute_bilby_post=args.compute_bilby_post)
+            pm.evaluate(idx, plot=True, compute_fisher=args.compute_fisher, compute_bilby_post=False)
 
     else:
         print('Wrong mode selected')
