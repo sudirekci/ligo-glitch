@@ -1044,6 +1044,8 @@ def main():
             else:
                 print(key, '\t', value)
 
+        args.compute_bilby_post = False
+
         # TESTING
         print('Testing is starting...')
         pm.init_waveform_supp(compute_fisher=args.compute_fisher, compute_bilby_post=args.compute_bilby_post)
