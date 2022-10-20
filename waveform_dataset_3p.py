@@ -78,8 +78,8 @@ class WaveformGenerator:
                              1.0781266874951325, 0.9691707576482571, 2.871221497023955]
 
             self.priors = np.zeros((self.INTRINSIC_LEN + self.EXTRINSIC_LEN + 1, 2))
-            self.priors[self.INTRINSIC_PARAMS['mass1']] = [25., 50.]
-            self.priors[self.INTRINSIC_PARAMS['mass2']] = [25., 50.]
+            self.priors[self.INTRINSIC_PARAMS['mass1']] = [70., 80.]
+            self.priors[self.INTRINSIC_PARAMS['mass2']] = [10., 20.]
             self.priors[self.EXTRINSIC_PARAMS['distance']] = [100., 1000.]
             self.priors[self.GLITCH_PARAMS['time']] = [-1.5, 1.5]
 
@@ -435,7 +435,7 @@ class WaveformGenerator:
 
             snr = self.SNR_colored(self.projection_strains[ind])
 
-            timeshift -= self.duration / 2
+            # timeshift -= self.duration / 2
 
             self.projection_strains[ind] = self.projection_strains[ind] * \
                                            np.exp(-1j * 2 * np.pi * self.freqs[self.fft_mask] * timeshift) * \
@@ -446,7 +446,7 @@ class WaveformGenerator:
 
     def whiten_hp_hc(self, timeshift=0.):
 
-        timeshift -= self.duration / 2
+        # timeshift -= self.duration / 2
 
         self.hp = self.hp * np.expand_dims(np.exp(-1j * 2 * np.pi *
                             self.freqs[self.fft_mask] * timeshift) * \
@@ -560,17 +560,15 @@ class WaveformGenerator:
         return hp, hc
 
 
-    def project_hp_hc(self, hp, hc, dataset_ind, params=None, whiten=True, extrinsic=False):
+    def project_hp_hc(self, hp, hc, dataset_ind, params=None, whiten=True):
 
         if params is None:
 
             distance = self.params[dataset_ind, self.EXTRINSIC_PARAMS['distance']]
 
         else:
-            if extrinsic:
-                distance = params[0]
-            else:
-                distance = params[self.EXTRINSIC_PARAMS['distance']]
+
+            distance = params[self.EXTRINSIC_PARAMS['distance']]
 
         ra = self.other_params[self.OTHER_PARAMS['right_ascension']]
         dec = self.other_params[self.OTHER_PARAMS['declination']]
@@ -865,7 +863,7 @@ class WaveformGenerator:
             extrinsic_params = self.sample_extrinsic()
 
             snrs = self.project_hp_hc(np.copy(self.hp[idx]), np.copy(self.hc[idx]), -1,
-                                      params=extrinsic_params, whiten=False, extrinsic=True)
+                                      params=np.asarray([0,0,extrinsic_params]), whiten=False)
 
             #self.normalize_projection_strains()
 

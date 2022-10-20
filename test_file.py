@@ -821,7 +821,7 @@ test_glitch_SVD_projection()
 
 #test_extrinsic_at_train()
 
-plot_signal_noise_glitch()
+#plot_signal_noise_glitch()
 
 
 #dataset.normalize_params()
