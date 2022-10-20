@@ -569,7 +569,6 @@ class WaveformGenerator:
         else:
 
             distance = params[self.EXTRINSIC_PARAMS['distance']]
-            print(distance)
 
         ra = self.other_params[self.OTHER_PARAMS['right_ascension']]
         dec = self.other_params[self.OTHER_PARAMS['declination']]
@@ -864,7 +863,7 @@ class WaveformGenerator:
             extrinsic_params = self.sample_extrinsic()
 
             snrs = self.project_hp_hc(np.copy(self.hp[idx]), np.copy(self.hc[idx]), -1,
-                                      params=np.asarray([0.,0.,extrinsic_params]), whiten=False)
+                                      params=np.asarray([0, 0, extrinsic_params[0]]), whiten=False)
 
             #self.normalize_projection_strains()
 
