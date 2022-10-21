@@ -126,8 +126,9 @@ class Bilby_Posterior:
                         self._wg.fft_mask] * self._wg.dt * \
                     np.sqrt(self._wg.bandwidth)
 
-            strains[j] = (fp * hp + fc * hc) * \
-                         np.exp(-1j * 2 * np.pi * self._wg.freqs[self._wg.fft_mask] * timeshift) + noise
+            strains.append((fp * hp + fc * hc) *
+                           np.exp(-1j * 2 * np.pi *
+                                  self._wg.freqs[self._wg.fft_mask] * timeshift) + noise)
 
         injection_parameters = dict(
             mass_1=mass_1,
