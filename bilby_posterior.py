@@ -107,7 +107,7 @@ class Bilby_Posterior:
             print('TODO')
 
         # compute the polarizations
-        hp, hc = self._wg.compute_hp_hc(-1, params=params_true, mask=False)
+        hp, hc = self._wg.compute_hp_hc(-1, params=params_true)
 
         # divide by the distance
 
@@ -115,6 +115,7 @@ class Bilby_Posterior:
         hc = hc / luminosity_distance
 
         for j in range(0, self._wg.no_detectors):
+
             det = self._wg.detectors[j]
 
             fp, fc = det.antenna_pattern(ra, dec, psi, self._wg.REF_TIME)
@@ -183,7 +184,7 @@ class Bilby_Posterior:
         # set the strain data directly
         for j in range(0, self._wg.no_detectors):
             print(len(strains[j]))
-            self._ifos[j].set_strain_data_from_frequency_domain_strain(strains[j],
+            self._ifos[j].set_strain_data_from_frequency_domain_strain(np.insert(strains[j], 0, 0),
                                                                        sampling_frequency=self._wg.sampling_freq,
                                                                        duration=self._wg.duration,
                                                                        start_time=geocent_time - 2)
