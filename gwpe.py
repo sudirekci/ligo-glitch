@@ -58,7 +58,7 @@ python gwpe.py train existing \
     --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/3d_30/ \
     --epochs 10 \
     --batch_size 8000 \
-    
+
 python gwpe.py train existing \
     --data_dir /home/su.direkci/glitch_project/dataset_w_glitch_3p_svd_100_extrinsic/ \
     --model_dir /home/su.direkci/glitch_project/models/3d_1/ \
@@ -1045,13 +1045,13 @@ def main():
 
         # TESTING
         print('Testing is starting...')
-        pm.init_waveform_supp(compute_fisher=args.compute_fisher, compute_bilby_post=False)
+        pm.init_waveform_supp(compute_fisher=args.compute_fisher, compute_bilby_post=args.compute_bilby_post)
 
         for i in range(0, 10):
 
             idx = np.random.randint(0, (pm.testing_wg.dataset_len*pm.testing_wg.noise_real_to_sig))
             # print(idx)
-            pm.evaluate(idx, plot=True, compute_fisher=args.compute_fisher, compute_bilby_post=False)
+            pm.evaluate(idx, plot=True, compute_fisher=args.compute_fisher, compute_bilby_post=args.compute_bilby_post)
 
     else:
         print('Wrong mode selected')
