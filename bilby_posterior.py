@@ -64,44 +64,44 @@ class Bilby_Posterior:
             return
 
         if self._three_parameter:
-            mass_1 = params_true[self._wg.INTRINSIC_PARAMS['mass1']]
-            mass_2 = params_true[self._wg.INTRINSIC_PARAMS['mass2']]
-            luminosity_distance = params_true[self._wg.EXTRINSIC_PARAMS['distance']]
+            mass_1 = float(params_true[self._wg.INTRINSIC_PARAMS['mass1']])
+            mass_2 = float(params_true[self._wg.INTRINSIC_PARAMS['mass2']])
+            luminosity_distance = float(params_true[self._wg.EXTRINSIC_PARAMS['distance']])
 
-            a_1 = self._wg.other_params[[self._wg.OTHER_PARAMS['a1']]]
-            a_2 = self._wg.other_params[[self._wg.OTHER_PARAMS['a2']]]
-            tilt_1 = self._wg.other_params[[self._wg.OTHER_PARAMS['theta1']]]
-            tilt_2 = self._wg.other_params[[self._wg.OTHER_PARAMS['theta2']]]
-            phi_12 = self._wg.other_params[[self._wg.OTHER_PARAMS['phi_12']]]
-            phi_jl = self._wg.other_params[[self._wg.OTHER_PARAMS['phi_JL']]]
-            theta_jn = self._wg.other_params[[self._wg.OTHER_PARAMS['theta_JN']]]
+            a_1 = float(self._wg.other_params[[self._wg.OTHER_PARAMS['a1']]])
+            a_2 = float(self._wg.other_params[[self._wg.OTHER_PARAMS['a2']]])
+            tilt_1 = float(self._wg.other_params[[self._wg.OTHER_PARAMS['theta1']]])
+            tilt_2 = float(self._wg.other_params[[self._wg.OTHER_PARAMS['theta2']]])
+            phi_12 = float(self._wg.other_params[[self._wg.OTHER_PARAMS['phi_12']]])
+            phi_jl = float(self._wg.other_params[[self._wg.OTHER_PARAMS['phi_JL']]])
+            theta_jn = float(self._wg.other_params[[self._wg.OTHER_PARAMS['theta_JN']]])
 
-            psi = self._wg.other_params[[self._wg.OTHER_PARAMS['pol_angle']]]
-            phase = self._wg.other_params[[self._wg.OTHER_PARAMS['phase']]]
-            ra = self._wg.other_params[self._wg.OTHER_PARAMS['right_ascension']]
-            dec = self._wg.other_params[self._wg.OTHER_PARAMS['declination']]
-            tc = self._wg.other_params[self._wg.OTHER_PARAMS['tc']]
+            psi = float(self._wg.other_params[[self._wg.OTHER_PARAMS['pol_angle']]])
+            phase = float(self._wg.other_params[[self._wg.OTHER_PARAMS['phase']]])
+            ra = float(self._wg.other_params[self._wg.OTHER_PARAMS['right_ascension']])
+            dec = float(self._wg.other_params[self._wg.OTHER_PARAMS['declination']])
+            tc = float(self._wg.other_params[self._wg.OTHER_PARAMS['tc']])
 
 
         else:
 
-            mass_1 = params_true[self._wg.INTRINSIC_PARAMS['mass1']]
-            mass_2 = params_true[self._wg.INTRINSIC_PARAMS['mass2']]
-            luminosity_distance = params_true[self._wg.EXTRINSIC_PARAMS['distance']]
+            mass_1 = float(params_true[self._wg.INTRINSIC_PARAMS['mass1']])
+            mass_2 = float(params_true[self._wg.INTRINSIC_PARAMS['mass2']])
+            luminosity_distance = float(params_true[self._wg.EXTRINSIC_PARAMS['distance']])
 
-            a_1 = params_true[[self._wg.INTRINSIC_PARAMS['a1']]]
-            a_2 = params_true[[self._wg.INTRINSIC_PARAMS['a2']]]
-            tilt_1 = params_true[[self._wg.INTRINSIC_PARAMS['theta1']]]
-            tilt_2 = params_true[[self._wg.INTRINSIC_PARAMS['theta2']]]
-            phi_12 = params_true[[self._wg.INTRINSIC_PARAMS['phi_12']]]
-            phi_jl = params_true[[self._wg.INTRINSIC_PARAMS['phi_JL']]]
-            theta_jn = params_true[[self._wg.INTRINSIC_PARAMS['theta_JN']]]
+            a_1 = float(params_true[[self._wg.INTRINSIC_PARAMS['a1']]])
+            a_2 = float(params_true[[self._wg.INTRINSIC_PARAMS['a2']]])
+            tilt_1 = float(params_true[[self._wg.INTRINSIC_PARAMS['theta1']]])
+            tilt_2 = float(params_true[[self._wg.INTRINSIC_PARAMS['theta2']]])
+            phi_12 = float(params_true[[self._wg.INTRINSIC_PARAMS['phi_12']]])
+            phi_jl = float(params_true[[self._wg.INTRINSIC_PARAMS['phi_JL']]])
+            theta_jn = float(params_true[[self._wg.INTRINSIC_PARAMS['theta_JN']]])
 
-            psi = params_true[[self._wg.EXTRINSIC_PARAMS['pol_angle']]]
-            phase = params_true[[self._wg.EXTRINSIC_PARAMS['phase']]]
-            ra = params_true[self._wg.EXTRINSIC_PARAMS['right_ascension']]
-            dec = params_true[self._wg.EXTRINSIC_PARAMS['declination']]
-            tc = params_true[self._wg.OTHER_PARAMS['tc']]
+            psi = float(params_true[[self._wg.EXTRINSIC_PARAMS['pol_angle']]])
+            phase = float(params_true[[self._wg.EXTRINSIC_PARAMS['phase']]])
+            ra = float(params_true[self._wg.EXTRINSIC_PARAMS['right_ascension']])
+            dec = float(params_true[self._wg.EXTRINSIC_PARAMS['declination']])
+            tc = float(params_true[self._wg.OTHER_PARAMS['tc']])
 
         if self._wg.add_glitch:
             print('TODO')
