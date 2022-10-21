@@ -182,6 +182,7 @@ class Bilby_Posterior:
 
         # set the strain data directly
         for j in range(0, self._wg.no_detectors):
+            print(len(strains[j]))
             self._ifos[j].set_strain_data_from_frequency_domain_strain(strains[j],
                                                                        sampling_frequency=self._wg.sampling_freq,
                                                                        duration=self._wg.duration,
@@ -211,7 +212,6 @@ class Bilby_Posterior:
 
         # Make a corner plot.
         result.plot_corner()
-
 
 
 
