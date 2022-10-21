@@ -495,7 +495,7 @@ class WaveformGenerator:
                 std2 = np.split(np.std(self.detector_signals.imag, axis=1), self.no_detectors)
                 self.stds = std1 + std2
 
-    def compute_hp_hc(self, index, params=None):
+    def compute_hp_hc(self, index, params=None, mask=True):
         """
         Compute hps and hcs given the intrinsic parameters
         """
@@ -554,8 +554,9 @@ class WaveformGenerator:
                                      f_lower=self.fmin,
                                      f_final=self.sampling_freq / 2)
 
-            hp = hp.data[self.fft_mask]
-            hc = hc.data[self.fft_mask]
+            if mask:
+                hp = hp.data[self.fft_mask]
+                hc = hc.data[self.fft_mask]
 
         return hp, hc
 
@@ -863,7 +864,7 @@ class WaveformGenerator:
             extrinsic_params = self.sample_extrinsic()
 
             snrs = self.project_hp_hc(np.copy(self.hp[idx]), np.copy(self.hc[idx]), -1,
-                                      params=np.asarray([0, 0, extrinsic_params[0]]), whiten=False)
+                                      params=np.asarray([0., 0, extrinsic_params[0]]), whiten=False)
 
             #self.normalize_projection_strains()
 

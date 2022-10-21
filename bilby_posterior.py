@@ -107,7 +107,7 @@ class Bilby_Posterior:
             print('TODO')
 
         # compute the polarizations
-        hp, hc = self._wg.compute_hp_hc(-1, params=params_true)
+        hp, hc = self._wg.compute_hp_hc(-1, params=params_true, mask=False)
 
         # divide by the distance
 
