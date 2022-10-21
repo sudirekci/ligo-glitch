@@ -186,11 +186,15 @@ class Bilby_Posterior:
                                                                        duration=self._wg.duration,
                                                                        start_time=geocent_time - 2)
 
+        print('Strain data set')
+
         # Initialise the likelihood by passing in the interferometer data (ifos) and
         # the waveform generator
         likelihood = bilby.gw.GravitationalWaveTransient(
             interferometers=self._ifos, waveform_generator=self._waveform_generator
         )
+
+        print('Likelihood defined')
 
         # Run sampler.  In this case we're going to use the `dynesty` sampler
         result = bilby.run_sampler(
