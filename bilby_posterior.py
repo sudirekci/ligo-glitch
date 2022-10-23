@@ -157,6 +157,7 @@ class Bilby_Posterior:
             "tilt_2",
             "phi_12",
             "phi_jl",
+            "theta_jn",
             "psi",
             "ra",
             "dec",
