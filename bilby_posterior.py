@@ -125,7 +125,7 @@ class Bilby_Posterior:
 
             noise = np.fft.rfft(np.random.normal(0, scale=1.0, size=int(self._wg.length)))[
                         self._wg.fft_mask] * self._wg.dt * \
-                    np.sqrt(self._wg.bandwidth*(self._wg.psd[self.fft_mask]))
+                    np.sqrt(self._wg.bandwidth*(self._wg.psd[self._wg.fft_mask]))
 
             strains.append((fp * hp + fc * hc) *
                            np.exp(-1j * 2 * np.pi *
