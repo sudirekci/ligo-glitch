@@ -26,14 +26,14 @@ from scipy.stats import multivariate_normal
 
 """
 python gwpe.py train new nde \
-    --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_3p_svd_100_extrinsic_2/ \
-    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/3d_30/ \
+    --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_3p_svd_100_extrinsic_3/ \
+    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/3d_31/ \
     --nbins 2 \
     --num_transform_blocks 1 \
     --nflows 3 \
     --batch_norm \
     --lr 0.0002 \
-    --epochs 40 \
+    --epochs 50 \
     --hidden_dims 32 \
     --activation elu \
     --no_lr_annealing \

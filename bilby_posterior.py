@@ -125,7 +125,7 @@ class Bilby_Posterior:
 
             noise = np.fft.rfft(np.random.normal(0, scale=1.0, size=int(self._wg.length)))[
                         self._wg.fft_mask] * self._wg.dt * \
-                    np.sqrt(self._wg.bandwidth)
+                    np.sqrt(self._wg.bandwidth*(self.psd[self.fft_mask]))
 
             strains.append((fp * hp + fc * hc) *
                            np.exp(-1j * 2 * np.pi *
@@ -188,7 +188,8 @@ class Bilby_Posterior:
             self._ifos[j].set_strain_data_from_frequency_domain_strain(np.insert(strains[j], 0, 0),
                                                                        sampling_frequency=self._wg.sampling_freq,
                                                                        duration=self._wg.duration,
-                                                                       start_time=geocent_time-self._wg.duration*3./4)
+                                                                       start_time=geocent_time -
+                                                                       self._wg.duration*self._wg.merger_beginning_factor)
 
         print('Strain data set')
 

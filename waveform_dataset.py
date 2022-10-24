@@ -49,6 +49,7 @@ class WaveformGenerator:
                  extrinsic_at_train=False, directory='/home/su/Documents/glitch_dataset/', glitch_sigma=1, domain='FD',
                  svd_no_basis_coeffs=100, add_glitch=False, add_noise=False, noise_real_to_sig=1):
 
+        self.merger_beginning_factor = 3./4
         # ratio of noise realizations to signals
         self.noise_real_to_sig = int(noise_real_to_sig)
 
@@ -352,7 +353,7 @@ class WaveformGenerator:
         p = self.priors[self.GLITCH_PARAMS['time']]
         time = np.random.uniform(p[0], p[1])
 
-        beginning = int((time - self.winlen / 2 + self.duration / 2) * self.sampling_freq)
+        beginning = int((time - self.winlen / 2 + self.duration*self.merger_beginning_factor) * self.sampling_freq)
         end = len(glitch) + beginning
 
         # sample detector

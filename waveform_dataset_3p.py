@@ -55,6 +55,7 @@ class WaveformGenerator:
                  extrinsic_at_train=False, directory='/home/su/Documents/glitch_dataset/', glitch_sigma=1, domain='FD',
                  svd_no_basis_coeffs=100, add_glitch=False, add_noise=False, noise_real_to_sig=1):
 
+        self.merger_beginning_factor = 0.
         self.extrinsic_factor = 150
         # ratio of noise realizations to signals
         self.noise_real_to_sig = int(noise_real_to_sig)
@@ -248,6 +249,10 @@ class WaveformGenerator:
 
     def create_glitch(self, name='tomte', length=10, mean=0):
 
+        if self.W_tomte is None or self.W_blip is None:
+            # initialize glitch matrices first
+            self.initialize_glitch_matrices()
+
         W, Z = None, None
         if name == 'tomte':
             W = self.W_tomte
@@ -348,7 +353,7 @@ class WaveformGenerator:
         p = self.priors[self.GLITCH_PARAMS['time']]
         time = np.random.uniform(p[0], p[1])
 
-        beginning = int((time - self.winlen / 2 + self.duration / 2) * self.sampling_freq)
+        beginning = int((time - self.winlen / 2 + self.duration*self.merger_beginning_factor) * self.sampling_freq)
         end = len(glitch) + beginning
 
         # sample detector
@@ -360,7 +365,8 @@ class WaveformGenerator:
 
         elif self.domain == 'FD':
 
-            glitch = np.fft.rfft(np.pad(glitch, (beginning, self.length - end), 'constant'))[self.fft_mask] * self.dt * \
+            glitch = np.fft.rfft(np.pad(glitch, (beginning, self.length - end),
+                                        'constant'))[self.fft_mask] * self.dt * \
                      np.sqrt(self.bandwidth)
 
             if self.performed_svd:
@@ -371,6 +377,41 @@ class WaveformGenerator:
         params = np.concatenate(([time], z))
 
         return det, params
+
+    def create_glitch_SVD_basis(self):
+
+        if self.domain == 'TD':
+            print('This method works only for FD.')
+            return
+
+        N = 10000
+
+        glitches = np.zeros((N, self.length / 2))
+
+        for i in range(0, N):
+
+            if np.random.random() > self.tomte_to_blip:
+                type = 0
+                # sample blip
+                z, glitch = self.create_glitch('blip', length=1)
+            else:
+                type = 1
+                # sample tomte
+                z, glitch = self.create_glitch('tomte', length=1)
+
+                # sample time of glitch
+            p = self.priors[self.GLITCH_PARAMS['time']]
+            time = np.random.uniform(p[0], p[1])
+
+            beginning = int((time - self.winlen / 2 + self.duration * self.merger_beginning_factor) * self.sampling_freq)
+            end = len(glitch) + beginning
+
+            glitches[i,:] = np.fft.rfft(np.pad(glitch, (beginning, self.length - end),
+                                        'constant'))[self.fft_mask] * self.dt * \
+                     np.sqrt(self.bandwidth)
+
+
+
 
     def get_spin_components(self, index, params=None):
 
@@ -592,7 +633,7 @@ class WaveformGenerator:
 
             # time shift and whiten
             if whiten:
-                snr = self.whiten_strain(j, timeshift=(dt + tc + self.duration*3./4))
+                snr = self.whiten_strain(j, timeshift=(dt + tc + self.duration*self.merger_beginning_factor))
                 snr_list.append(snr)
 
             else:
@@ -603,8 +644,7 @@ class WaveformGenerator:
                     # apply timeshift
                     self.projection_strains[j] = self.svd.basis_coeffs(
                         self.svd.fseries(self.projection_strains[j]) * np.exp(-1j * 2 * np.pi *
-                                                                              self.freqs[self.fft_mask] * (
-                                                                              dt+tc+self.duration*3./4)))
+                                         self.freqs[self.fft_mask] * (dt+tc+self.duration*self.merger_beginning_factor)))
 
                 else:
                     print('TODO')
@@ -724,7 +764,7 @@ class WaveformGenerator:
             for i in range(0, self.dataset_len):
                 self.hp[i], self.hc[i] = self.compute_hp_hc(i)
 
-            self.whiten_hp_hc(timeshift=self.duration*3./4)
+            self.whiten_hp_hc(timeshift=self.duration*self.merger_beginning_factor)
 
         else:
             # compute hps and hcs, sample extrinsic, project, add glitch and noise
