@@ -725,14 +725,15 @@ class PosteriorModel(object):
             # plt.show()
 
         if compute_bilby_post:
+
             print('Computing bilby posteriors...')
             bilby_fig = self.bilbly_post.find_result(idx, params_true)
             print('Posteriors computed')
 
             if plot:
 
-                 corner.corner(params_samples[:, slice], truths=params_true[slice],
-                                     labels=parameter_labels[slice], hist_kwargs={"density": True}, fig=bilby_fig)
+                corner.corner(params_samples[:, slice], truths=params_true[slice],labels=parameter_labels[slice],
+                               hist_kwargs={"density": True}, fig=bilby_fig)
 
                 plt.savefig(self.model_dir + str(idx)+"_bilby")
 
