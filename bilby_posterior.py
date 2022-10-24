@@ -188,7 +188,7 @@ class Bilby_Posterior:
             self._ifos[j].set_strain_data_from_frequency_domain_strain(np.insert(strains[j], 0, 0),
                                                                        sampling_frequency=self._wg.sampling_freq,
                                                                        duration=self._wg.duration,
-                                                                       start_time=geocent_time - 2)
+                                                                       start_time=geocent_time-self._wg.duration/2)
 
         print('Strain data set')
 
