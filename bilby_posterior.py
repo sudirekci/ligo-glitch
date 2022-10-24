@@ -188,7 +188,7 @@ class Bilby_Posterior:
             self._ifos[j].set_strain_data_from_frequency_domain_strain(np.insert(strains[j], 0, 0),
                                                                        sampling_frequency=self._wg.sampling_freq,
                                                                        duration=self._wg.duration,
-                                                                       start_time=geocent_time)
+                                                                       start_time=geocent_time-self._wg.duration/2)
 
         print('Strain data set')
 
@@ -213,7 +213,9 @@ class Bilby_Posterior:
         )
 
         # Make a corner plot.
-        result.plot_corner()
+        fig = result.plot_corner()
+
+        return fig
 
 
 
