@@ -646,11 +646,6 @@ class PosteriorModel(object):
             print('Covariance matrix:')
             print(cov_matrix)
 
-        if compute_bilby_post:
-            print('Computing bilby posteriors...')
-            self.bilbly_post.find_result(idx, params_true)
-            print('Posteriors computed')
-
         slice = [0, 1, 2]
 
         percentile_low = np.percentile(params_samples[:,slice], 1, axis=0)
@@ -728,6 +723,19 @@ class PosteriorModel(object):
             #     plt.savefig(self.model_dir + str(idx) + '_zoomed')
 
             # plt.show()
+
+        if compute_bilby_post:
+            print('Computing bilby posteriors...')
+            bilby_fig = self.bilbly_post.find_result(idx, params_true)
+            print('Posteriors computed')
+
+            if plot:
+
+                 corner.corner(params_samples[:, slice], truths=params_true[slice],
+                                     labels=parameter_labels[slice], hist_kwargs={"density": True}, fig=bilby_fig)
+
+                plt.savefig(self.model_dir + str(idx)+"_bilby")
+
 
         return params_samples
 
