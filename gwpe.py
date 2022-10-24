@@ -67,8 +67,8 @@ python gwpe.py train existing \
 
 
 python gwpe.py test \
-    --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_3p_svd_100_extrinsic_2/ \
-    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/3d_30/ \
+    --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_3p_svd_100_extrinsic/ \
+    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/3d_29/ \
     --fisher \
     --bilby \
     --epoch 8\
