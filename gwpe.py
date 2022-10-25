@@ -635,7 +635,7 @@ class PosteriorModel(object):
         for i in range(0, params_samples.shape[1]):
 
             bins, edges = np.histogram(params_samples[:,i], bins=20)
-            bins = scipy.ndimage.gaussian_filter(bins, sigma=1)
+            bins = scipy.ndimage.gaussian_filter(bins, sigma=2)
             params_samples_ml[i] = (edges[np.argmax(bins)]+edges[np.argmax(bins)+1])/2.
 
         params_true = self.testing_wg.post_process_parameters(params_true)
