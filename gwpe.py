@@ -68,8 +68,8 @@ python gwpe.py train existing \
 
 
 python gwpe.py test \
-    --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_3p_svd_100_extrinsic/ \
-    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/3d_29/ \
+    --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_3p_svd_100_extrinsic_2/ \
+    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/3d_30/ \
     --fisher \
     --bilby \
     --epoch 8\
@@ -1060,9 +1060,8 @@ def main():
 
         for i in range(0, 1):
 
-            idx = 666
-
             idx = np.random.randint(0, (pm.testing_wg.dataset_len*pm.testing_wg.noise_real_to_sig))
+            idx = 666
             # print(idx)
             pm.evaluate(idx, plot=True, compute_fisher=args.compute_fisher, compute_bilby_post=args.compute_bilby_post)
 
