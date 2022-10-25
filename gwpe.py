@@ -660,7 +660,7 @@ class PosteriorModel(object):
                           labels=parameter_labels[slice], hist_kwargs={"density":True}, bins=20)
 
             # plt.show()
-            plt.savefig(self.model_dir+str(idx)+'_new')
+            plt.savefig(self.model_dir+str(idx))
 
             if compute_fisher:
 
@@ -679,7 +679,7 @@ class PosteriorModel(object):
 
                 # corner.corner(fisher_samples, color='red', fig=fig, bins=100, hist_kwargs={"density":True})
 
-                plt.savefig(self.model_dir + str(idx) + '_fisher2'+'_new')
+                plt.savefig(self.model_dir + str(idx) + '_fisher2')
 
                 fig = corner.corner(params_samples[:, slice], truths=params_true[slice],
                                     labels=parameter_labels[slice], range=range1, density=True,
@@ -705,7 +705,7 @@ class PosteriorModel(object):
 
                 # corner.corner(fisher_samples, color='red', fig=fig, bins=100, hist_kwargs={"density":True})
 
-                plt.savefig(self.model_dir + str(idx) + '_fisher'+'_new')
+                plt.savefig(self.model_dir + str(idx) + '_fisher')
 
             if self.testing_wg.add_glitch:
 
