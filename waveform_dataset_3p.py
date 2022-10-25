@@ -56,7 +56,7 @@ class WaveformGenerator:
                  svd_no_basis_coeffs=100, add_glitch=False, add_noise=False, noise_real_to_sig=1):
 
         self.svd = None
-        self.merger_beginning_factor = 1./2
+        self.merger_beginning_factor = 0.
         self.extrinsic_factor = 150
         # ratio of noise realizations to signals
         self.noise_real_to_sig = int(noise_real_to_sig)

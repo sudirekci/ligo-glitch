@@ -27,8 +27,8 @@ from scipy.stats import multivariate_normal
 
 """
 python gwpe.py train new nde \
-    --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_3p_svd_100_extrinsic_3/ \
-    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/3d_31/ \
+    --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_3p_svd_100_extrinsic_2/ \
+    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/3d_30/ \
     --nbins 2 \
     --num_transform_blocks 1 \
     --nflows 3 \
@@ -71,8 +71,8 @@ python gwpe.py test \
     --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_3p_svd_100_extrinsic_2/ \
     --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/3d_30/ \
     --fisher \
+        --epoch 40\
     --bilby \
-    --epoch 8\
     --test_on_training_data \
     
 python gwpe.py test \
@@ -631,8 +631,8 @@ class PosteriorModel(object):
         params_samples = self.testing_wg.post_process_parameters(x_samples.cpu().numpy())
 
         # find maximum likelihood point
-        params_samples_ml = np.zeros((params_samples.shape)[1])
-        for i in range(0, (params_samples.shape)[1]):
+        params_samples_ml = np.zeros(params_samples.shape[1])
+        for i in range(0, params_samples.shape[1]):
 
             bins, edges = np.histogram(params_samples[:,i], bins=20)
             #bins = scipy.ndimage.gaussian_filter(bins, sigma=1)
