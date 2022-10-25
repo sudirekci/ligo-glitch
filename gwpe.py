@@ -660,7 +660,7 @@ class PosteriorModel(object):
                           labels=parameter_labels[slice], hist_kwargs={"density":True}, bins=20)
 
             # plt.show()
-            plt.savefig(self.model_dir+str(idx))
+            plt.savefig(self.model_dir+str(idx)+'_new')
 
             if compute_fisher:
 
@@ -679,7 +679,7 @@ class PosteriorModel(object):
 
                 # corner.corner(fisher_samples, color='red', fig=fig, bins=100, hist_kwargs={"density":True})
 
-                plt.savefig(self.model_dir + str(idx) + '_fisher2')
+                plt.savefig(self.model_dir + str(idx) + '_fisher2'+'_new')
 
                 fig = corner.corner(params_samples[:, slice], truths=params_true[slice],
                                     labels=parameter_labels[slice], range=range1, density=True,
@@ -705,7 +705,7 @@ class PosteriorModel(object):
 
                 # corner.corner(fisher_samples, color='red', fig=fig, bins=100, hist_kwargs={"density":True})
 
-                plt.savefig(self.model_dir + str(idx) + '_fisher')
+                plt.savefig(self.model_dir + str(idx) + '_fisher'+'_new')
 
             if self.testing_wg.add_glitch:
 
@@ -737,7 +737,7 @@ class PosteriorModel(object):
                 corner.corner(params_samples[:, slice], truths=params_true[slice],labels=parameter_labels[slice],
                                hist_kwargs={"density": True}, fig=bilby_fig)
 
-                plt.savefig(self.model_dir + str(idx)+"_bilby")
+                plt.savefig(self.model_dir + str(idx)+"_bilby"+'_new')
 
 
         return params_samples
@@ -1061,7 +1061,7 @@ def main():
         for i in range(0, 1):
 
             idx = np.random.randint(0, (pm.testing_wg.dataset_len*pm.testing_wg.noise_real_to_sig))
-            idx = 1313
+            idx = 666
             # print(idx)
             pm.evaluate(idx, plot=True, compute_fisher=args.compute_fisher, compute_bilby_post=args.compute_bilby_post)
 
