@@ -55,7 +55,8 @@ class WaveformGenerator:
                  extrinsic_at_train=False, directory='/home/su/Documents/glitch_dataset/', glitch_sigma=1, domain='FD',
                  svd_no_basis_coeffs=100, add_glitch=False, add_noise=False, noise_real_to_sig=1):
 
-        self.merger_beginning_factor = 0.
+        self.svd = None
+        self.merger_beginning_factor = 3./4
         self.extrinsic_factor = 150
         # ratio of noise realizations to signals
         self.noise_real_to_sig = int(noise_real_to_sig)
@@ -82,7 +83,7 @@ class WaveformGenerator:
             self.priors[self.INTRINSIC_PARAMS['mass1']] = [25., 50.]
             self.priors[self.INTRINSIC_PARAMS['mass2']] = [25., 50.]
             self.priors[self.EXTRINSIC_PARAMS['distance']] = [100., 1000.]
-            self.priors[self.GLITCH_PARAMS['time']] = [-1.5, 1.5]
+            self.priors[self.GLITCH_PARAMS['time']] = [-1., 1.]
 
             dmax = self.priors[self.EXTRINSIC_PARAMS['distance']][1]
             dmin = self.priors[self.EXTRINSIC_PARAMS['distance']][0]
@@ -270,6 +271,36 @@ class WaveformGenerator:
         else:
             return Z_new, np.transpose(gobs)
 
+
+    def create_FD_padded_glitch(self):
+
+        if np.random.random() > self.tomte_to_blip:
+            # sample blip
+            z, glitch = self.create_glitch('blip', length=1)
+        else:
+            # sample tomte
+            z, glitch = self.create_glitch('tomte', length=1)
+
+            # sample time of glitch
+        p = self.priors[self.GLITCH_PARAMS['time']]
+        time = np.random.uniform(p[0], p[1])
+
+        beginning = int((time - self.winlen / 2 + self.duration * self.merger_beginning_factor) *
+                        self.sampling_freq)
+        end = len(glitch) + beginning
+
+        if end > self.length:
+            mask = self.length - end
+            end_pad = 0
+        else:
+            mask = self.length
+            end_pad = self.length - end
+
+        glitch = np.fft.rfft(np.pad(glitch[:mask], (beginning, end_pad), 'constant')) \
+                 * self.dt * np.sqrt(self.bandwidth)
+
+        return glitch
+
     def generate_noise(self, length):
 
         return np.reshape(np.random.normal(0, 1, int(length * self.dataset_len)),
@@ -311,6 +342,7 @@ class WaveformGenerator:
     #
     #         self.projection_strains[j] += noise
 
+
     def add_noise_to_detector_signals(self):
 
         if self.noise_real_to_sig != 1:
@@ -327,6 +359,7 @@ class WaveformGenerator:
                             np.sqrt(self.bandwidth)
 
                 self.detector_signals[j, l, :] += noise
+
 
     def add_noise_to_projection_strains_after_SVD(self):
 
@@ -356,16 +389,23 @@ class WaveformGenerator:
         beginning = int((time - self.winlen / 2 + self.duration*self.merger_beginning_factor) * self.sampling_freq)
         end = len(glitch) + beginning
 
+        if end > self.length:
+            mask = self.length - end
+            end_pad = 0
+        else:
+            mask = self.length
+            end_pad = self.length - end
+
         # sample detector
         det = np.random.randint(0, self.no_detectors)
 
         if self.domain == 'TD':
 
-            self.projection_strains[det][beginning:end] += glitch
+            self.projection_strains[det][beginning:self.length-end_pad] += glitch[:mask]
 
         elif self.domain == 'FD':
 
-            glitch = np.fft.rfft(np.pad(glitch, (beginning, self.length - end),
+            glitch = np.fft.rfft(np.pad(glitch[:mask], (beginning, end_pad),
                                         'constant'))[self.fft_mask] * self.dt * \
                      np.sqrt(self.bandwidth)
 
@@ -378,7 +418,8 @@ class WaveformGenerator:
 
         return det, params
 
-    def create_glitch_SVD_basis(self):
+
+    def create_glitch_SVD_basis(self, no_basis_coeffs):
 
         if self.domain == 'TD':
             print('This method works only for FD.')
@@ -386,31 +427,20 @@ class WaveformGenerator:
 
         N = 10000
 
-        glitches = np.zeros((N, self.length / 2))
+        glitches = np.zeros((N, int(len(self.freqs))), dtype=np.complex_)
 
         for i in range(0, N):
 
-            if np.random.random() > self.tomte_to_blip:
-                type = 0
-                # sample blip
-                z, glitch = self.create_glitch('blip', length=1)
-            else:
-                type = 1
-                # sample tomte
-                z, glitch = self.create_glitch('tomte', length=1)
+            glitches[i, :] = self.create_FD_padded_glitch()
 
-                # sample time of glitch
-            p = self.priors[self.GLITCH_PARAMS['time']]
-            time = np.random.uniform(p[0], p[1])
+        svd = SVD(no_basis_coeffs)
+        print('Creating SVD basis for glitches')
+        svd.generate_basis(glitches)
+        print('SVD basis created')
 
-            beginning = int((time - self.winlen / 2 + self.duration * self.merger_beginning_factor) * self.sampling_freq)
-            end = len(glitch) + beginning
+        del glitches
 
-            glitches[i,:] = np.fft.rfft(np.pad(glitch, (beginning, self.length - end),
-                                        'constant'))[self.fft_mask] * self.dt * \
-                     np.sqrt(self.bandwidth)
-
-
+        return svd.Vh
 
 
     def get_spin_components(self, index, params=None):
@@ -532,7 +562,8 @@ class WaveformGenerator:
                 std2 = np.split(np.std(self.detector_signals.imag, axis=1), self.no_detectors)
                 self.stds = std1 + std2
 
-    def compute_hp_hc(self, index, params=None):
+
+    def compute_hp_hc(self, index, params=None, mask=True):
         """
         Compute hps and hcs given the intrinsic parameters
         """
@@ -591,10 +622,12 @@ class WaveformGenerator:
                                      f_lower=self.fmin,
                                      f_final=self.sampling_freq / 2)
 
-            hp = hp.data[self.fft_mask]
-            hc = hc.data[self.fft_mask]
+            if mask:
+                hp = hp.data[self.fft_mask]
+                hc = hc.data[self.fft_mask]
 
         return hp, hc
+
 
     def project_hp_hc(self, hp, hc, dataset_ind, params=None, whiten=True):
 
@@ -644,13 +677,15 @@ class WaveformGenerator:
                     # apply timeshift
                     self.projection_strains[j] = self.svd.basis_coeffs(
                         self.svd.fseries(self.projection_strains[j]) * np.exp(-1j * 2 * np.pi *
-                                         self.freqs[self.fft_mask] * (dt+tc+self.duration*self.merger_beginning_factor)))
+                                         self.freqs[self.fft_mask] * (dt+tc+self.duration*
+                                         self.merger_beginning_factor)))
 
                 else:
                     print('TODO')
 
         # return snrs
         return snr_list
+
 
     def sample_intrinsic(self):
         """
@@ -739,6 +774,7 @@ class WaveformGenerator:
 
         self.performed_svd = True
 
+
     # this will be called to generate waveforms
     def construct_signal_dataset(self, save=False, filename='', perform_svd=False):
 
@@ -803,6 +839,18 @@ class WaveformGenerator:
         if perform_svd:
             self.perform_svd()
             print('SVD performed')
+
+            if self.add_glitch and self.extrinsic_at_train:
+                
+                glitch_svd_no_basis_coeffs = 10
+
+                glitch_Vh = self.create_glitch_SVD_basis(no_basis_coeffs=glitch_svd_no_basis_coeffs)
+                self.svd.Vh = np.hstack((np.zeros(self.svd_no_basis_coeffs),
+                                         self.svd.Vh))
+                Vh_new = self.create_orthogonal_basis(self.svd.Vh, glitch_Vh)
+
+                self.svd_no_basis_coeffs += glitch_svd_no_basis_coeffs
+                self.svd = SVD(no_basis_coeffs=self.svd_no_basis_coeffs, Vh=Vh_new)
 
         self.calculate_dataset_statistics()
 
@@ -1090,6 +1138,21 @@ class WaveformGenerator:
                                                    self.fps[i] ** 2 * (self.stds[0] ** 2 + 1j * self.stds[
                         1] ** 2))) / self.extrinsic_mean
 
+    def create_orthogonal_basis(self, Vh1, Vh2):
+
+        # project Vh2 onto Vh1 and subtract it from Vh2
+        projection = np.dot(Vh2, Vh1.T.conj())*Vh1
+        Vh2 -= projection
+
+        # compute qr factorization with new Vh2
+
+        q, _ = np.linalg.qr(Vh2.T, mode="reduced")
+        Vh2 = q.T
+
+        Vh = np.vstack(Vh1, Vh2)
+        
+        return Vh
+
 
 class WaveformDatasetTorch(Dataset):
     """Wrapper for a WaveformDataset to use with PyTorch DataLoader."""
@@ -1122,7 +1185,7 @@ class SVD:
             self.V = self.Vh.T.conj()
 
     def generate_basis(self, data):
-        U, s, Vh = randomized_svd(data, self.no_basis_coeffs, random_state=1581)
+        U, s, Vh = randomized_svd(data, self.no_basis_coeffs)
 
         self.Vh = Vh.astype(np.complex64)
         self.V = self.Vh.T.conj()

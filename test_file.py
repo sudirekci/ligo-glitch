@@ -785,6 +785,53 @@ def test_glitch_SVD_projection():
     plt.show()
 
 
+def test_glitch_SVD_basis():
+
+    dataset_len = 10000
+    N = 5000
+
+    dataset = waveform_dataset_3p.WaveformGenerator(dataset_len=dataset_len, path_to_glitschen=path_to_glitschen,
+                                                    extrinsic_at_train=True, tomte_to_blip=1, domain='FD',
+                                                    add_glitch=True, add_noise=False, directory=directory)
+    dataset.initialize()
+
+    basis_coeff_arr = [50, 100, 150, 200, 250, 300]
+    rel_errors = np.zeros((len(basis_coeff_arr), N))
+
+    for ind, coeff in enumerate(basis_coeff_arr):
+
+        Vh = dataset.create_glitch_SVD_basis(no_basis_coeffs=coeff)
+
+        for i in range(0, N):
+
+            glitch = dataset.create_FD_padded_glitch()
+
+            # project and re-construct glitch
+            glitch_reconstructed = (glitch @ Vh.T.conj()) @ Vh
+
+            # plt.figure()
+            # plt.plot(np.fft.irfft(glitch), '-r')
+            # plt.plot(np.fft.irfft(glitch_reconstructed), '-b')
+            # plt.show()
+
+            rel_error = np.sqrt(np.sum(np.abs(glitch-glitch_reconstructed)**2)/np.sum(np.abs(glitch)**2))
+            rel_errors[ind, i] = rel_error
+
+        plt.figure()
+        plt.hist(rel_errors[ind,:], bins=20, density=True)
+        plt.title('Error for # basis coeffs = ' + str(coeff))
+        plt.xlabel('Relative error')
+        plt.ylabel('Density')
+        plt.draw()
+
+    plt.figure()
+    plt.plot(basis_coeff_arr, np.sum(rel_errors, axis=1)/N)
+    plt.title('Global Error Trend for Glitch SVD Projection')
+    plt.xlabel('# of basis coeffs')
+    plt.ylabel('Average relative error')
+
+    plt.show()
+
 
 # dataset.initialize()
 
@@ -800,9 +847,9 @@ dataset_len = 10000
 svd_no_basis_coeffs = 10
 
 path_to_glitschen = '/home/su/Documents/glitschen-main/'
-directory='/home/su/Documents/glitch_dataset/'
+directory = '/home/su/Documents/glitch_dataset/'
 
-test_glitch_SVD_projection()
+#test_glitch_SVD_projection()
 
 #SVD_noise_test2()
 
@@ -851,5 +898,4 @@ test_glitch_SVD_projection()
 #     print(cov)
 #     print('Positive def: ' , is_pos_def(cov))
 
-
-
+test_glitch_SVD_basis()

@@ -17,6 +17,7 @@ from bilby_posterior import Bilby_Posterior
 
 from fisher_info import Fisher
 from scipy.stats import norm
+import scipy.ndimage
 from scipy.stats import multivariate_normal
 
 
@@ -634,6 +635,7 @@ class PosteriorModel(object):
         for i in range(0, (params_samples.shape)[1]):
 
             bins, edges = np.histogram(params_samples[:,i], bins=20)
+            bins = scipy.ndimage.gaussian_filter(bins, sigma=1)
             params_samples_ml[i] = (edges[np.argmax(bins)]+edges[np.argmax(bins)+1])/2.
 
         params_true = self.testing_wg.post_process_parameters(params_true)
@@ -1056,7 +1058,9 @@ def main():
         print('Testing is starting...')
         pm.init_waveform_supp(compute_fisher=args.compute_fisher, compute_bilby_post=args.compute_bilby_post)
 
-        for i in range(0, 10):
+        for i in range(0, 1):
+
+            idx = 666
 
             idx = np.random.randint(0, (pm.testing_wg.dataset_len*pm.testing_wg.noise_real_to_sig))
             # print(idx)
