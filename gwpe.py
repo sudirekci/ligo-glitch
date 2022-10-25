@@ -1061,7 +1061,7 @@ def main():
         for i in range(0, 1):
 
             idx = np.random.randint(0, (pm.testing_wg.dataset_len*pm.testing_wg.noise_real_to_sig))
-            idx = 666
+            idx = 242
             # print(idx)
             pm.evaluate(idx, plot=True, compute_fisher=args.compute_fisher, compute_bilby_post=args.compute_bilby_post)
 
