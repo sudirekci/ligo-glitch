@@ -749,7 +749,7 @@ def test_glitch_SVD_projection():
     dataset = waveform_dataset_3p.WaveformGenerator(dataset_len=dataset_len, path_to_glitschen=path_to_glitschen,
                                                     extrinsic_at_train=True, tomte_to_blip=1, domain='FD',
                                                     add_glitch=False, add_noise=False, directory=directory,
-                                                    svd_no_basis_coeffs=svd_no_basis_coeffs, duration=8.,
+                                                    svd_no_basis_coeffs=svd_no_basis_coeffs, duration=4.,
                                                     sampling_frequency=512.)
 
     dataset.construct_signal_dataset(perform_svd=True)
@@ -775,14 +775,16 @@ def test_glitch_SVD_projection():
 
         glitch = np.copy(dataset.projection_strains[det])
 
-        glitch_pow[i] = np.sqrt(np.sum(np.abs(dataset.svd.basis_coeffs(glitch))**2))/average_pow
+        glitch_pow[i] = np.sqrt(np.sum(np.abs(dataset.svd.basis_coeffs(glitch))**2))
         print(glitch_pow[i])
 
-    plt.figure()
-    plt.hist(glitch_pow, density=True, bins=100)
-    plt.xlabel('Relative amplitude after projection')
-    plt.ylabel('Density')
-    plt.show()
+    print(np.max(glitch_pow))
+
+    # plt.figure()
+    # plt.hist(glitch_pow, density=True, bins=100)
+    # plt.xlabel('Relative amplitude after projection')
+    # plt.ylabel('Density')
+    # plt.show()
 
 
 def test_glitch_SVD_basis():
@@ -898,4 +900,6 @@ directory = '/home/su/Documents/glitch_dataset/'
 #     print(cov)
 #     print('Positive def: ' , is_pos_def(cov))
 
-test_glitch_SVD_basis()
+#test_glitch_SVD_basis()
+
+test_glitch_SVD_projection()

@@ -56,7 +56,7 @@ class WaveformGenerator:
                  svd_no_basis_coeffs=100, add_glitch=False, add_noise=False, noise_real_to_sig=1):
 
         self.svd = None
-        self.merger_beginning_factor = 3./4
+        self.merger_beginning_factor = 1./2
         self.extrinsic_factor = 150
         # ratio of noise realizations to signals
         self.noise_real_to_sig = int(noise_real_to_sig)
@@ -83,7 +83,7 @@ class WaveformGenerator:
             self.priors[self.INTRINSIC_PARAMS['mass1']] = [25., 50.]
             self.priors[self.INTRINSIC_PARAMS['mass2']] = [25., 50.]
             self.priors[self.EXTRINSIC_PARAMS['distance']] = [100., 1000.]
-            self.priors[self.GLITCH_PARAMS['time']] = [-1., 1.]
+            self.priors[self.GLITCH_PARAMS['time']] = [-0.001, 0.001]
 
             dmax = self.priors[self.EXTRINSIC_PARAMS['distance']][1]
             dmin = self.priors[self.EXTRINSIC_PARAMS['distance']][0]

@@ -171,13 +171,14 @@ class Bilby_Posterior:
             del priors["chirp_mass"], priors["mass_ratio"]
             # We can make uniform distributions.
             priors["mass_1"] = bilby.core.prior.Uniform(
-                name="mass_1", minimum=mass_1 - 2, maximum=mass_1 + 2
+                name="mass_1", minimum=mass_1 - 5, maximum=mass_1 + 5
             )
             priors["mass_2"] = bilby.core.prior.Uniform(
-                name="mass_2", minimum=mass_2 - 2, maximum=mass_2 + 2
+                name="mass_2", minimum=mass_2 - 5, maximum=mass_2 + 5
             )
             priors["luminosity_distance"] = bilby.core.prior.Uniform(
-                name="luminosity_distance", minimum=luminosity_distance - 25, maximum=luminosity_distance + 25
+                name="luminosity_distance", minimum=luminosity_distance - 40,
+                maximum=luminosity_distance + 40
             )
         else:
             print('TODO')
@@ -189,7 +190,8 @@ class Bilby_Posterior:
                                                                        sampling_frequency=self._wg.sampling_freq,
                                                                        duration=self._wg.duration,
                                                                        start_time=geocent_time -
-                                                                       self._wg.duration*self._wg.merger_beginning_factor)
+                                                                       self._wg.duration *
+                                                                       self._wg.merger_beginning_factor)
 
         print('Strain data set')
 
