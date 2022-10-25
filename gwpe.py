@@ -1058,10 +1058,10 @@ def main():
         print('Testing is starting...')
         pm.init_waveform_supp(compute_fisher=args.compute_fisher, compute_bilby_post=args.compute_bilby_post)
 
-        for i in range(0, 1):
+        for i in range(0, 10):
 
             idx = np.random.randint(0, (pm.testing_wg.dataset_len*pm.testing_wg.noise_real_to_sig))
-            idx = 242
+            #idx = 242
             # print(idx)
             pm.evaluate(idx, plot=True, compute_fisher=args.compute_fisher, compute_bilby_post=args.compute_bilby_post)
 
