@@ -16,6 +16,7 @@ import waveform_dataset_3p as waveform_dataset
 from bilby.gw.utils import calculate_time_to_merger
 from bilby.gw.prior import CBCPriorDict
 
+import matplotlib.pyplot as plt
 
 class Bilby_Posterior:
 
@@ -131,6 +132,16 @@ class Bilby_Posterior:
                            np.exp(-1j * 2 * np.pi *
                                   self._wg.freqs[self._wg.fft_mask] * timeshift) + noise)
 
+
+        signal = np.fft.irfft(np.pad(fp * hp + fc * hc, (1, 0),
+                    'constant')) * self._wg.df * self._wg.length / np.sqrt(self._wg.bandwidth)
+        td_axis = np.arange(0, self._wg.duration, step=self._wg.dt)
+
+        plt.figure()
+        plt.plot(td_axis, signal)
+        plt.plot(td_axis, signal)
+        plt.show()
+
         injection_parameters = dict(
             mass_1=mass_1,
             mass_2=mass_2,
@@ -167,7 +178,7 @@ class Bilby_Posterior:
             priors[key] = injection_parameters[key]
 
         if self._three_parameter:
-            # We can make uniform distributions.
+
             del priors["chirp_mass"], priors["mass_ratio"]
             # We can make uniform distributions.
             priors["mass_1"] = bilby.core.prior.Uniform(
