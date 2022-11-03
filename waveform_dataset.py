@@ -38,7 +38,6 @@ class WaveformGenerator:
     GLITCH_PARAMS = dict(time=15, z1=3, z2=4, z3=5, z4=6, z5=7)
     DETECTORS = dict(H1=0, L1=1)
 
-    REF_TIME = 1e5
     SOLAR_MASS = 1.9891e+30
 
     slice = np.asarray([0, 1, 10])
@@ -49,7 +48,7 @@ class WaveformGenerator:
                  extrinsic_at_train=False, directory='/home/su/Documents/glitch_dataset/', glitch_sigma=1, domain='FD',
                  svd_no_basis_coeffs=100, add_glitch=False, add_noise=False, noise_real_to_sig=1):
 
-        self.merger_beginning_factor = 3./4
+        self.merger_beginning_factor = 1.
         # ratio of noise realizations to signals
         self.noise_real_to_sig = int(noise_real_to_sig)
 
@@ -136,6 +135,7 @@ class WaveformGenerator:
 
         self.sampling_freq = sampling_frequency
         self.duration = duration
+        self.ref_time = self.duration*self.merger_beginning_factor
 
         self.length = None
         self.dt = None
@@ -598,9 +598,9 @@ class WaveformGenerator:
         for j in range(0, self.no_detectors):
             det = self.detectors[j]
 
-            fp, fc = det.antenna_pattern(ra, dec, polarization, self.REF_TIME)
+            fp, fc = det.antenna_pattern(ra, dec, polarization, self.ref_time)
 
-            dt = det.time_delay_from_earth_center(ra, dec, self.REF_TIME)
+            dt = det.time_delay_from_earth_center(ra, dec, self.ref_time)
             self.projection_strains[j] = fp * hp + fc * hc
 
             # time shift and whiten

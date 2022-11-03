@@ -695,7 +695,7 @@ class PosteriorModel(object):
                 for k in range(0,3):
 
                     x = np.linspace(norm.ppf(0.0001, loc=params_samples_ml[k], scale=np.sqrt(cov_matrix[k,k])),
-                                    norm.ppf(0.9999,loc=params_samples_ml[k], scale=np.sqrt(cov_matrix[k,k])), 500)
+                                    norm.ppf(0.9999, loc=params_samples_ml[k], scale=np.sqrt(cov_matrix[k,k])), 500)
 
                     axes[4*k].plot(x, norm.pdf(x, loc=params_samples_ml[k], scale=np.sqrt(cov_matrix[k,k])),'r-')
 

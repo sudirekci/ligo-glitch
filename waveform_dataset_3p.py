@@ -43,20 +43,19 @@ class WaveformGenerator:
     GLITCH_LEN = len(GLITCH_PARAMS)
     DETECTORS = dict(H1=0, L1=1)
 
-    REF_TIME = 1e5
     SOLAR_MASS = 1.9891e+30
 
     slice = np.asarray([0, 1, 10])
 
     # sampling freq 512
-    def __init__(self, sampling_frequency=512., duration=4., fmin=10., dataset_len=100000,
+    def __init__(self, sampling_frequency=512., duration=8., fmin=10., dataset_len=100000,
                  path_to_glitschen='/home/su/Documents/glitschen-main/',
                  q=5, winlen=0.5, approximant='IMRPhenomPv2', priors=None, detectors=None, tomte_to_blip=1,
                  extrinsic_at_train=False, directory='/home/su/Documents/glitch_dataset/', glitch_sigma=1, domain='FD',
                  svd_no_basis_coeffs=100, add_glitch=False, add_noise=False, noise_real_to_sig=1):
 
         self.svd = None
-        self.merger_beginning_factor = 0.
+        self.merger_beginning_factor = 1.
         self.extrinsic_factor = 150
         # ratio of noise realizations to signals
         self.noise_real_to_sig = int(noise_real_to_sig)
@@ -77,7 +76,7 @@ class WaveformGenerator:
 
             random_params = [1.9385764842785942, 1.7498819076505903, 1.9471468704940496,
                              2.779184216112431, 4.781609102594541, 2.1581020633082915,
-                             1.0781266874951325, 0.9691707576482571, 2.871221497023955]
+                             4.855269070280174, -0.7538096149666829, 2.871221497023955]
 
             self.priors = np.zeros((self.INTRINSIC_LEN + self.EXTRINSIC_LEN + 1, 2))
             self.priors[self.INTRINSIC_PARAMS['mass1']] = [25., 50.]
@@ -116,6 +115,7 @@ class WaveformGenerator:
 
         self.sampling_freq = sampling_frequency
         self.duration = duration
+        self.ref_time = self.duration*self.merger_beginning_factor
 
         self.length = None
         self.dt = None
@@ -219,8 +219,8 @@ class WaveformGenerator:
             position = val_list.index(el)
             det_name = key_list[position]
             self.detectors.append(Detector(det_name))
-            fp, fc = self.detectors[i].antenna_pattern(ra, dec, polarization, self.REF_TIME)
-            dt = self.detectors[i].time_delay_from_earth_center(ra, dec, self.REF_TIME)
+            fp, fc = self.detectors[i].antenna_pattern(ra, dec, polarization, self.ref_time)
+            dt = self.detectors[i].time_delay_from_earth_center(ra, dec, self.ref_time)
             self.fps.append(fp)
             self.fcs.append(fc)
             self.projection_strains.append(np.zeros(self.length))
@@ -660,7 +660,7 @@ class WaveformGenerator:
 
             # fp, fc = det.antenna_pattern(ra, dec, polarization, self.REF_TIME)
 
-            dt = det.time_delay_from_earth_center(ra, dec, self.REF_TIME)
+            dt = det.time_delay_from_earth_center(ra, dec, self.ref_time)
             # print(dt)
             self.projection_strains[j] = self.fps[j] * hp + self.fcs[j] * hc
 
@@ -1185,7 +1185,7 @@ class SVD:
             self.V = self.Vh.T.conj()
 
     def generate_basis(self, data):
-        U, s, Vh = randomized_svd(data, self.no_basis_coeffs)
+        U, s, Vh = randomized_svd(data, self.no_basis_coeffs, random_state=1581)
 
         self.Vh = Vh.astype(np.complex64)
         self.V = self.Vh.T.conj()

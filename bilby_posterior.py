@@ -26,6 +26,8 @@ class Bilby_Posterior:
         self._outdir = model_dir + "bilby_plots"
         self._three_parameter = three_parameter
 
+        #self._wg.no_detectors = 1
+
         self._ifos = []
         val_list = list(self._wg.DETECTORS.values())
         key_list = list(self._wg.DETECTORS.keys())
@@ -56,7 +58,7 @@ class Bilby_Posterior:
 
         # Set up a random seed for result reproducibility.  This is optional!
         np.random.seed(88170235)
-        geocent_time = 1126259642.413
+        geocent_time = self._wg.duration
 
         strains = []
 
@@ -119,28 +121,40 @@ class Bilby_Posterior:
 
             det = self._wg.detectors[j]
 
-            fp, fc = det.antenna_pattern(ra, dec, psi, self._wg.REF_TIME)
+            fp, fc = det.antenna_pattern(ra, dec, psi, geocent_time)
 
-            dt = det.time_delay_from_earth_center(ra, dec, self._wg.REF_TIME)
+            dt = det.time_delay_from_earth_center(ra, dec, geocent_time)
             timeshift = dt + tc
+            print('dt', dt)
+            print('tc', tc)
+            print('timeshift', timeshift)
 
-            noise = np.fft.rfft(np.random.normal(0, scale=1.0, size=int(self._wg.length)))[
-                        self._wg.fft_mask] * self._wg.dt * \
-                    np.sqrt(self._wg.bandwidth*(self._wg.psd[self._wg.fft_mask]))
+            noise = np.fft.rfft(np.random.normal(0, scale=1.0, size=int(self._wg.length))) \
+                        [self._wg.fft_mask] * self._wg.dt * \
+                    np.sqrt(self._wg.bandwidth*self._wg.psd[self._wg.fft_mask])
+
+            # self._wg.bandwidth
 
             strains.append((fp * hp + fc * hc) *
                            np.exp(-1j * 2 * np.pi *
-                                  self._wg.freqs[self._wg.fft_mask] * timeshift) + noise)
+                                  self._wg.freqs[self._wg.fft_mask] * timeshift))
 
+        #print(noise)
+        #print('*************************')
+        #print(np.pad(noise, (1, 0),'constant'))
 
-        signal = np.fft.irfft(np.pad(fp * hp + fc * hc, (1, 0),
+        signal = np.fft.irfft(np.pad(strains[0]*self._wg.psd[self._wg.fft_mask]**(-0.5), (1, 0),
                     'constant')) * self._wg.df * self._wg.length / np.sqrt(self._wg.bandwidth)
         td_axis = np.arange(0, self._wg.duration, step=self._wg.dt)
 
+        #signal = np.fft.irfft(noise)
+
         plt.figure()
-        plt.plot(td_axis, signal)
-        plt.plot(td_axis, signal)
-        plt.show()
+        plt.plot(np.abs(strains[0]))
+        plt.xscale('log')
+        plt.yscale('log')
+        #plt.plot(self._wg.psd)
+        #plt.show()
 
         injection_parameters = dict(
             mass_1=mass_1,
@@ -182,29 +196,40 @@ class Bilby_Posterior:
             del priors["chirp_mass"], priors["mass_ratio"]
             # We can make uniform distributions.
             priors["mass_1"] = bilby.core.prior.Uniform(
-                name="mass_1", minimum=mass_1 - 2.5, maximum=mass_1 + 2.5
+                name="mass_1", minimum=25., maximum=50.
             )
             priors["mass_2"] = bilby.core.prior.Uniform(
-                name="mass_2", minimum=mass_2 - 2.5, maximum=mass_2 + 2.5
+                name="mass_2", minimum=25., maximum=50.
             )
-            priors["luminosity_distance"] = bilby.core.prior.Uniform(
-                name="luminosity_distance", minimum=luminosity_distance - 40,
-                maximum=luminosity_distance + 40
+            priors["luminosity_distance"] = bilby.gw.prior.UniformComovingVolume(
+                name="luminosity_distance", minimum=100.,
+                maximum=1000.
             )
+            priors["mass_ratio"] = bilby.core.prior.Constraint(minimum=1, maximum=2)
         else:
             print('TODO')
 
         # set the strain data directly
         for j in range(0, self._wg.no_detectors):
-            print(len(strains[j]))
+
+            #strains[j] = np.concatenate((np.conjugate(strains[j]), np.asarray([0], dtype=complex),
+            #                             strains[j]))
+
+            #np.insert(strains[j], 0, 0)
+
             self._ifos[j].set_strain_data_from_frequency_domain_strain(np.insert(strains[j], 0, 0),
-                                                                       sampling_frequency=self._wg.sampling_freq,
-                                                                       duration=self._wg.duration,
-                                                                       start_time=geocent_time -
-                                                                       self._wg.duration *
-                                                                       self._wg.merger_beginning_factor)
+                                                                       frequency_array=self._wg.freqs,
+                                                                       #start_time=geocent_time-self._wg.duration+2.)
+                                                                       )
+
+            # start_time = geocent_time-duration+2
 
         print('Strain data set')
+
+        #plt.figure()
+        #plt.plot(np.fft.irfft(self._ifos[1].whitened_frequency_domain_strain)\
+        #         * self._wg.df * self._wg.length / np.sqrt(self._wg.bandwidth))
+        #plt.show()
 
         # Initialise the likelihood by passing in the interferometer data (ifos) and
         # the waveform generator
@@ -219,11 +244,14 @@ class Bilby_Posterior:
             likelihood=likelihood,
             priors=priors,
             sampler="dynesty",
-            npoints=1000,
+            #npoints=1000,
             npool=4,
             injection_parameters=injection_parameters,
             outdir=self._outdir,
             label=label,
+            sample="slice",
+            slices=3,
+            nlive=500,
         )
 
         # Make a corner plot.

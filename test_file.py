@@ -11,6 +11,8 @@ from scipy import signal
 from pycbc.fft import backend_support
 from fisher_info import Fisher
 
+from bilby_posterior import Bilby_Posterior
+
 backend_support.set_backend(['mkl'])
 np.set_printoptions(threshold=sys.maxsize)
 
@@ -835,6 +837,38 @@ def test_glitch_SVD_basis():
     plt.show()
 
 
+def test_bilby():
+
+    dataset_len = 5000
+
+    #dataset = waveform_dataset_3p.WaveformGenerator(dataset_len=dataset_len, path_to_glitschen=path_to_glitschen,
+    #                                                extrinsic_at_train=True, tomte_to_blip=1, domain='FD',
+    #                                                add_glitch=False, add_noise=False, directory=directory)
+
+    #dataset.construct_signal_dataset(perform_svd=True, save=True, filename='bilby_test_dataset')
+    #print('dataset constructed')
+
+    #del dataset
+
+    dataset1 = waveform_dataset_3p.WaveformGenerator(directory=directory)
+    dataset1.load_data(filename='bilby_test_dataset')
+    dataset1.normalize_params()
+
+    bilbly_post = Bilby_Posterior(dataset1, model_dir='/home/su/Desktop/caltech/glitch_project/bilby_test/')
+
+    idx = np.random.randint(0, dataset_len)
+
+    y, params_true = dataset1.provide_sample(idx, return_det=False)
+    params_true = dataset1.post_process_parameters(params_true)
+
+    print('Params True')
+    print(params_true)
+
+    bilby_fig = bilbly_post.find_result(idx, params_true)
+
+
+
+
 # dataset.initialize()
 
 # test_noise()
@@ -900,6 +934,8 @@ directory = '/home/su/Documents/glitch_dataset/'
 #     print(cov)
 #     print('Positive def: ' , is_pos_def(cov))
 
-#test_glitch_SVD_basis()
+# test_glitch_SVD_basis()
 
-test_glitch_SVD_projection()
+# test_glitch_SVD_projection()
+
+test_bilby()
