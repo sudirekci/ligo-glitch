@@ -493,7 +493,7 @@ class WaveformGenerator:
             snr = self.SNR_colored(signal_fft * self.dt)
 
             self.projection_strains[ind] = np.fft.irfft(np.pad(signal_fft *
-                                                               np.exp(-1j * 2 * np.pi * self.freqs[self.fft_mask]
+                                                               np.exp(1j * 2 * np.pi * self.freqs[self.fft_mask]
                                                                       * timeshift) * (self.psd[self.fft_mask] *
                                                                                       factor) ** (-0.5), (1, 0),
                                                                'constant'))
@@ -505,10 +505,8 @@ class WaveformGenerator:
 
             snr = self.SNR_colored(self.projection_strains[ind])
 
-            # timeshift -= self.duration / 2
-
             self.projection_strains[ind] = self.projection_strains[ind] * \
-                                           np.exp(-1j * 2 * np.pi * self.freqs[self.fft_mask] * timeshift) * \
+                                           np.exp(1j * 2 * np.pi * self.freqs[self.fft_mask] * timeshift) * \
                                            (self.psd[self.fft_mask]) ** (-0.5)
 
         return snr
@@ -517,11 +515,11 @@ class WaveformGenerator:
 
         #timeshift += self.duration / 4
 
-        self.hp = self.hp * np.expand_dims(np.exp(-1j * 2 * np.pi *
+        self.hp = self.hp * np.expand_dims(np.exp(1j * 2 * np.pi *
                                                   self.freqs[self.fft_mask] * timeshift) * \
                                            (self.psd[self.fft_mask]) ** (-0.5), axis=0)
 
-        self.hc = self.hc * np.expand_dims(np.exp(-1j * 2 * np.pi *
+        self.hc = self.hc * np.expand_dims(np.exp(1j * 2 * np.pi *
                                                   self.freqs[self.fft_mask] * timeshift) * \
                                            (self.psd[self.fft_mask]) ** (-0.5), axis=0)
 
@@ -666,7 +664,7 @@ class WaveformGenerator:
 
             # time shift and whiten
             if whiten:
-                snr = self.whiten_strain(j, timeshift=(dt + tc + self.duration*self.merger_beginning_factor))
+                snr = self.whiten_strain(j, timeshift=(dt + tc - self.duration*(1.-self.merger_beginning_factor)))
                 snr_list.append(snr)
 
             else:
@@ -676,9 +674,9 @@ class WaveformGenerator:
                                                         self.projection_strains[j]))
                     # apply timeshift
                     self.projection_strains[j] = self.svd.basis_coeffs(
-                        self.svd.fseries(self.projection_strains[j]) * np.exp(-1j * 2 * np.pi *
-                                         self.freqs[self.fft_mask] * (dt+tc+self.duration*
-                                         self.merger_beginning_factor)))
+                        self.svd.fseries(self.projection_strains[j]) * np.exp(1j * 2 * np.pi *
+                                         self.freqs[self.fft_mask] * (dt+tc-self.duration*
+                                                                      (1.-self.merger_beginning_factor))))
 
                 else:
                     print('TODO')
@@ -800,7 +798,7 @@ class WaveformGenerator:
             for i in range(0, self.dataset_len):
                 self.hp[i], self.hc[i] = self.compute_hp_hc(i)
 
-            self.whiten_hp_hc(timeshift=self.duration*self.merger_beginning_factor)
+            self.whiten_hp_hc(timeshift=-self.duration*(1-self.merger_beginning_factor))
 
         else:
             # compute hps and hcs, sample extrinsic, project, add glitch and noise

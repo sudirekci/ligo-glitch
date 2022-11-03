@@ -1,6 +1,6 @@
 import waveform_dataset_3p as wd
 
-directory = '/home/su.direkci/glitch_project/dataset_no_glitch_3p_svd_100_extrinsic_3/'
+directory = '/home/su.direkci/glitch_project/dataset_no_glitch_3p_svd_100_extrinsic_4/'
 path_to_glitschen = '/home/su.direkci/programs/glitschen'
 
 add_glitch = True

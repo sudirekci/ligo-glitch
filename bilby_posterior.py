@@ -205,7 +205,7 @@ class Bilby_Posterior:
                 name="luminosity_distance", minimum=100.,
                 maximum=1000.
             )
-            priors["mass_ratio"] = bilby.core.prior.Constraint(minimum=1, maximum=2)
+            priors["mass_ratio"] = bilby.core.prior.Constraint(minimum=1./2, maximum=1.)
         else:
             print('TODO')
 
