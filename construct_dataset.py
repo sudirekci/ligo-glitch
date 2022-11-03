@@ -3,7 +3,7 @@ import waveform_dataset_3p as wd
 directory = '/home/su.direkci/glitch_project/dataset_no_glitch_3p_svd_100_extrinsic_4/'
 path_to_glitschen = '/home/su.direkci/programs/glitschen'
 
-add_glitch = True
+add_glitch = False
 
 training_wg = wd.WaveformGenerator(dataset_len=20000, add_glitch=add_glitch, add_noise=False,
                                    directory=directory, path_to_glitschen=path_to_glitschen,

@@ -136,8 +136,8 @@ class Bilby_Posterior:
             # self._wg.bandwidth
 
             strains.append((fp * hp + fc * hc) *
-                           np.exp(-1j * 2 * np.pi *
-                                  self._wg.freqs[self._wg.fft_mask] * timeshift))
+                           np.exp(1j * 2 * np.pi *
+                                  self._wg.freqs[self._wg.fft_mask] * timeshift)+noise)
 
         #print(noise)
         #print('*************************')
