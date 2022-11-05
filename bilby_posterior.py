@@ -257,7 +257,7 @@ class Bilby_Posterior:
         # Make a corner plot.
         fig = result.plot_corner()
 
-        return fig
+        return result, fig
 
 
 

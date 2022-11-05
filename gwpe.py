@@ -647,8 +647,8 @@ class PosteriorModel(object):
 
         #limit_low = np.percentile(params_samples[:,slice], 1, axis=0)
         #limit_high = np.percentile(params_samples[:, slice], 99, axis=0)
-        limit_low = np.asarray([25., 25., 100.])
-        limit_high = np.asarray([50., 50., 1000.])
+        limit_low = np.asarray([25., 20., 100.])
+        limit_high = np.asarray([60., 50., 1100.])
         range_not_zoomed = np.stack((limit_low, limit_high), axis=1)
         limit_low = params_samples_ml*0.85
         limit_high = params_samples_ml*1.15
@@ -684,41 +684,39 @@ class PosteriorModel(object):
                 plot_fisher_estimates(fig_zoomed, range_zoomed, params_samples_ml,
                                       cov_matrix)
 
+            if compute_bilby_post:
+
+                print('Computing bilby posteriors...')
+                bilby_fig, bilby_result = self.bilbly_post.find_result(idx, params_true)
+                print('Posteriors computed')
+
+                print(bilby_result.samples)
+
+                bilby_not_zoomed = corner.corner(bilby_result.samples,
+                                               labels=parameter_labels[slice], hist_kwargs={"density": True},
+                                               bins=20, range=range_not_zoomed, plot_datapoints=False,
+                                               no_fill_contours=False, fill_contours=True,
+                                               levels=(0.3935, 0.8647, 0.9889, 0.9997), fig=fig_not_zoomed)
+
+                bilby_zoomed = corner.corner(bilby_result.samples,
+                                           labels=parameter_labels[slice], hist_kwargs={"density": True},
+                                           bins=20, range=range_zoomed, plot_datapoints=False,
+                                           no_fill_contours=False, fill_contours=True,
+                                           levels=(0.3935, 0.8647, 0.9889, 0.9997), fig=fig_zoomed)
+
+
             fig_not_zoomed.savefig(self.model_dir + str(idx))
             fig_zoomed.savefig(self.model_dir + str(idx)+'_zoomed')
 
-            if self.testing_wg.add_glitch:
-
-                slice = np.arange(3, 15)
-
-                corner.corner(params_samples[:, slice], truths=params_true[slice],
-                              labels=parameter_labels[slice], hist_kwargs={"density": True},
-                              bins=20)
-                    # plt.show()
-                plt.savefig(self.model_dir + str(idx) + 'glitch')
-
-            # else:
+            # if self.testing_wg.add_glitch:
             #
-            #     fig1 = corner.corner(params_samples[:, slice], truths=params_true[slice],
-            #                          labels=parameter_labels[slice], range=range1)
+            #     slice = np.arange(3, 15)
             #
-            #     plt.savefig(self.model_dir + str(idx) + '_zoomed')
-
-            # plt.show()
-
-        # if compute_bilby_post:
-        #
-        #     print('Computing bilby posteriors...')
-        #     bilby_fig = self.bilbly_post.find_result(idx, params_true)
-        #     print('Posteriors computed')
-        #
-        #     if plot:
-        #
-        #         corner.corner(params_samples[:, slice], truths=params_true[slice],labels=parameter_labels[slice],
-        #                        hist_kwargs={"density": True}, fig=bilby_fig)
-        #
-        #         plt.savefig(self.model_dir + str(idx)+"_bilby"+'_new')
-
+            #     corner.corner(params_samples[:, slice], truths=params_true[slice],
+            #                   labels=parameter_labels[slice], hist_kwargs={"density": True},
+            #                   bins=20)
+            #         # plt.show()
+            #     plt.savefig(self.model_dir + str(idx) + 'glitch')
 
         return params_samples
 
