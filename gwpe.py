@@ -687,7 +687,7 @@ class PosteriorModel(object):
             if compute_bilby_post:
 
                 print('Computing bilby posteriors...')
-                bilby_fig, bilby_result = self.bilbly_post.find_result(idx, params_true)
+                bilby_result, _ = self.bilbly_post.find_result(idx, params_true)
                 print('Posteriors computed')
 
                 print(bilby_result.samples)
