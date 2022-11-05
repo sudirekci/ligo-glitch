@@ -55,9 +55,9 @@ python gwpe.py train new nde \
     --batch_size 2000 \
 
 python gwpe.py train existing \
-    --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_3p_svd_100_extrinsic_2/ \
-    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/3d_30/ \
-    --epochs 10 \
+    --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_3p_svd_100_extrinsic_4/ \
+    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/3d_31/ \
+    --epochs 15 \
     --batch_size 8000 \
 
 python gwpe.py train existing \
@@ -68,10 +68,9 @@ python gwpe.py train existing \
 
 
 python gwpe.py test \
-    --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_3p_svd_100_extrinsic_2/ \
-    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/3d_30/ \
+    --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_3p_svd_100_extrinsic_4/ \
+    --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/3d_31/ \
     --fisher \
-        --epoch 40\
     --bilby \
     --test_on_training_data \
     
@@ -611,10 +610,6 @@ class PosteriorModel(object):
         idx = idx // self.testing_wg.noise_real_to_sig
         det = -100
 
-        # if self.testing_wg.add_glitch:
-        #     params_true = np.concatenate((self.testing_wg.params[idx],self.testing_wg.glitch_params[idx]))
-        # else:
-        #     params_true = self.testing_wg.params[idx]
 
         if self.testing_wg.add_glitch:
             y, params_true, det = self.testing_wg.provide_sample(idx, return_det=True)
@@ -635,7 +630,7 @@ class PosteriorModel(object):
         for i in range(0, params_samples.shape[1]):
 
             bins, edges = np.histogram(params_samples[:,i], bins=20)
-            bins = scipy.ndimage.gaussian_filter(bins, sigma=3)
+            bins = scipy.ndimage.gaussian_filter(bins, sigma=0.5)
             params_samples_ml[i] = (edges[np.argmax(bins)]+edges[np.argmax(bins)+1])/2.
 
         params_true = self.testing_wg.post_process_parameters(params_true)
@@ -650,9 +645,14 @@ class PosteriorModel(object):
 
         slice = [0, 1, 2]
 
-        percentile_low = np.percentile(params_samples[:,slice], 1, axis=0)
-        percentile_high = np.percentile(params_samples[:, slice], 99, axis=0)
-        range1 = np.stack((percentile_low, percentile_high), axis=1)
+        #limit_low = np.percentile(params_samples[:,slice], 1, axis=0)
+        #limit_high = np.percentile(params_samples[:, slice], 99, axis=0)
+        limit_low = np.asarray([25., 25., 100.])
+        limit_high = np.asarray([50., 50., 1000.])
+        range_not_zoomed = np.stack((limit_low, limit_high), axis=1)
+        limit_low = params_samples_ml*0.75
+        limit_high = params_samples_ml*1.25
+        range_zoomed = np.stack((limit_low, limit_high), axis=1)
 
         if plot:
 
@@ -662,50 +662,28 @@ class PosteriorModel(object):
             # plt.show()
             plt.savefig(self.model_dir+str(idx))
 
+            fig_not_zoomed = corner.corner(params_samples[:, slice], truths=params_true[slice],
+                                           labels=parameter_labels[slice], hist_kwargs={"density":True},
+                                           bins=20, range=range_not_zoomed,plot_datapoints=False,
+                                           no_fill_contours=False, fill_contours=True,
+                                           levels=(0.3935, 0.8647, 0.9889, 0.9997))
+
+            fig_zoomed = corner.corner(params_samples[:, slice], truths=params_true[slice],
+                                           labels=parameter_labels[slice], hist_kwargs={"density":True},
+                                           bins=20, range=range_zoomed,plot_datapoints=False,
+                                           no_fill_contours=False, fill_contours=True,
+                                           levels=(0.3935, 0.8647, 0.9889, 0.9997))
+
             if compute_fisher:
 
-                axes = fig1.get_axes()
+                plot_fisher_estimates(fig_not_zoomed, range_not_zoomed, params_samples_ml,
+                                      cov_matrix)
 
-                # fisher 1d histograms
-                for k in range(0, 3):
+                plot_fisher_estimates(fig_zoomed, range_zoomed, params_samples_ml,
+                                      cov_matrix)
 
-                    x = np.linspace(norm.ppf(0.0001, loc=params_samples_ml[k], scale=np.sqrt(cov_matrix[k, k])),
-                                    norm.ppf(0.9999, loc=params_samples_ml[k], scale=np.sqrt(cov_matrix[k, k])), 500)
-
-                    axes[4 * k].plot(x, norm.pdf(x, loc=params_samples_ml[k], scale=np.sqrt(cov_matrix[k, k])), 'r-')
-
-                    for l in range(k + 1, 3):
-                        plot_gauss_contours(params_samples_ml, cov_matrix, k, l, axes[3 * l + k])
-
-                # corner.corner(fisher_samples, color='red', fig=fig, bins=100, hist_kwargs={"density":True})
-
-                plt.savefig(self.model_dir + str(idx) + '_fisher2')
-
-                fig = corner.corner(params_samples[:, slice], truths=params_true[slice],
-                                    labels=parameter_labels[slice], range=range1, density=True,
-                                    hist_kwargs={"density":True}, bins=20,
-                                    plot_datapoints=False,no_fill_contours=False, fill_contours=True,
-                                    levels=(0.3935, 0.8647, 0.9889, 0.9997))
-
-                #"levels":[68.2, 95.4, 99.7]
-
-                axes = fig.get_axes()
-
-                # fisher 1d histograms
-                for k in range(0,3):
-
-                    x = np.linspace(norm.ppf(0.0001, loc=params_samples_ml[k], scale=np.sqrt(cov_matrix[k,k])),
-                                    norm.ppf(0.9999, loc=params_samples_ml[k], scale=np.sqrt(cov_matrix[k,k])), 500)
-
-                    axes[4*k].plot(x, norm.pdf(x, loc=params_samples_ml[k], scale=np.sqrt(cov_matrix[k,k])),'r-')
-
-                    for l in range(k+1, 3):
-
-                        plot_gauss_contours(params_samples_ml, cov_matrix, k, l, axes[3*l+k])
-
-                # corner.corner(fisher_samples, color='red', fig=fig, bins=100, hist_kwargs={"density":True})
-
-                plt.savefig(self.model_dir + str(idx) + '_fisher')
+            fig_not_zoomed.savefig(self.model_dir + str(idx))
+            fig_zoomed.savefig(self.model_dir + str(idx)+'_zoomed')
 
             if self.testing_wg.add_glitch:
 
@@ -726,18 +704,18 @@ class PosteriorModel(object):
 
             # plt.show()
 
-        if compute_bilby_post:
-
-            print('Computing bilby posteriors...')
-            bilby_fig = self.bilbly_post.find_result(idx, params_true)
-            print('Posteriors computed')
-
-            if plot:
-
-                corner.corner(params_samples[:, slice], truths=params_true[slice],labels=parameter_labels[slice],
-                               hist_kwargs={"density": True}, fig=bilby_fig)
-
-                plt.savefig(self.model_dir + str(idx)+"_bilby"+'_new')
+        # if compute_bilby_post:
+        #
+        #     print('Computing bilby posteriors...')
+        #     bilby_fig = self.bilbly_post.find_result(idx, params_true)
+        #     print('Posteriors computed')
+        #
+        #     if plot:
+        #
+        #         corner.corner(params_samples[:, slice], truths=params_true[slice],labels=parameter_labels[slice],
+        #                        hist_kwargs={"density": True}, fig=bilby_fig)
+        #
+        #         plt.savefig(self.model_dir + str(idx)+"_bilby"+'_new')
 
 
         return params_samples
@@ -792,6 +770,25 @@ def plot_gauss_contours(params_true, cov_matrix, ind1, ind2, ax):
         xs_transformed = np.dot(v, xs)
 
         ax.plot(xs_transformed[0]+means[0], xs_transformed[1]+means[1], 'r')
+
+
+def plot_fisher_estimates(fig, ranges, params_samples_ml, cov_matrix):
+
+    "WORKS ONLY FOR 3 PARAMETERS"
+
+    axes = fig.get_axes()
+
+    # fisher 1d histograms
+    for k in range(0, 3):
+
+        x = np.linspace(ranges[0, k], ranges[1, k], 500)
+
+        axes[4 * k].plot(x, norm.pdf(x, loc=params_samples_ml[k],
+                                    scale=np.sqrt(cov_matrix[k, k])), 'r-')
+
+        for l in range(k + 1, 3):
+            plot_gauss_contours(params_samples_ml, cov_matrix, k, l,
+                                    axes[3 * l + k])
 
 
 class Nestedspace(argparse.Namespace):
