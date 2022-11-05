@@ -654,6 +654,8 @@ class PosteriorModel(object):
         limit_high = params_samples_ml*1.25
         range_zoomed = np.stack((limit_low, limit_high), axis=1)
 
+        print(range_zoomed)
+
         if plot:
 
             fig1 = corner.corner(params_samples[:, slice], truths=params_true[slice],
