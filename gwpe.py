@@ -783,7 +783,7 @@ def plot_fisher_estimates(fig, ranges, params_samples_ml, cov_matrix):
     # fisher 1d histograms
     for k in range(0, 3):
 
-        x = np.linspace(ranges[0, k], ranges[1, k], 500)
+        x = np.linspace(ranges[k, 0], ranges[k, 1], 500)
 
         axes[4 * k].plot(x, norm.pdf(x, loc=params_samples_ml[k],
                                     scale=np.sqrt(cov_matrix[k, k])), 'r-')
