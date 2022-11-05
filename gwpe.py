@@ -650,8 +650,8 @@ class PosteriorModel(object):
         limit_low = np.asarray([25., 25., 100.])
         limit_high = np.asarray([50., 50., 1000.])
         range_not_zoomed = np.stack((limit_low, limit_high), axis=1)
-        limit_low = params_samples_ml*0.75
-        limit_high = params_samples_ml*1.25
+        limit_low = params_samples_ml*0.85
+        limit_high = params_samples_ml*1.15
         range_zoomed = np.stack((limit_low, limit_high), axis=1)
 
         print(range_zoomed)
