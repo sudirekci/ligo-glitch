@@ -196,14 +196,14 @@ class Bilby_Posterior:
             del priors["chirp_mass"], priors["mass_ratio"]
             # We can make uniform distributions.
             priors["mass_1"] = bilby.core.prior.Uniform(
-                name="mass_1", minimum=25., maximum=50.
+                name="mass_1", minimum=mass_1-5., maximum=mass_1+5.
             )
             priors["mass_2"] = bilby.core.prior.Uniform(
-                name="mass_2", minimum=25., maximum=50.
+                name="mass_2", minimum=mass_2-5., maximum=mass_2+5.
             )
             priors["luminosity_distance"] = bilby.gw.prior.UniformComovingVolume(
-                name="luminosity_distance", minimum=100.,
-                maximum=1000.
+                name="luminosity_distance", minimum=luminosity_distance-100.,
+                maximum=luminosity_distance+100.
             )
             priors["mass_ratio"] = bilby.core.prior.Constraint(minimum=1./2, maximum=1.)
         else:
