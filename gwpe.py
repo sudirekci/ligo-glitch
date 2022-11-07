@@ -696,12 +696,17 @@ class PosteriorModel(object):
                 #                                bins=20, range=range_not_zoomed, plot_datapoints=False,
                 #                                no_fill_contours=False, fill_contours=True,
                 #                                levels=(0.3935, 0.8647, 0.9889, 0.9997), fig=fig_not_zoomed)
+                corner.corner(bilby_result.samples, labels=parameter_labels[slice], hist_kwargs={"density": True},
+                              bins=20, range=range_not_zoomed, plot_datapoints=False,
+                              no_fill_contours=False, fill_contours=True,
+                              levels=(0.3935, 0.8647, 0.9889, 0.9997), fig=fig_not_zoomed,
+                              color='m')
 
                 corner.corner(bilby_result.samples, labels=parameter_labels[slice], hist_kwargs={"density": True},
                                            bins=20, range=range_zoomed, plot_datapoints=False,
                                            no_fill_contours=False, fill_contours=True,
                                            levels=(0.3935, 0.8647, 0.9889, 0.9997), fig=fig_zoomed,
-                                           color='g')
+                                           color='m')
 
 
             fig_not_zoomed.savefig(self.model_dir + str(idx))
