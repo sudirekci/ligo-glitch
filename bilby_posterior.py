@@ -244,14 +244,14 @@ class Bilby_Posterior:
             likelihood=likelihood,
             priors=priors,
             sampler="dynesty",
-            npoints=1000,
+            #npoints=1000,
             npool=4,
             injection_parameters=injection_parameters,
             outdir=self._outdir,
             label=label,
-            #sample="slice",
-            #slices=3,
-            #nlive=500,
+            sample="slice",
+            slices=3,
+            nlive=500,
         )
 
         # Make a corner plot.
