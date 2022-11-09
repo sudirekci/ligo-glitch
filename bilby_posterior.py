@@ -35,7 +35,8 @@ class Bilby_Posterior:
         for i in range(self._wg.no_detectors):
             det_name = key_list[val_list.index(self._wg.detector_list[i])]
             self._ifos.append(bilby.gw.detector.get_empty_interferometer(det_name))
-            self._ifos[i].power_spectral_density = np.copy(self._wg.psd)
+            self._ifos[i].power_spectral_density = bilby.gw.detector.PowerSpectralDensity(frequency_array=self._wg.freqs,
+                                                                                          psd_array=self._wg.psd)
 
         waveform_arguments = dict(
             waveform_approximant=self._wg.approximant,
