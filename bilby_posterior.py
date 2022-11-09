@@ -245,7 +245,7 @@ class Bilby_Posterior:
             likelihood=likelihood,
             priors=priors,
             sampler="dynesty",
-            npoints=50,
+            npoints=100,
             npool=8,
             injection_parameters=injection_parameters,
             outdir=self._outdir,
