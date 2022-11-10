@@ -703,6 +703,8 @@ class WaveformGenerator:
         self.params[:, self.INTRINSIC_PARAMS['mass1']] = mass1
         self.params[:, self.INTRINSIC_PARAMS['mass2']] = mass2
 
+        return mass1, mass2
+
     def sample_extrinsic(self):
 
         if self.extrinsic_at_train:

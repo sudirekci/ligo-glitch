@@ -2,6 +2,7 @@ import sys
 
 import torch
 
+import bilby_posterior
 import waveform_dataset as waveform_dataset
 import waveform_dataset_3p as waveform_dataset_3p
 import numpy as np
@@ -12,6 +13,7 @@ from pycbc.fft import backend_support
 from fisher_info import Fisher
 
 from bilby_posterior import Bilby_Posterior
+from bilby_posterior import HellingerDistance
 
 backend_support.set_backend(['mkl'])
 np.set_printoptions(threshold=sys.maxsize)
@@ -867,6 +869,23 @@ def test_bilby():
     bilby_fig = bilbly_post.find_result(idx, params_true)
 
 
+def test_hellinger():
+
+    dataset_len = 100
+
+    dataset = waveform_dataset_3p.WaveformGenerator(dataset_len=dataset_len, path_to_glitschen=path_to_glitschen,
+                                                   extrinsic_at_train=False, tomte_to_blip=1, domain='FD',
+                                                   add_glitch=False, add_noise=False, directory=directory)
+
+    dataset.construct_signal_dataset(perform_svd=False)
+
+    hellinger = bilby_posterior.HellingerDistance(model_dir=model_dir,
+                                                  N=2, waveform_generator=dataset)
+
+    hellinger.calculate_hellinger_distances()
+    print("**************** MEAN DISTANCE **********************")
+    print(hellinger.distance_mean())
+
 
 
 # dataset.initialize()
@@ -884,6 +903,10 @@ svd_no_basis_coeffs = 10
 
 path_to_glitschen = '/home/su/Documents/glitschen-main/'
 directory = '/home/su/Documents/glitch_dataset/'
+
+# directory = '/home/su.direkci/glitch_project/dataset_no_glitch_3p_svd_100_extrinsic_4/'
+path_to_glitschen = '/home/su.direkci/programs/glitschen'
+model_dir = '/home/su.direkci/glitch_project/hellinger_dist/'
 
 #test_glitch_SVD_projection()
 
@@ -938,4 +961,6 @@ directory = '/home/su/Documents/glitch_dataset/'
 
 # test_glitch_SVD_projection()
 
-test_bilby()
+#test_bilby()
+
+test_hellinger()
