@@ -269,7 +269,7 @@ class HellingerDistance:
 
     def __init__(self, model_dir, N, waveform_generator):
 
-        self._outdir = model_dir + "hellinger_cache"
+        self._outdir = model_dir + "hellinger_cache/"
         self.N = N
         self.distances = np.zeros(N)
         self.wg = waveform_generator
