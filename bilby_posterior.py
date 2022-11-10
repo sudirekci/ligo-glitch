@@ -356,8 +356,8 @@ class HellingerDistance:
             print(self.distances[i])
 
         if save:
-            np.savetxt('true_params.txt', self.wg.params[idxs], delimiter=',')
-            np.savetxt('distances.txt', self.distances, delimiter=',')
+            np.savetxt(self._outdir+'true_params.txt', self.wg.params[idxs], delimiter=',')
+            np.savetxt(self._outdir+'distances.txt', self.distances, delimiter=',')
 
         return self.distances
 
