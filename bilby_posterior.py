@@ -347,7 +347,7 @@ class HellingerDistance:
                 self.distances[i] += 1./2*((np.sqrt(fisher_density[s]) -
                                                   np.sqrt(kde.pdf(samples[s])))**2)
                 dx += kde.pdf(samples[s])
-                print(self.distances[i])
+                #print(self.distances[i])
 
             dx = 1/dx
             print('dx')

@@ -880,7 +880,7 @@ def test_hellinger():
     dataset.construct_signal_dataset(perform_svd=False)
 
     hellinger = bilby_posterior.HellingerDistance(model_dir=model_dir,
-                                                  N=2, waveform_generator=dataset)
+                                                  N=100, waveform_generator=dataset)
 
     hellinger.calculate_hellinger_distances()
     print("**************** MEAN DISTANCE **********************")
