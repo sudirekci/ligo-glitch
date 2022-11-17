@@ -888,7 +888,12 @@ def test_hellinger():
 
 def hellinger_histogram():
 
-    hellinger = bilby_posterior.HellingerDistance(model_dir=model_dir, N=0, waveform_generator=None)
+    dataset = waveform_dataset_3p.WaveformGenerator(dataset_len=100, path_to_glitschen=path_to_glitschen,
+                                                    extrinsic_at_train=False, tomte_to_blip=1, domain='FD',
+                                                    add_glitch=False, add_noise=False, directory=directory)
+    dataset.initialize()
+
+    hellinger = bilby_posterior.HellingerDistance(model_dir=model_dir, N=0, waveform_generator=dataset)
     hellinger.plot_hellinger_histogram()
 
 
