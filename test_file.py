@@ -886,6 +886,12 @@ def test_hellinger():
     print("**************** MEAN DISTANCE **********************")
     print(hellinger.distance_mean())
 
+def hellinger_histogram():
+
+    hellinger = bilby_posterior.HellingerDistance(model_dir=model_dir, N=0, waveform_generator=None)
+    hellinger.plot_hellinger_histogram()
+
+
 
 
 # dataset.initialize()
@@ -963,4 +969,6 @@ model_dir = '/home/su.direkci/glitch_project/hellinger_dist/'
 
 #test_bilby()
 
-test_hellinger()
+#test_hellinger()
+
+hellinger_histogram()
