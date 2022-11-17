@@ -365,7 +365,7 @@ class HellingerDistance:
 
         self.distances = np.loadtxt(self._outdir + 'distances.txt')
         plt.figure()
-        plt.hist(self.distances, density=True)
+        plt.hist(self.distances, density=True, bins=20)
         plt.savefig(self._outdir + 'hellinger_histogram')
 
 
