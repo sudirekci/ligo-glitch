@@ -11,6 +11,8 @@ import scipy
 from scipy import signal
 from pycbc.fft import backend_support
 from fisher_info import Fisher
+import corner
+
 
 from bilby_posterior import Bilby_Posterior
 from bilby_posterior import HellingerDistance
@@ -869,7 +871,7 @@ def test_bilby():
     bilby_fig = bilbly_post.find_result(idx, params_true)
 
 
-def test_hellinger():
+def test_hellinger(plot=False):
 
     dataset_len = 500
 
@@ -882,7 +884,7 @@ def test_hellinger():
     hellinger = bilby_posterior.HellingerDistance(model_dir=model_dir,
                                                   N=100, waveform_generator=dataset)
 
-    hellinger.calculate_hellinger_distances(save=True)
+    hellinger.calculate_hellinger_distances(save=True, plot=plot)
     print("**************** MEAN DISTANCE **********************")
     print(hellinger.distance_mean())
 
@@ -896,6 +898,158 @@ def hellinger_histogram():
     hellinger = bilby_posterior.HellingerDistance(model_dir=model_dir, N=0, waveform_generator=dataset)
     hellinger.plot_hellinger_histogram()
 
+
+def maximize_match_compute_posterior(n):
+
+    dataset_len = n
+
+    dataset = waveform_dataset_3p.WaveformGenerator(dataset_len=dataset_len, path_to_glitschen=path_to_glitschen,
+                                                    extrinsic_at_train=False, tomte_to_blip=1, domain='FD',
+                                                    add_glitch=False, add_noise=False, directory=directory,
+                                                    sampling_frequency=2048., duration=8.)
+
+    dataset.construct_signal_dataset(save=False, perform_svd=False)
+
+    zs, glitches = dataset.create_glitch(length=n)
+
+    dir_to_save = '/home/su/Desktop/caltech/glitch_project/matching_with_glitches/'
+
+    # do sliding
+    print('Dataset dt')
+    print(dataset.dt)
+    print('Dataset df')
+    print(dataset.df)
+    print(np.sqrt(dataset.bandwidth))
+    print(np.sqrt(dataset.bandwidth)*dataset.dt)
+    print(dataset.df)
+
+    signal_length = dataset.length
+    glitch_length = len(glitches[0])
+
+    print('Length of a signal (in terms of array elements)')
+    print(signal_length)
+    print('Length of a glitch (in terms of array elements)')
+    print(glitch_length)
+
+    print('Max number of iterations')
+    print(signal_length-glitch_length)
+
+    no_iterations = min(signal_length-glitch_length, 200)
+
+    # number of array elements that we skip per iteration
+    dlength = int((signal_length - glitch_length) / no_iterations)
+
+    matches = np.zeros((n, no_iterations))
+
+    time_axis = np.arange(0, signal_length)/signal_length*dataset.duration-dataset.duration/2
+
+    # choose a detector
+    d = 0
+
+    for i in range(0, n):
+
+        # signal = dataset.detector_signals[d, i, :]
+
+        signal = np.fft.irfft(np.pad(dataset.detector_signals[d, i, :]* \
+                            np.exp(-1j*2*np.pi*dataset.freqs[dataset.fft_mask]*dataset.duration/2), (1, 0),
+                            'constant')) * dataset.df * dataset.length /\
+                            np.sqrt(dataset.bandwidth)
+        snr = dataset.snrs[d, i]
+
+        # find the norm of the signal
+        norm_signal = np.sqrt(np.sum(signal*np.conjugate(signal)))
+        print('norm of the signal')
+        print(norm_signal)
+        print('snr')
+        print(snr)
+        #plt.figure()
+        #plt.plot(np.fft.irfft(signal)*dataset.length*dataset.df)
+        #plt.plot(signal)
+        #plt.show()
+
+        # find the norm of the glitch
+        norm_glitch = np.sqrt(np.sum(glitches[i, :]**2))
+        # print('norm of the glitch')
+        # print(norm_glitch)
+
+        for j in range(0, no_iterations):
+
+            matches[i, j] = np.abs(np.sum(signal[j*dlength:j*dlength+glitch_length]*glitches[i])\
+                    / (norm_signal*norm_glitch))
+
+
+    # find TOP_MAX best matches
+    TOP_MAX = 5
+
+    best_match_js = np.argmax(matches, axis=1)
+    best_match_indices = np.argsort(matches[np.arange(0, n), best_match_js])[-TOP_MAX:]
+    best_matches = matches[best_match_indices, np.argmax(matches, axis=1)[best_match_indices]]
+
+    print(best_match_indices)
+    print(best_matches)
+
+    for i in range(0, TOP_MAX):
+
+        true_params = dataset.params[best_match_indices[i]]
+        snr = dataset.snrs[d, best_match_indices[i]]
+
+        plt.figure()
+        plt.plot(dataset.duration/2*(-1+(2*np.arange(0, no_iterations)*dlength+glitch_length)/signal_length),
+                     matches[best_match_indices[i]])
+        plt.title('Match')
+        plt.xlabel('t (Relative to merge time)')
+        plt.title('Best match = {match:.2f}'.format(match=best_matches[i]))
+        plt.savefig(dir_to_save+str(best_match_indices[i])+'_match_plot.png')
+
+        plt.figure()
+        j = best_match_js[best_match_indices[i]]
+
+        signal = np.fft.irfft(np.pad(dataset.detector_signals[d, best_match_indices[i], :]*\
+                            np.exp(-1j*2*np.pi*dataset.freqs[dataset.fft_mask]*dataset.duration/2), (1, 0),
+                            'constant')) * dataset.df * dataset.length /\
+                            np.sqrt(dataset.bandwidth)
+
+        plt.plot(time_axis, signal)
+        plt.plot(time_axis[j*dlength:j*dlength+glitch_length],
+                 glitches[best_match_indices[i]])
+        plt.title('Parameters: m1=%.1f, m2=%.2f, d=%.1f snr=%.1f' % (true_params[0], true_params[1],
+                                                                     true_params[2], snr))
+        plt.savefig(dir_to_save+str(best_match_indices[i])+'_td_signal_glitch.png')
+
+    # time for bilby
+
+    bilbly_post = Bilby_Posterior(dataset, model_dir=dir_to_save)
+    for i in range(0, TOP_MAX):
+
+        # do the analysis without glitch
+
+        true_params = dataset.params[best_match_indices[i]]
+        print('true params')
+        print(true_params)
+
+        # bilby with glitch
+        glitch_start_time = best_match_js[best_match_indices[i]]*dlength/\
+                            dataset.length*dataset.duration-dataset.duration/2
+        print(glitch_start_time)
+
+        result2, _ = bilbly_post.find_result(idx=best_match_indices[i], params_true=true_params,
+                                label=str(best_match_indices[i])+'_with_glitch',
+                                glitch_array=glitches[best_match_indices[i]],
+                                glitch_start_time=glitch_start_time)
+
+        # bilby without glitch
+        result1, _ = bilbly_post.find_result(idx=best_match_indices[i], params_true=true_params)
+
+
+        fig = corner.corner(result1.samples, labels=['m1', 'm2', 'dL'], hist_kwargs={"density": True},
+                      bins=20, plot_datapoints=False, no_fill_contours=False, fill_contours=True,
+                      levels=(0.3935, 0.8647, 0.9889, 0.9997), color='b', truths=true_params)
+
+        corner.corner(result2.samples, labels=['m1', 'm2', 'dL'], hist_kwargs={"density": True},
+                      bins=20, plot_datapoints=False, no_fill_contours=False, fill_contours=True,
+                      levels=(0.3935, 0.8647, 0.9889, 0.9997), color='r', fig=fig, truths=true_params)
+
+        plt.savefig(dir_to_save + str(best_match_indices[i]) + '_bilby_results')
 
 
 
@@ -914,10 +1068,11 @@ svd_no_basis_coeffs = 10
 
 path_to_glitschen = '/home/su/Documents/glitschen-main/'
 directory = '/home/su/Documents/glitch_dataset/'
+model_dir = '/home/su/Desktop/caltech/glitch_project/bilby_test/'
 
 # directory = '/home/su.direkci/glitch_project/dataset_no_glitch_3p_svd_100_extrinsic_4/'
-path_to_glitschen = '/home/su.direkci/programs/glitschen'
-model_dir = '/home/su.direkci/glitch_project/hellinger_dist/'
+# path_to_glitschen = '/home/su.direkci/programs/glitschen'
+#model_dir = '/home/su.direkci/glitch_project/hellinger_dist/'
 
 #test_glitch_SVD_projection()
 
@@ -972,8 +1127,10 @@ model_dir = '/home/su.direkci/glitch_project/hellinger_dist/'
 
 # test_glitch_SVD_projection()
 
-#test_bilby()
+# test_bilby()
 
-#test_hellinger()
+#test_hellinger(plot=True)
 
-hellinger_histogram()
+# hellinger_histogram()
+
+maximize_match_compute_posterior(100)

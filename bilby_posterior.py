@@ -25,6 +25,9 @@ import matplotlib.pyplot as plt
 
 class Bilby_Posterior:
 
+
+    # DON'T FORGET TO FIX REF TIME !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
     def __init__(self, wg, model_dir, three_parameter=True):
 
         self._wg = wg
@@ -57,10 +60,14 @@ class Bilby_Posterior:
             waveform_arguments=waveform_arguments,
         )
 
-    def find_result(self, idx, params_true):
+    def find_result(self, idx, params_true, label=None, glitch_array=None,
+                 glitch_start_time=0, glitch_domain='TD'):
+
+        # glitch_start_time the start of the array in seconds (NOT THE MIDDLE)
 
         # Specify the output directory and the name of the simulation.
-        label = str(idx)
+        if label is None:
+            label = str(idx)
         bilby.core.utils.setup_logger(outdir=self._outdir, label=label)
 
         # Set up a random seed for result reproducibility.  This is optional!
@@ -113,9 +120,6 @@ class Bilby_Posterior:
             dec = float(params_true[self._wg.EXTRINSIC_PARAMS['declination']])
             tc = float(params_true[self._wg.OTHER_PARAMS['tc']])
 
-        if self._wg.add_glitch:
-            print('TODO')
-
         # compute the polarizations
         hp, hc = self._wg.compute_hp_hc(-1, params=params_true)
 
@@ -124,6 +128,8 @@ class Bilby_Posterior:
         hp = hp / luminosity_distance
         hc = hc / luminosity_distance
 
+        timeshifts = np.zeros(self._wg.no_detectors)
+
         for j in range(0, self._wg.no_detectors):
 
             det = self._wg.detectors[j]
@@ -131,18 +137,53 @@ class Bilby_Posterior:
             fp, fc = det.antenna_pattern(ra, dec, psi, geocent_time)
 
             dt = det.time_delay_from_earth_center(ra, dec, geocent_time)
-            timeshift = dt + tc
+            timeshifts[j] = dt + tc
 
 
             noise = np.fft.rfft(np.random.normal(0, scale=1.0, size=int(self._wg.length))) \
                         [self._wg.fft_mask] * self._wg.dt * \
                     np.sqrt(self._wg.bandwidth*self._wg.psd[self._wg.fft_mask])
 
+            # without noise
+            noise = 0.
+
             # self._wg.bandwidth
 
             strains.append((fp * hp + fc * hc) *
                            np.exp(-1j * 2 * np.pi *
-                                  self._wg.freqs[self._wg.fft_mask] * timeshift)+noise)
+                                  self._wg.freqs[self._wg.fft_mask] * timeshifts[j])+noise)
+
+
+        if self._wg.add_glitch or glitch_array is not None:
+
+            if glitch_domain == 'TD':
+
+                if len(glitch_array) != self._wg.length:
+                    # pad the glitch
+                    # first, left side:
+                    glitch_duration = len(glitch_array) / self._wg.length * self._wg.duration
+                    left_side = glitch_start_time + self._wg.duration / 2
+                    left_pad = np.max(left_side * self._wg.length / self._wg.duration, 0)
+                    print(left_pad)
+
+                    right_side = self._wg.duration / 2. - glitch_duration - glitch_start_time
+                    right_pad = np.max(right_side * self._wg.length / self._wg.duration, 0)
+                    print(right_pad)
+
+                    glitch_array = np.concatenate((np.zeros(int(left_pad)),
+                                                   glitch_array, np.zeros(int(right_pad))))
+
+                glitch_array = np.fft.rfft(glitch_array)[self._wg.fft_mask] * np.exp(
+                    -1j * 2 * np.pi * self._wg.freqs[self._wg.fft_mask] * glitch_start_time) * \
+                    self._wg.dt * np.sqrt(self._wg.bandwidth*self._wg.psd[self._wg.fft_mask])
+
+                for j in range(0, self._wg.no_detectors):
+
+                    strains[j] += glitch_array
+
+            else:
+
+                print('TODO')
 
         #print(noise)
         #print('*************************')
@@ -288,7 +329,7 @@ class HellingerDistance:
 
         return self.distances
 
-    def calculate_hellinger_distances(self, save=False):
+    def calculate_hellinger_distances(self, save=False, plot=False):
 
         if self.wg.extrinsic_at_train:
             print('dataset shouldn\'t be extrinsic at train')
@@ -312,23 +353,10 @@ class HellingerDistance:
             print(bilby_result.kde)
 
             kde = bilby_result.kde
-            samples = bilby_result.samples
+            samples = np.transpose(bilby_result.samples) # shape: (# dims, # data)
 
-            # H, edges = np.histogramdd(bilby_result.samples, bins=20,density=True)
-            # print(H.shape)
-            #
-            # bins = scipy.ndimage.gaussian_filter(H, sigma=0.5)
-            #
-            # max_index = np.asarray(np.unravel_index(bins.argmax(), H.shape))
-            #
-            # print(max_index)
-            #
-            # max_likelihood_pt = np.zeros(3)
-            # for m in range(0, len(max_index)):
-            #     max_likelihood_pt[m] = (edges[m][max_index[m]] + edges[m][max_index[m]+1]) / 2.
-            #
-            # print(max_likelihood_pt)
-            #
+            print('Samples shape')
+            print(samples.shape)
 
             opt = optimize.minimize(lambda x: -kde(x), x0=params_true)
 
@@ -343,11 +371,42 @@ class HellingerDistance:
 
             dx = 0
 
-            for s in range(0, samples.shape[0]):
-                self.distances[i] += 1./2*((np.sqrt(fisher_density[s]) -
-                                                  np.sqrt(kde.pdf(samples[s])))**2)
-                dx += kde.pdf(samples[s])
-                #print(self.distances[i])
+            if plot:
+
+                fig, ax = plt.subplots(2, 2)
+
+
+            # for s in range(0, samples.shape[0]):
+            #     self.distances[i] += 1./2*((np.sqrt(fisher_density[s]) -
+            #                                       np.sqrt(kde.pdf(samples[s])))**2)
+            #     dx += kde.pdf(samples[s])
+
+            self.distances[i] += np.sum(1./2*((np.sqrt(fisher_density) -
+                                                  np.sqrt(kde.pdf(samples)))**2))
+            # dx = np.sum(kde.pdf(samples))
+
+            # DO BINNING
+
+            if plot:
+                labels = ['m1', 'm2', 'dL']
+
+                print(len(fisher_density))
+                print(fisher_density)
+                print('*****************')
+                for m in range(0, 3):
+
+                    mask = np.argsort(samples[m, :])
+
+                    print(fisher_density[mask])
+                    print('*****************')
+
+                    ax[m//2, m%2].plot(samples[m, :][mask], fisher_density[mask], '-r')
+                    ax[m//2, m%2].plot(samples[m, :][mask], kde.pdf(samples)[mask], '-m')
+                    ax[m // 2, m % 2].set_title('Density for ' + labels[m])
+                    ax[m // 2, m % 2].set_xlabel(labels[m])
+                    ax[m // 2, m % 2].axvline(x=params_true[m])
+
+                plt.show()
 
             dx = 1/dx
             print('dx')

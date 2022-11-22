@@ -57,7 +57,7 @@ python gwpe.py train new nde \
 python gwpe.py train existing \
     --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_3p_svd_100_extrinsic_4/ \
     --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/3d_31/ \
-    --epochs 40 \
+    --epochs 30 \
     --batch_size 8000 \
 
 python gwpe.py train existing \
@@ -71,7 +71,7 @@ python gwpe.py test \
     --data_dir /home/su.direkci/glitch_project/dataset_no_glitch_3p_svd_100_extrinsic_4/ \
     --model_dir /home/su.direkci/glitch_project/models_no_glitch_w_noise/3d_31/ \
     --bilby \
-        --fisher \
+    --fisher \
     --test_on_training_data \
     
 python gwpe.py test \

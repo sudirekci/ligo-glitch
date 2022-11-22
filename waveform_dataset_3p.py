@@ -48,7 +48,7 @@ class WaveformGenerator:
     slice = np.asarray([0, 1, 10])
 
     # sampling freq 512
-    def __init__(self, sampling_frequency=512., duration=8., fmin=10., dataset_len=100000,
+    def __init__(self, sampling_frequency=512., duration=4., fmin=10., dataset_len=100000,
                  path_to_glitschen='/home/su/Documents/glitschen-main/',
                  q=5, winlen=0.5, approximant='IMRPhenomPv2', priors=None, detectors=None, tomte_to_blip=1,
                  extrinsic_at_train=False, directory='/home/su/Documents/glitch_dataset/', glitch_sigma=1, domain='FD',
@@ -356,7 +356,7 @@ class WaveformGenerator:
                 elif self.domain == 'FD':
                     noise = np.fft.rfft(np.random.normal(0, scale=1.0, size=int(self.length)))[
                                 self.fft_mask] * self.dt * \
-                            np.sqrt(self.bandwidth)
+                                np.sqrt(self.bandwidth)
 
                 self.detector_signals[j, l, :] += noise
 
@@ -492,11 +492,20 @@ class WaveformGenerator:
 
             snr = self.SNR_colored(signal_fft * self.dt)
 
+            #print('SNR COLORED: ', str(self.SNR_colored(signal_fft * self.dt)))
+
             self.projection_strains[ind] = np.fft.irfft(np.pad(signal_fft *
-                                                               np.exp(-1j * 2 * np.pi * self.freqs[self.fft_mask]
-                                                                      * timeshift) * (self.psd[self.fft_mask] *
-                                                                                      factor) ** (-0.5), (1, 0),
-                                                               'constant'))
+                                                np.exp(-1j * 2 * np.pi * self.freqs[self.fft_mask]
+                                                * timeshift) * (self.psd[self.fft_mask]
+                                                * factor) ** (-0.5), (1, 0),
+                                                'constant'))
+
+            #signal_fft = np.fft.rfft(self.projection_strains[ind])[self.fft_mask]
+
+            #print('SNR WHITENED: ', str(self.SNR_whitened(signal_fft * self.dt)))
+            #snr_whitened = self.SNR_whitened(signal_fft * self.dt)
+
+            #print('RATIO:', str(snr/snr_whitened))
 
         elif self.domain == 'FD':
 
@@ -505,9 +514,11 @@ class WaveformGenerator:
 
             snr = self.SNR_colored(self.projection_strains[ind])
 
-            self.projection_strains[ind] = self.projection_strains[ind] * \
-                                           np.exp(-1j * 2 * np.pi * self.freqs[self.fft_mask] * timeshift) * \
-                                           (self.psd[self.fft_mask]) ** (-0.5)
+            self.projection_strains[ind] = self.projection_strains[ind] * np.exp(-1j * 2 *
+                                                    np.pi * self.freqs[self.fft_mask] * timeshift) * \
+                                                    (self.psd[self.fft_mask]) ** (-0.5)
+
+            # print('SNR WHITENED: ', str(self.SNR_whitened(self.projection_strains[ind])))
 
         return snr
 
