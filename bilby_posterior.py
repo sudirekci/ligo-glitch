@@ -16,6 +16,8 @@ from numpy.random import default_rng
 import scipy.ndimage
 import scipy.stats
 from scipy import optimize
+import corner
+import os
 
 import waveform_dataset_3p as waveform_dataset
 from bilby.gw.utils import calculate_time_to_merger
@@ -145,7 +147,7 @@ class Bilby_Posterior:
                     np.sqrt(self._wg.bandwidth*self._wg.psd[self._wg.fft_mask])
 
             # without noise
-            noise = 0.
+            # noise = 0.
 
             # self._wg.bandwidth
 
@@ -290,14 +292,15 @@ class Bilby_Posterior:
             likelihood=likelihood,
             priors=priors,
             sampler="dynesty",
-            npoints=100,
+            npoints=250,
             npool=8,
             injection_parameters=injection_parameters,
             outdir=self._outdir,
             label=label,
+            nact=10,
             #sample="slice",
             #slices=3,
-            #nlive=500,
+            #nlive=100,
         )
 
         # Make a corner plot.
@@ -311,6 +314,10 @@ class HellingerDistance:
     def __init__(self, model_dir, N, waveform_generator):
 
         self._outdir = model_dir + "hellinger_cache/"
+
+        if not os.path.exists(self._outdir):
+            os.makedirs(self._outdir)
+
         self.N = N
         self.distances = np.zeros(N)
         self.wg = waveform_generator
@@ -344,19 +351,20 @@ class HellingerDistance:
             print('True Params:')
             print(params_true)
 
-            cov_matrix = self.fisher.compute_analytical_cov_m1_m2(params=params_true)
+            cov_matrix = self.fisher.compute_analytical_cov_m1_m2_from_mu_chirp(params=params_true)
             print('Covariance matrix:')
             print(cov_matrix)
+            #cov_matrix = self.fisher.compute_analytical_cov_m1_m2(params=params_true)
+            #print('Covariance matrix:')
+            #print(cov_matrix)
 
             bilby_result, _ = self.bilby.find_result(idxs[i], params_true)
 
-            print(bilby_result.kde)
-
             kde = bilby_result.kde
-            samples = np.transpose(bilby_result.samples) # shape: (# dims, # data)
+            #samples = np.transpose(bilby_result.samples) # shape: (# dims, # data)
 
-            print('Samples shape')
-            print(samples.shape)
+            #print('# of samples')
+            #print(len(bilby_result.samples))
 
             opt = optimize.minimize(lambda x: -kde(x), x0=params_true)
 
@@ -365,15 +373,74 @@ class HellingerDistance:
 
             max_likelihood_pt = opt.x
 
-            fisher_density = scipy.stats.multivariate_normal.pdf(bilby_result.samples,
-                                                                 mean=max_likelihood_pt,
-                                                                 cov=cov_matrix)
+            limit_low = max_likelihood_pt * 0.85
+            limit_high = max_likelihood_pt * 1.15
+            range_zoomed = np.stack((limit_low, limit_high), axis=1)
 
-            dx = 0
+            # do binning on bilby samples
+            # bilby_histogram, edges = np.histogramdd(bilby_result.samples, bins=8, density=True)
+            #
+            # for e in range(0, len(edges)):
+            #     edges[e] = [(a + b) / 2 for a, b in zip(edges[e][:-1], edges[e][1:])]
+            #
+            # fisher_histogram = scipy.stats.multivariate_normal.pdf(np.array(np.meshgrid(edges[0], edges[1],
+            #                                                     edges[2])).T.reshape(-1,3),
+            #                                                      mean=max_likelihood_pt,
+            #                                                      cov=cov_matrix)
+            #print('shapes')
+            #print(bilby_histogram.shape)
+            #print(fisher_histogram.shape)
 
-            if plot:
+            #print('Edges')
+            #print(edges)
 
-                fig, ax = plt.subplots(2, 2)
+            #bin_volume = (edges[0][1]-edges[0][0])*(edges[1][1]-edges[1][0])*(edges[2][1]-edges[2][0])
+            #print('Bin volume: ')
+            #print(bin_volume)
+
+            #self.distances[i] = np.sqrt(np.sum(1./2 * ((np.sqrt(fisher_histogram) -
+            #                                            np.sqrt(bilby_histogram.flatten()))**2)))
+            #self.distances[i] = np.sqrt(self.distances[i])
+            #print('Distance without bin volume')
+            #print(self.distances[i])
+            #self.distances[i] *= np.sqrt(bin_volume)
+            #print('Distance with bin volume')
+            #print(self.distances[i])
+
+            # generate random samples
+            sample_len = 10000
+            mass_range = 5.
+            dist_range = 100.
+
+            ranges = np.asarray([mass_range, mass_range, dist_range])
+
+            bin_volume = np.prod(ranges)/sample_len
+            print('Bin volume')
+            print(bin_volume)
+
+            samples = np.random.random(size=(sample_len, 3))
+            samples *= np.expand_dims(ranges, axis=0)
+            samples += np.expand_dims(max_likelihood_pt, axis=0)
+
+            print(samples[0, :])
+
+            fisher_histogram = scipy.stats.multivariate_normal.pdf(samples,
+                                                                mean=max_likelihood_pt,
+                                                                cov=cov_matrix)
+            #bilby_probabilities = np.transpose(kde.pdf(np.transpose(samples)))
+            bilby_probabilities = np.zeros(sample_len)
+            for b in range(0, sample_len):
+                sample = dict(mass_1=samples[b,0], mass_2=samples[b,1],
+                              luminosity_distance=samples[b,2])
+
+                bilby_probabilities[b] = bilby_result.posterior_probability(sample)
+
+            print(bilby_probabilities[0:25])
+            self.distances[i] = np.sum(np.sqrt(1./2 * ((np.sqrt(fisher_histogram) -
+                                                 np.sqrt(bilby_probabilities))**2) * bin_volume))
+
+            print('Distance with bin volume')
+            print(self.distances[i])
 
 
             # for s in range(0, samples.shape[0]):
@@ -381,38 +448,28 @@ class HellingerDistance:
             #                                       np.sqrt(kde.pdf(samples[s])))**2)
             #     dx += kde.pdf(samples[s])
 
-            self.distances[i] += np.sum(1./2*((np.sqrt(fisher_density) -
-                                                  np.sqrt(kde.pdf(samples)))**2))
             # dx = np.sum(kde.pdf(samples))
 
             # DO BINNING
 
+            print('Iteration ' + str(i) + ' is complete')
+
             if plot:
                 labels = ['m1', 'm2', 'dL']
 
-                print(len(fisher_density))
-                print(fisher_density)
-                print('*****************')
-                for m in range(0, 3):
+                fig = corner.corner(bilby_result.samples, labels=labels, hist_kwargs={"density": True},
+                                    bins=20, plot_datapoints=False, range=range_zoomed,
+                                    no_fill_contours=False, fill_contours=True,
+                                    levels=(0.3935, 0.8647, 0.9889, 0.9997),
+                                    color='m', truths=params_true)
 
-                    mask = np.argsort(samples[m, :])
+                plot_fisher_estimates(fig, range_zoomed, max_likelihood_pt, cov_matrix)
 
-                    print(fisher_density[mask])
-                    print('*****************')
+                if save:
+                    fig.savefig(self._outdir + str(i))
 
-                    ax[m//2, m%2].plot(samples[m, :][mask], fisher_density[mask], '-r')
-                    ax[m//2, m%2].plot(samples[m, :][mask], kde.pdf(samples)[mask], '-m')
-                    ax[m // 2, m % 2].set_title('Density for ' + labels[m])
-                    ax[m // 2, m % 2].set_xlabel(labels[m])
-                    ax[m // 2, m % 2].axvline(x=params_true[m])
+                #plt.show()
 
-                plt.show()
-
-            dx = 1/dx
-            print('dx')
-            print(dx)
-            self.distances[i] = np.sqrt(self.distances[i]*dx)
-            print(self.distances[i])
 
         if save:
             np.savetxt(self._outdir+'true_params.txt', self.wg.params[idxs], delimiter=',')
@@ -428,5 +485,45 @@ class HellingerDistance:
         plt.savefig(self._outdir + 'hellinger_histogram')
 
 
+def plot_gauss_contours(params_true, cov_matrix, ind1, ind2, ax):
 
+    # Initializing the covariance matrix
+    cov = np.asarray([[cov_matrix[ind1, ind1], cov_matrix[ind1, ind2]],
+                      [cov_matrix[ind1, ind2], cov_matrix[ind2, ind2]]])
+
+    means = np.asarray([[params_true[ind1]], [params_true[ind2]]])
+
+    w, v = np.linalg.eig(cov)
+
+    t = np.linspace(0, 2*np.pi, num=100)
+    xs = np.zeros((2, 100))
+
+    # draw 1 sigma - 4 sigma
+    for r in range(1, 5):
+
+        xs[0,:] = r*np.sqrt(w[0])*np.cos(t)
+        xs[1,:] = r*np.sqrt(w[1])*np.sin(t)
+
+        xs_transformed = np.dot(v, xs)
+
+        ax.plot(xs_transformed[0]+means[0], xs_transformed[1]+means[1], 'r')
+
+
+def plot_fisher_estimates(fig, ranges, params_samples_ml, cov_matrix):
+
+    "WORKS ONLY FOR 3 PARAMETERS"
+
+    axes = fig.get_axes()
+
+    # fisher 1d histograms
+    for k in range(0, 3):
+
+        x = np.linspace(ranges[k, 0], ranges[k, 1], 500)
+
+        axes[4 * k].plot(x, scipy.stats.norm.pdf(x, loc=params_samples_ml[k],
+                                    scale=np.sqrt(cov_matrix[k, k])), 'r-')
+
+        for l in range(k + 1, 3):
+            plot_gauss_contours(params_samples_ml, cov_matrix, k, l,
+                                    axes[3 * l + k])
 

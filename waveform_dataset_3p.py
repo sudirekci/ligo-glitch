@@ -689,8 +689,7 @@ class WaveformGenerator:
                                          self.freqs[self.fft_mask] * (dt+tc-self.duration*
                                                                       (1.-self.merger_beginning_factor))))
 
-                else:
-                    print('TODO')
+                #else, dont do anything
 
         # return snrs
         return snr_list

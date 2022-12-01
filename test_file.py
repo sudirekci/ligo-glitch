@@ -882,7 +882,8 @@ def test_hellinger(plot=False):
     dataset.construct_signal_dataset(perform_svd=False)
 
     hellinger = bilby_posterior.HellingerDistance(model_dir=model_dir,
-                                                  N=100, waveform_generator=dataset)
+                                                  N=1, waveform_generator=dataset)
+    print('hellinger initialized')
 
     hellinger.calculate_hellinger_distances(save=True, plot=plot)
     print("**************** MEAN DISTANCE **********************")
@@ -1040,7 +1041,6 @@ def maximize_match_compute_posterior(n):
         # bilby without glitch
         result1, _ = bilbly_post.find_result(idx=best_match_indices[i], params_true=true_params)
 
-
         fig = corner.corner(result1.samples, labels=['m1', 'm2', 'dL'], hist_kwargs={"density": True},
                       bins=20, plot_datapoints=False, no_fill_contours=False, fill_contours=True,
                       levels=(0.3935, 0.8647, 0.9889, 0.9997), color='b', truths=true_params)
@@ -1068,11 +1068,14 @@ svd_no_basis_coeffs = 10
 
 path_to_glitschen = '/home/su/Documents/glitschen-main/'
 directory = '/home/su/Documents/glitch_dataset/'
-model_dir = '/home/su/Desktop/caltech/glitch_project/bilby_test/'
+#model_dir = '/home/su/Desktop/caltech/glitch_project/bilby_test/'
+
+model_dir = '/home/su/Desktop/caltech/glitch_project/hellinger/'
+
 
 # directory = '/home/su.direkci/glitch_project/dataset_no_glitch_3p_svd_100_extrinsic_4/'
-# path_to_glitschen = '/home/su.direkci/programs/glitschen'
-#model_dir = '/home/su.direkci/glitch_project/hellinger_dist/'
+path_to_glitschen = '/home/su.direkci/programs/glitschen'
+model_dir = '/home/su.direkci/glitch_project/hellinger_dist/'
 
 #test_glitch_SVD_projection()
 
@@ -1129,8 +1132,8 @@ model_dir = '/home/su/Desktop/caltech/glitch_project/bilby_test/'
 
 # test_bilby()
 
-#test_hellinger(plot=True)
+test_hellinger(plot=False)
 
 # hellinger_histogram()
 
-maximize_match_compute_posterior(100)
+#maximize_match_compute_posterior(100)

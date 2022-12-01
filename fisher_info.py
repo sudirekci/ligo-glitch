@@ -197,11 +197,12 @@ class Fisher:
 
         for i in range(0, self._wg.no_detectors):
 
-            derivs[0, i, :] = 1j*(0.75*np.power(8*np.pi*chirp_mass*f,-5./3)*h[i]*
+            derivs[0, i, :] = 1j*(0.75*np.power(8*np.pi*chirp_mass*f,-5./3)*np.conjugate(h[i])*
                              ((-3715./756+55*mu/(6*M))*x+24*np.pi*np.power(x, 3./2)))
-            derivs[1, i, :] = -1j*(5/4*np.power(8*np.pi*chirp_mass*f,-5./3)*h[i]*
-                              (1.+55*mu/(6*M)*x+8*np.pi*np.power(x, 3./2)))
-            derivs[2, i, :] = h[i]
+            derivs[1, i, :] = -1j*(5/4*np.power(8*np.pi*chirp_mass*f,-5./3)*np.conjugate(h[i])*
+                              (1.+55*mu/(6*M)*x+8*np.pi*np.power(x, 3./2))) + 0.
+                              #h[i]*5./6 # last part is del h/del ln A * del ln A/ del ln M
+            derivs[2, i, :] = np.conjugate(h[i])
 
         th_fisher = np.zeros((3, 3))
 
@@ -211,7 +212,7 @@ class Fisher:
                 inner = 0.
                 for m in range(0, self._wg.no_detectors):
 
-                    inner += self._wg.inner_colored(derivs[i, m, :], derivs[j, m, :])
+                    inner += self._wg.inner_colored(derivs[j, m, :], derivs[i, m, :])
 
                     # inner += self._wg.inner_colored(derivs[i, m, :],
                     #                               derivs[j, m+1//self._wg.no_detectors, :])
@@ -235,7 +236,16 @@ class Fisher:
 
         return th_fisher, th_cov
 
-    def compute_theoretical_cov_m1_m2(self, index):
+    def compute_theoretical_cov_m1_m2(self, index=-1, params=None):
+
+        if params is None and index == -1:
+            print('Set parameters first')
+            return -1
+
+        if index == -1:
+            self._params = np.copy(params)
+        else:
+            self._params = np.copy(self._wg.params[index, :])
 
         th_fisher, _ = self.compute_theoretical_cov_mu_chirp(index)
 
