@@ -292,15 +292,15 @@ class Bilby_Posterior:
             likelihood=likelihood,
             priors=priors,
             sampler="dynesty",
-            npoints=250,
+            #npoints=100,
             npool=8,
             injection_parameters=injection_parameters,
             outdir=self._outdir,
             label=label,
             nact=10,
-            #sample="slice",
-            #slices=3,
-            #nlive=100,
+            sample="slice",
+            slices=3,
+            nlive=100,
         )
 
         # Make a corner plot.
@@ -471,9 +471,9 @@ class HellingerDistance:
                 #plt.show()
 
 
-        if save:
-            np.savetxt(self._outdir+'true_params.txt', self.wg.params[idxs], delimiter=',')
-            np.savetxt(self._outdir+'distances.txt', self.distances, delimiter=',')
+            if save:
+                np.savetxt(self._outdir+'true_params.txt', self.wg.params[idxs], delimiter=',')
+                np.savetxt(self._outdir+'distances.txt', self.distances, delimiter=',')
 
         return self.distances
 
