@@ -435,8 +435,7 @@ class HellingerDistance:
 
                 bilby_probabilities[b] = bilby_result.posterior_probability(sample)
 
-            print(bilby_probabilities[0:25])
-            self.distances[i] = np.sum(np.sqrt(1./2 * ((np.sqrt(fisher_histogram) -
+            self.distances[i] = np.sqrt(np.sum(1./2 * ((np.sqrt(fisher_histogram) -
                                                  np.sqrt(bilby_probabilities))**2) * bin_volume))
 
             print('Distance with bin volume')
