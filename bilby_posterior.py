@@ -297,7 +297,7 @@ class Bilby_Posterior:
             injection_parameters=injection_parameters,
             outdir=self._outdir,
             label=label,
-            nact=10,
+            #nact=10,
             #sample="slice",
             #slices=3,
             #nlive=100,
