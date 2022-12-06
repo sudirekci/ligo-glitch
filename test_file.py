@@ -1132,7 +1132,7 @@ model_dir = '/home/su.direkci/glitch_project/hellinger_dist/'
 
 # test_bilby()
 
-test_hellinger(plot=False)
+test_hellinger(plot=True)
 
 #hellinger_histogram()
 
