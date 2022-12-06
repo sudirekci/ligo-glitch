@@ -882,7 +882,7 @@ def test_hellinger(plot=False):
     dataset.construct_signal_dataset(perform_svd=False)
 
     hellinger = bilby_posterior.HellingerDistance(model_dir=model_dir,
-                                                  N=30, waveform_generator=dataset)
+                                                  N=20, waveform_generator=dataset)
     print('hellinger initialized')
 
     hellinger.calculate_hellinger_distances(save=True, plot=plot)
@@ -1133,6 +1133,8 @@ model_dir = '/home/su.direkci/glitch_project/hellinger_dist/'
 # test_bilby()
 
 test_hellinger(plot=False)
+
+#hellinger_histogram()
 
 # hellinger_histogram()
 
